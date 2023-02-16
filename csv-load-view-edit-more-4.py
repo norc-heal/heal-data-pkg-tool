@@ -356,8 +356,10 @@ class MainWindow(QtWidgets.QMainWindow):
         #self.buttonValidateHealCsvDd.setFixedSize(100,60)
 
         # maybe switch Line edit to this: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QPlainTextEdit.html#more
-        self.userMessageBox = QtWidgets.QLineEdit(parent=self)
-
+        #self.userMessageBox = QtWidgets.QLineEdit(parent=self)
+        self.userMessageBox = QtWidgets.QTextEdit(parent=self)
+        self.userMessageBox.setReadOnly(True)
+        
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.buttonConvertRedcapCsvDd)
         layout.addWidget(self.buttonEditCsv)
@@ -368,13 +370,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(widget)
 
     def redcap_csv_dd_convert(self):
-        fname=QtWidgets.QFileDialog.getOpenFileName(self,'Open file','C:\\Users\\tentner-andrea\\project_repositories\\dsc\\')
+        fname=QtWidgets.QFileDialog.getOpenFileName(self,'Open file',QtCore.QDir.homePath())
         path = fname[0]
         print(path)
         
         redcap_path = Path(path)
         redcap_output = redcap_path.parent.with_name('output')
-        self.userMessageBox.setText('Converting: '  + path + '\n' + 'Output path: ' + redcap_output.__str__())
+        self.userMessageBox.setText('Converting: '  + path + '\n\n\n' + 'Output path: ' + redcap_output.__str__())
 
         print(redcap_path)
         print(redcap_output)

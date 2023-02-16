@@ -7,6 +7,19 @@
 # this helped with guidance on why qpushbuttons were not showing up in main window
 # https://stackoverflow.com/questions/37304684/qwidgetsetlayout-attempting-to-set-qlayout-on-mainwindow-which-already
 
+# guidance on using qtextedit (better replacement in this context for qlineedit)
+# https://stackoverflow.com/questions/16568451/pyqt-how-to-make-a-textarea-to-write-messages-to-kinda-like-printing-to-a-co
+
+# guidance on packaging with pyinstaller
+# https://www.pythonguis.com/tutorials/packaging-pyqt5-pyside2-applications-windows-pyinstaller/
+
+# guidance on packaging with fbs
+# https://www.pythonguis.com/tutorials/packaging-pyqt5-apps-fbs/
+# fbs tutorial
+# https://github.com/mherrmann/fbs-tutorial
+# fbs manual
+# https://build-system.fman.io/manual/
+
 # not used here but may be useful later
 # https://realpython.com/python-menus-toolbars/
 

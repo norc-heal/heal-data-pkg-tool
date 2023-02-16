@@ -19,6 +19,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 from PyQt5.QtGui import QImage, QPainter
 from PyQt5.QtCore import QFile
 
+import sys
+
+from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
+from PyQt5.uic import loadUi
+
+from pathlib import Path 
+from healdata_utils.cli import to_json,to_csv_from_json
+
 
  
 class MyWindow(QtWidgets.QWidget):
@@ -333,8 +341,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.w = None  # No external window yet.
         
         widget = QtWidgets.QWidget()
+        
 
         self.buttonConvertRedcapCsvDd = QtWidgets.QPushButton(text="Redcap CSV Data Dictionary >> HEAL CSV Data Dictionary",parent=self)
+        self.buttonConvertRedcapCsvDd.clicked.connect(self.redcap_csv_dd_convert)
         #self.buttonConvertRedcapCsvDd.setFixedSize(100,60)
 
         self.buttonEditCsv = QtWidgets.QPushButton(text="View/Edit CSV", parent=self)
@@ -345,13 +355,42 @@ class MainWindow(QtWidgets.QMainWindow):
         self.buttonValidateHealCsvDd = QtWidgets.QPushButton(text="Validate HEAL CSV Data Dictionary", parent=self)
         #self.buttonValidateHealCsvDd.setFixedSize(100,60)
 
+        # maybe switch Line edit to this: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QPlainTextEdit.html#more
+        self.userMessageBox = QtWidgets.QLineEdit(parent=self)
+
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.buttonConvertRedcapCsvDd)
         layout.addWidget(self.buttonEditCsv)
         layout.addWidget(self.buttonValidateHealCsvDd)
+        layout.addWidget(self.userMessageBox)
         
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def redcap_csv_dd_convert(self):
+        fname=QtWidgets.QFileDialog.getOpenFileName(self,'Open file','C:\\Users\\tentner-andrea\\project_repositories\\dsc\\')
+        path = fname[0]
+        print(path)
+        
+        redcap_path = Path(path)
+        redcap_output = redcap_path.parent.with_name('output')
+        self.userMessageBox.setText('Converting: '  + path + '\n' + 'Output path: ' + redcap_output.__str__())
+
+        print(redcap_path)
+        print(redcap_output)
+
+        to_json(
+            filepath=redcap_path,
+            outputdir=redcap_output,
+            data_dictionary_props={
+                "title":"my dd title",
+                "description":"my dd description"
+            },
+            inputtype="redcap.csv"
+        )
+
+        to_csv_from_json(redcap_output/redcap_path.with_suffix(".json").name,redcap_output)
+
 
     def show_new_window(self,checked):
         if self.w is None:

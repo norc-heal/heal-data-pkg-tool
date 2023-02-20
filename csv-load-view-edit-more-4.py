@@ -28,9 +28,9 @@
 import csv, codecs 
 import os
  
-from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
+from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport 
 from PyQt5.QtGui import QImage, QPainter
-from PyQt5.QtCore import QFile
+from PyQt5.QtCore import QFile, Qt
 
 import sys
 
@@ -55,7 +55,7 @@ class MyWindow(QtWidgets.QWidget):
        self.tableView.horizontalHeader().setStretchLastSection(True)
        self.tableView.setShowGrid(True)
        self.tableView.setGeometry(10, 50, 780, 645)
-       self.model.dataChanged.connect(self.finishedEdit)
+       #self.model.dataChanged.connect(self.finishedEdit)
  
        self.pushButtonLoad = QtWidgets.QPushButton(self)
        self.pushButtonLoad.setText("Load CSV")
@@ -148,10 +148,30 @@ class MyWindow(QtWidgets.QWidget):
                 reader = csv.reader(f, delimiter = ',')
                 self.model.clear()
 
+                # list to store the names of columns
+                list_of_column_names = []
+                # row counter; set to zero
+                i=0
+
                 for row in reader:
-                    items = [QtGui.QStandardItem(field) for field in row]
-                    self.model.appendRow(items)
-                self.tableView.resizeColumnsToContents()
+                    if i==0:
+                        # adding the first row
+                        list_of_column_names.append(row)
+                        print(list_of_column_names)
+                        print(list_of_column_names[0])
+                        # iterate the counter so no longer zero
+                        i+=1
+                    else:
+                        items = [QtGui.QStandardItem(field) for field in row]
+                        self.model.appendRow(items)
+
+                i=0 # reset counter back to zero    
+                self.model.setHorizontalHeaderLabels(list_of_column_names[0])
+                
+                header = self.tableView.horizontalHeader()
+                header.setDefaultAlignment(Qt.AlignHCenter)
+                #self.tableView.setModel(self.model)
+                #self.tableView.resizeColumnsToContents()
 
 
 
@@ -236,6 +256,7 @@ class MyWindow(QtWidgets.QWidget):
  
    def finishedEdit(self):
        self.tableView.resizeColumnsToContents()
+       
  
    def contextMenuEvent(self, event):
        self.menu = QtWidgets.QMenu(self)

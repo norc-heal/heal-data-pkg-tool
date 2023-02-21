@@ -63,10 +63,12 @@ def infer_dd(input_csv_data):
     csv_dd_df = pd.json_normalize(resource, record_path=['schema','fields'])
     return csv_dd_df
 
-def add_dd_to_heal_dd_template(csv_dd_df,required_first=True):
+def add_dd_to_heal_dd_template(csv_dd_df,required_first=True,save_path):
     # csv_dd_df is a csv data dictionary - it can be user-created or come from running infer_dd function on a csv data file
     # if it is user-created, user must ensure that dd column names match those in the heal vlmd field properties
     # e.g. 'name', 'description', 'type', etc. 
+
+    # save path is a string that must end in '.csv'
     
     # get empty df with col names for all the heal vlmd field properties (including 'sub' properties)
     # user can specify whether to put the required properties first but that's the default
@@ -76,4 +78,9 @@ def add_dd_to_heal_dd_template(csv_dd_df,required_first=True):
     # concat the input csv dd to the empty heal csv dd template df to add any info from the user input dd to the 
     # heal template 
     heal_dd_df = pd.concat([heal_dd_df,csv_dd_df])
-    heal_dd_df.to_csv('./package/my_heal_dd_df.csv',index=False)
+    
+    if save_path:
+        heal_dd_df.to_csv(save_path,index=False)
+
+    return heal_dd_df
+    

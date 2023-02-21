@@ -1,3 +1,7 @@
+# issues: 
+# copy only copies the last value
+# paste pastes everything into each highlighted cell
+
 # https://python-forum.io/thread-1785.html
 # https://github.com/Axel-Erfurt/TreeView/blob/master/Qt5_CSV.py
 
@@ -128,7 +132,7 @@ class MyWindow(QtWidgets.QWidget):
        item = QtGui.QStandardItem()
        self.model.appendRow(item)
        self.model.setData(self.model.index(0, 0), "", 0)
-       self.tableView.resizeColumnsToContents()
+       #self.tableView.resizeColumnsToContents()
  
    def loadCsv(self, fileName):
        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",
@@ -252,7 +256,7 @@ class MyWindow(QtWidgets.QWidget):
        print (count)
        self.model.setColumnCount(count + 1)
        self.model.setData(self.model.index(0, count), "", 0)
-       self.tableView.resizeColumnsToContents()
+       #self.tableView.resizeColumnsToContents()
  
    def finishedEdit(self):
        self.tableView.resizeColumnsToContents()

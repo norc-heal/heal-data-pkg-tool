@@ -9,14 +9,14 @@ def everything_after(df, cols):
     another = df.columns.difference(cols, sort=False).tolist()
     return df[cols + another]
 
-def get_heal_csv_dd_cols(heal_json_dd_schema_url=None, required_first=True, return_df=False):
+def get_heal_csv_dd_cols(heal_json_dd_schema_url, required_first=True, return_df=False):
 
     ###########################################################################
     # get the latest version of the heal json dd schema to populate the 
     # heal csv dd template - user can update url in function call if necessary
     ###########################################################################
     
-    if heal_dd_json_schema_url is None:
+    if not heal_dd_json_schema_url:
         heal_dd_json_schema_url = 'https://raw.githubusercontent.com/HEAL/heal-metadata-schemas/main/variable-level-metadata-schema/schemas/fields.json'
     
     r = requests.get(heal_dd_json_schema_url)
@@ -63,7 +63,7 @@ def infer_dd(input_csv_data):
     csv_dd_df = pd.json_normalize(resource, record_path=['schema','fields'])
     return csv_dd_df
 
-def add_dd_to_heal_dd_template(csv_dd_df,required_first=True,save_path):
+def add_dd_to_heal_dd_template(csv_dd_df,save_path,required_first=True):
     # csv_dd_df is a csv data dictionary - it can be user-created or come from running infer_dd function on a csv data file
     # if it is user-created, user must ensure that dd column names match those in the heal vlmd field properties
     # e.g. 'name', 'description', 'type', etc. 

@@ -44,6 +44,12 @@ from PyQt5.uic import loadUi
 from pathlib import Path 
 from healdata_utils.cli import to_json,to_csv_from_json
 
+from frictionless import describe
+import pandas as pd
+import json
+import requests
+import pipe
+
 
  
 class MyWindow(QtWidgets.QWidget):
@@ -380,6 +386,8 @@ class MainWindow(QtWidgets.QMainWindow):
         
         widget = QtWidgets.QWidget()
         
+        self.buttonInferHealCsvDd = QtWidgets.QPushButton(text="CSV Data >> HEAL CSV Data Dictionary",parent=self)
+        self.buttonInferHealCsvDd.clicked.connect(self.csv_data_infer_dd)
 
         self.buttonConvertRedcapCsvDd = QtWidgets.QPushButton(text="Redcap CSV Data Dictionary >> HEAL CSV Data Dictionary",parent=self)
         self.buttonConvertRedcapCsvDd.clicked.connect(self.redcap_csv_dd_convert)
@@ -407,17 +415,22 @@ class MainWindow(QtWidgets.QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
+    def csv_data_infer_dd(self):
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",
+               (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
+
+
     def redcap_csv_dd_convert(self):
         fname=QtWidgets.QFileDialog.getOpenFileName(self,'Open file',QtCore.QDir.homePath())
         path = fname[0]
-        print(path)
+        #print(path)
         
         redcap_path = Path(path)
         redcap_output = redcap_path.parent.with_name('output')
         self.userMessageBox.setText('Converting: '  + path + '\n\n\n' + 'Output path: ' + redcap_output.__str__())
 
-        print(redcap_path)
-        print(redcap_output)
+        #print(redcap_path)
+        #print(redcap_output)
 
         to_json(
             filepath=redcap_path,

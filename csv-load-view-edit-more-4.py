@@ -50,6 +50,8 @@ import json
 import requests
 import pipe
 
+import dsc_pkg_utils
+
 
  
 class MyWindow(QtWidgets.QWidget):

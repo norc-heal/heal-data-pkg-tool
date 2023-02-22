@@ -416,6 +416,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setReadOnly(True)
         
         layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.buttonInferHealCsvDd)
         layout.addWidget(self.buttonConvertRedcapCsvDd)
         layout.addWidget(self.buttonEditCsv)
         layout.addWidget(self.buttonValidateHealCsvDd)
@@ -430,7 +431,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
         
-        messageText = 'Inferring minimal data dictionary from: ' + ifname
+        messageText = 'Inferring minimal data dictionary from: ' + ifileName
         self.userMessageBox.setText(messageText)
 
         first_dd_df = dsc_pkg_utils.infer_dd(ifileName)

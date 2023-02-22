@@ -5,29 +5,31 @@ import requests
 import pipe
 
 def everything_after(df, cols):
+    # convenience function to bring one or more cols in a dataframe to the front, while leaving all others in same order following
+    # replicates functionality of dplyr 'everything' function - by: https://stackoverflow.com/users/2901002/jezrael
     # cols is a list of col names (list of strings)
     another = df.columns.difference(cols, sort=False).tolist()
     return df[cols + another]
 
-def get_heal_csv_dd_cols(heal_json_dd_schema_url, required_first=True, return_df=False):
+def get_heal_csv_dd_cols(heal_json_dd_schema_url=None, required_first=True, return_df=False):
 
     ###########################################################################
     # get the latest version of the heal json dd schema to populate the 
     # heal csv dd template - user can update url in function call if necessary
     ###########################################################################
     
-    if not heal_dd_json_schema_url:
-        heal_dd_json_schema_url = 'https://raw.githubusercontent.com/HEAL/heal-metadata-schemas/main/variable-level-metadata-schema/schemas/fields.json'
+    if not heal_json_dd_schema_url:
+        heal_json_dd_schema_url = 'https://raw.githubusercontent.com/HEAL/heal-metadata-schemas/main/variable-level-metadata-schema/schemas/fields.json'
     
-    r = requests.get(heal_dd_json_schema_url)
-    heal_dd_json_schema = r.json()
-    print(heal_dd_json_schema)
+    r = requests.get(heal_json_dd_schema_url)
+    heal_json_dd_schema = r.json()
+    print(heal_json_dd_schema)
 
     my_df_col = []
 
-    for p in list(heal_dd_json_schema['properties'].keys()):
-        if 'properties' in heal_dd_json_schema['properties'][p].keys():
-            for p2 in list(heal_dd_json_schema['properties'][p]['properties'].keys()):
+    for p in list(heal_json_dd_schema['properties'].keys()):
+        if 'properties' in heal_json_dd_schema['properties'][p].keys():
+            for p2 in list(heal_json_dd_schema['properties'][p]['properties'].keys()):
                 my_df_col.append(p+'.'+p2)
         else:
             my_df_col.append(p)
@@ -45,7 +47,7 @@ def get_heal_csv_dd_cols(heal_json_dd_schema_url, required_first=True, return_df
         # first in the heal csv dd template
         ###########################################################################
 
-        required_col = heal_dd_json_schema['required']
+        required_col = heal_json_dd_schema['required']
         heal_dd_df = heal_dd_df.pipe(everything_after, required_col)
         if not return_df:
             return heal_dd_df.columns.values.tolist()
@@ -56,6 +58,7 @@ def infer_dd(input_csv_data):
     ###########################################################################
     # bring in a new tabular resource, infer minimal table schema/dd
     ###########################################################################
+    # input csv data is a string file path to a csv data file
 
     resource = describe(input_csv_data)
     resource = resource.to_dict()
@@ -63,7 +66,7 @@ def infer_dd(input_csv_data):
     csv_dd_df = pd.json_normalize(resource, record_path=['schema','fields'])
     return csv_dd_df
 
-def add_dd_to_heal_dd_template(csv_dd_df,save_path,required_first=True):
+def add_dd_to_heal_dd_template(csv_dd_df,required_first=True,save_path=None):
     # csv_dd_df is a csv data dictionary - it can be user-created or come from running infer_dd function on a csv data file
     # if it is user-created, user must ensure that dd column names match those in the heal vlmd field properties
     # e.g. 'name', 'description', 'type', etc. 

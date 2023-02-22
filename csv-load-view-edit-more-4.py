@@ -2,8 +2,14 @@
 # copy only copies the last value
 # paste pastes everything into each highlighted cell
 
+# using code here as main starting point for window that allows load, edit, save of csv
 # https://python-forum.io/thread-1785.html
 # https://github.com/Axel-Erfurt/TreeView/blob/master/Qt5_CSV.py
+
+# guidance on adding header to qtableview/qstandarditemmodel
+# https://stackoverflow.com/questions/42094545/cant-set-and-display-a-qtabelview-horizontal-header
+# https://stackoverflow.com/questions/37222081/pyqt-qtableview-set-horizontal-vertical-header-labels
+# https://stackoverflow.com/questions/17478993/how-to-change-headers-title-of-a-qtableview
 
 # using this here for example of how to open a new window from main window
 # https://www.pythonguis.com/tutorials/creating-multiple-windows/
@@ -17,7 +23,7 @@
 # guidance on packaging with pyinstaller
 # https://www.pythonguis.com/tutorials/packaging-pyqt5-pyside2-applications-windows-pyinstaller/
 
-# guidance on packaging with fbs
+# guidance on packaging with fbs 
 # https://www.pythonguis.com/tutorials/packaging-pyqt5-apps-fbs/
 # fbs tutorial
 # https://github.com/mherrmann/fbs-tutorial
@@ -167,13 +173,14 @@ class MyWindow(QtWidgets.QWidget):
 
                 for row in reader:
                     if i==0:
-                        # adding the first row
+                        # adding the first row to list of column names
                         list_of_column_names.append(row)
                         print(list_of_column_names)
                         print(list_of_column_names[0])
                         # iterate the counter so no longer zero
                         i+=1
                     else:
+                        # adding all rows except first row as rows to model
                         items = [QtGui.QStandardItem(field) for field in row]
                         self.model.appendRow(items)
 
@@ -418,8 +425,29 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(widget)
 
     def csv_data_infer_dd(self):
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",
                (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
+
+        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
+        
+        messageText = 'Inferring minimal data dictionary from: ' + ifname
+        self.userMessageBox.setText(messageText)
+
+        first_dd_df = dsc_pkg_utils.infer_dd(ifileName)
+
+        messageText = messageText + '\n\n\n' + 'Success!'
+        self.userMessageBox.setText(messageText)
+
+        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", 
+                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)")
+
+        messageText = messageText + '\n\n\n' + 'Populating HEAL CSV data dictionary template with values from inferred data dictionary.' + '\n\n\n' + 'Output data dictionary in HEAL CSV data dictionary format will be saved as: ' + ofileName
+        self.userMessageBox.setText(messageText)
+
+        second_dd_df = dsc_pkg_utils.add_dd_to_heal_dd_template(first_dd_df,required_first=True,save_path=ofileName)
+
+        messageText = messageText + '\n\n\n' + 'Success!'
+        self.userMessageBox.setText(messageText)
 
 
     def redcap_csv_dd_convert(self):

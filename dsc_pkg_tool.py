@@ -434,10 +434,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(widget)
 
     def create_new_pkg(self):
-        file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-        folder = str(QFileDialog.getExistingDirectory(None, "Select Directory"))
-        folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Folder')
-        filepath = QtWidgets.QFileDialog.getOpenFileName(self, 'Hey! Select a File')
+        #file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        #folder = str(QFileDialog.getExistingDirectory(None, "Select Directory"))
+        #filepath = QtWidgets.QFileDialog.getOpenFileName(self, 'Hey! Select a File')
+        parentFolderPath, _ = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Folder')
+        pkgPath = dsc_pkg_utils.new_pkg(pkg_parent_dir_path=parentFolderPath)
+
+        messageText = 'Created new HEAL DSC data package at: ' + pkgPath
+        self.userMessageBox.setText(messageText)
 
     def csv_data_infer_dd(self):
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",

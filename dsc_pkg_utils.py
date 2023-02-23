@@ -123,6 +123,8 @@ def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path
             shutil.copy(source, destination)
             print('copied', file_name)
 
+    return pkg_path
+
     
 
 

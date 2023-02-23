@@ -403,6 +403,9 @@ class MainWindow(QtWidgets.QMainWindow):
         
         widget = QtWidgets.QWidget()
         
+        self.buttonNewPkg = QtWidgets.QPushButton(text="Create New HEAL-DSC Data Package",parent=self)
+        self.buttonNewPkg.clicked.connect(self.create_new_pkg)
+
         self.buttonInferHealCsvDd = QtWidgets.QPushButton(text="CSV Data >> HEAL CSV Data Dictionary",parent=self)
         self.buttonInferHealCsvDd.clicked.connect(self.csv_data_infer_dd)
 
@@ -424,6 +427,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setReadOnly(True)
         
         layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.buttonNewPkg)
         layout.addWidget(self.buttonInferHealCsvDd)
         layout.addWidget(self.buttonConvertRedcapCsvDd)
         layout.addWidget(self.buttonEditCsv)

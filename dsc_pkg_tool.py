@@ -65,6 +65,7 @@ class MyWindow(QtWidgets.QWidget):
        super(MyWindow, self).__init__(parent)
        self.fileName = ""
        self.fname = "Liste"
+       self.myColNames = []
        self.model =  QtGui.QStandardItemModel(self)
  
        self.tableView = QtWidgets.QTableView(self)
@@ -184,8 +185,11 @@ class MyWindow(QtWidgets.QWidget):
                         items = [QtGui.QStandardItem(field) for field in row]
                         self.model.appendRow(items)
 
-                i=0 # reset counter back to zero    
-                self.model.setHorizontalHeaderLabels(list_of_column_names[0])
+                i=0 # reset counter back to zero 
+
+                self.myColNames = list_of_column_names[0] 
+                self.model.setHorizontalHeaderLabels(self.myColNames)  
+                #self.model.setHorizontalHeaderLabels(list_of_column_names[0])
                 
                 header = self.tableView.horizontalHeader()
                 header.setDefaultAlignment(Qt.AlignHCenter)
@@ -209,6 +213,7 @@ class MyWindow(QtWidgets.QWidget):
            f = open(fileName, 'w')
            with f:
                writer = csv.writer(f, delimiter = ',', lineterminator='\r')
+               writer.writerow(self.myColNames)
                for rowNumber in range(self.model.rowCount()):
                    fields = [self.model.data(self.model.index(rowNumber, columnNumber),
                                         QtCore.Qt.DisplayRole)

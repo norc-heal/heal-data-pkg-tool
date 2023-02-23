@@ -6,6 +6,9 @@
 # https://python-forum.io/thread-1785.html
 # https://github.com/Axel-Erfurt/TreeView/blob/master/Qt5_CSV.py
 
+# may be helpful with implementing validation/drop downs in qtableview csv editor
+# https://stackoverflow.com/questions/6571209/how-to-display-drop-down-in-column-of-qtableview-and-filter-based-on-drop-down
+
 # guidance on adding header to qtableview/qstandarditemmodel
 # https://stackoverflow.com/questions/42094545/cant-set-and-display-a-qtabelview-horizontal-header
 # https://stackoverflow.com/questions/37222081/pyqt-qtableview-set-horizontal-vertical-header-labels
@@ -429,6 +432,12 @@ class MainWindow(QtWidgets.QMainWindow):
         
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def create_new_pkg(self):
+        file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        folder = str(QFileDialog.getExistingDirectory(None, "Select Directory"))
+        folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Folder')
+        filepath = QtWidgets.QFileDialog.getOpenFileName(self, 'Hey! Select a File')
 
     def csv_data_infer_dd(self):
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",

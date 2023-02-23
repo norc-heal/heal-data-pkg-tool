@@ -441,7 +441,7 @@ class MainWindow(QtWidgets.QMainWindow):
         #file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
         #folder = str(QFileDialog.getExistingDirectory(None, "Select Directory"))
         #filepath = QtWidgets.QFileDialog.getOpenFileName(self, 'Hey! Select a File')
-        parentFolderPath, _ = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Folder')
+        parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Parent Directory Where Data Package Should Be Created!')
         pkgPath = dsc_pkg_utils.new_pkg(pkg_parent_dir_path=parentFolderPath)
 
         messageText = 'Created new HEAL DSC data package at: ' + pkgPath

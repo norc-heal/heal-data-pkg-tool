@@ -61,7 +61,7 @@ import pipe
 
 import dsc_pkg_utils
 
-
+basedir = os.path.dirname(__file__)
  
 class MyWindow(QtWidgets.QWidget):
    def __init__(self, fileName, parent=None):
@@ -549,6 +549,7 @@ if __name__ == "__main__":
    import sys
  
    app = QtWidgets.QApplication(sys.argv)
+   app.setWindowIcon(QtGui.QIcon(os.path.join(basedir,'heal-icon.ico')))
    #app.setApplicationName('MyWindow')
    
    w = MainWindow()

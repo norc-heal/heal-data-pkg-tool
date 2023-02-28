@@ -61,6 +61,14 @@ import pipe
 
 import dsc_pkg_utils
 
+# this will prevent windows from setting the app icon to python automatically based on .py suffix
+try:
+    from ctypes import windll # only exists on windows
+    myappid = 'mycompany.myproduct.subproduct.version' # somewhat arbitrary string, can set this to the recommendation but not really necessary
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
+
 basedir = os.path.dirname(__file__)
  
 class MyWindow(QtWidgets.QWidget):

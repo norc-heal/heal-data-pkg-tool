@@ -52,7 +52,7 @@ from PyQt5.uic import loadUi
 
 from pathlib import Path # base python, no pip install needed
 
-from healdata_utils.cli import to_json,to_csv_from_json
+from healdata_utils.cli import convert_to_vlmd
 
 from frictionless import plugins # frictionless already installed as a healdata_utils dependency, no pip install needed
 from frictionless.plugins import remote
@@ -486,28 +486,37 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def redcap_csv_dd_convert(self):
-        fname=QtWidgets.QFileDialog.getOpenFileName(self,'Open file',QtCore.QDir.homePath())
-        path = fname[0]
-        #print(path)
+        fname,_=QtWidgets.QFileDialog.getOpenFileName(self,'Open file',QtCore.QDir.homePath())
+        #path = fname[0]
+
+        outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
         
-        redcap_path = Path(path)
-        redcap_output = redcap_path.parent.with_name('output')
-        self.userMessageBox.setText('Converting: '  + path + '\n\n\n' + 'Output path: ' + redcap_output.__str__())
+        #redcap_path = Path(path)
+        #redcap_output = redcap_path.parent.with_name('output')
+        #self.userMessageBox.setText('Converting: '  + path + '\n\n\n' + 'Output path: ' + redcap_output.__str__())
 
-        #print(redcap_path)
-        #print(redcap_output)
-
-        to_json(
-            filepath=redcap_path,
-            outputdir=redcap_output,
+        convert_to_vlmd(
+            #filepath=redcap_path,
+            filepath=fname,
+            outputdir=outputFolderPath,
             data_dictionary_props={
                 "title":"my dd title",
                 "description":"my dd description"
             },
             inputtype="redcap.csv"
         )
-
-        to_csv_from_json(redcap_output/redcap_path.with_suffix(".json").name,redcap_output)
+#  
+#        to_json(
+#            filepath=redcap_path,
+#            outputdir=redcap_output,
+#            data_dictionary_props={
+#                "title":"my dd title",
+#                "description":"my dd description"
+#            },
+#            inputtype="redcap.csv"
+#        )
+#
+#        to_csv_from_json(redcap_output/redcap_path.with_suffix(".json").name,redcap_output)
 
 
     def show_new_window(self,checked):

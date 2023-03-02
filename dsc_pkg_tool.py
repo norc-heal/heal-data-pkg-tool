@@ -38,32 +38,36 @@
 
 #!/usr/bin/python3
 #-*- coding:utf-8 -*-
-import csv, codecs 
-import os
+import csv, codecs # base python, no pip install needed
+import os # base python, no pip install needed
  
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport 
 from PyQt5.QtGui import QImage, QPainter
 from PyQt5.QtCore import QFile, Qt
 
-import sys
+import sys # base python, no pip install needed
 
 from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
 from PyQt5.uic import loadUi
 
-from pathlib import Path 
+from pathlib import Path # base python, no pip install needed
+
 from healdata_utils.cli import to_json,to_csv_from_json
 
+from frictionless import plugins # frictionless already installed as a healdata_utils dependency, no pip install needed
+from frictionless.plugins import remote
 from frictionless import describe
-import pandas as pd
-import json
-import requests
+
+import pandas as pd # pandas already installed as a healdata_utils dependency, no pip install needed
+import json # base python, no pip install needed
+import requests # requests already installed as a healdata_utils dependency, no pip install needed
 import pipe
 
-import dsc_pkg_utils
+import dsc_pkg_utils # local module, no pip install needed
 
 # this will prevent windows from setting the app icon to python automatically based on .py suffix
 try:
-    from ctypes import windll # only exists on windows
+    from ctypes import windll # only exists on windows, base python, no pip install needed
     myappid = 'mycompany.myproduct.subproduct.version' # somewhat arbitrary string, can set this to the recommendation but not really necessary
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:

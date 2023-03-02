@@ -1,10 +1,10 @@
 from frictionless import describe
 import pandas as pd
-import json
+import json # base python, no pip install needed
 import requests
 import pipe
-import os
-import shutil
+import os # base python, no pip install needed
+import shutil # base python, no pip install needed
 
 def everything_after(df, cols):
     # convenience function to bring one or more cols in a dataframe to the front, while leaving all others in same order following

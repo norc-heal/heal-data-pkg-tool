@@ -6,6 +6,9 @@
 # https://python-forum.io/thread-1785.html
 # https://github.com/Axel-Erfurt/TreeView/blob/master/Qt5_CSV.py
 
+# may be helpful with implementing validation/drop downs in qtableview csv editor
+# https://stackoverflow.com/questions/6571209/how-to-display-drop-down-in-column-of-qtableview-and-filter-based-on-drop-down
+
 # guidance on adding header to qtableview/qstandarditemmodel
 # https://stackoverflow.com/questions/42094545/cant-set-and-display-a-qtabelview-horizontal-header
 # https://stackoverflow.com/questions/37222081/pyqt-qtableview-set-horizontal-vertical-header-labels
@@ -35,36 +38,49 @@
 
 #!/usr/bin/python3
 #-*- coding:utf-8 -*-
-import csv, codecs 
-import os
+import csv, codecs # base python, no pip install needed
+import os # base python, no pip install needed
  
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport 
 from PyQt5.QtGui import QImage, QPainter
 from PyQt5.QtCore import QFile, Qt
 
-import sys
+import sys # base python, no pip install needed
 
 from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
 from PyQt5.uic import loadUi
 
-from pathlib import Path 
-from healdata_utils.cli import to_json,to_csv_from_json
+from pathlib import Path # base python, no pip install needed
 
+from healdata_utils.cli import convert_to_vlmd
+
+from frictionless import plugins # frictionless already installed as a healdata_utils dependency, no pip install needed
+from frictionless.plugins import remote
 from frictionless import describe
-import pandas as pd
-import json
-import requests
+
+import pandas as pd # pandas already installed as a healdata_utils dependency, no pip install needed
+import json # base python, no pip install needed
+import requests # requests already installed as a healdata_utils dependency, no pip install needed
 import pipe
 
-import dsc_pkg_utils
+import dsc_pkg_utils # local module, no pip install needed
 
+# this will prevent windows from setting the app icon to python automatically based on .py suffix
+try:
+    from ctypes import windll # only exists on windows, base python, no pip install needed
+    myappid = 'mycompany.myproduct.subproduct.version' # somewhat arbitrary string, can set this to the recommendation but not really necessary
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
 
+basedir = os.path.dirname(__file__)
  
 class MyWindow(QtWidgets.QWidget):
    def __init__(self, fileName, parent=None):
        super(MyWindow, self).__init__(parent)
        self.fileName = ""
        self.fname = "Liste"
+       self.myColNames = []
        self.model =  QtGui.QStandardItemModel(self)
  
        self.tableView = QtWidgets.QTableView(self)
@@ -184,8 +200,11 @@ class MyWindow(QtWidgets.QWidget):
                         items = [QtGui.QStandardItem(field) for field in row]
                         self.model.appendRow(items)
 
-                i=0 # reset counter back to zero    
-                self.model.setHorizontalHeaderLabels(list_of_column_names[0])
+                i=0 # reset counter back to zero 
+
+                self.myColNames = list_of_column_names[0] 
+                self.model.setHorizontalHeaderLabels(self.myColNames)  
+                #self.model.setHorizontalHeaderLabels(list_of_column_names[0])
                 
                 header = self.tableView.horizontalHeader()
                 header.setDefaultAlignment(Qt.AlignHCenter)
@@ -209,6 +228,7 @@ class MyWindow(QtWidgets.QWidget):
            f = open(fileName, 'w')
            with f:
                writer = csv.writer(f, delimiter = ',', lineterminator='\r')
+               writer.writerow(self.myColNames)
                for rowNumber in range(self.model.rowCount()):
                    fields = [self.model.data(self.model.index(rowNumber, columnNumber),
                                         QtCore.Qt.DisplayRole)
@@ -395,6 +415,9 @@ class MainWindow(QtWidgets.QMainWindow):
         
         widget = QtWidgets.QWidget()
         
+        self.buttonNewPkg = QtWidgets.QPushButton(text="Create New HEAL-DSC Data Package",parent=self)
+        self.buttonNewPkg.clicked.connect(self.create_new_pkg)
+
         self.buttonInferHealCsvDd = QtWidgets.QPushButton(text="CSV Data >> HEAL CSV Data Dictionary",parent=self)
         self.buttonInferHealCsvDd.clicked.connect(self.csv_data_infer_dd)
 
@@ -416,6 +439,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setReadOnly(True)
         
         layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.buttonNewPkg)
         layout.addWidget(self.buttonInferHealCsvDd)
         layout.addWidget(self.buttonConvertRedcapCsvDd)
         layout.addWidget(self.buttonEditCsv)
@@ -424,6 +448,16 @@ class MainWindow(QtWidgets.QMainWindow):
         
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def create_new_pkg(self):
+        #file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        #folder = str(QFileDialog.getExistingDirectory(None, "Select Directory"))
+        #filepath = QtWidgets.QFileDialog.getOpenFileName(self, 'Hey! Select a File')
+        parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Parent Directory Where Data Package Should Be Created!')
+        pkgPath = dsc_pkg_utils.new_pkg(pkg_parent_dir_path=parentFolderPath)
+
+        messageText = 'Created new HEAL DSC data package at: ' + pkgPath
+        self.userMessageBox.setText(messageText)
 
     def csv_data_infer_dd(self):
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",
@@ -452,28 +486,37 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def redcap_csv_dd_convert(self):
-        fname=QtWidgets.QFileDialog.getOpenFileName(self,'Open file',QtCore.QDir.homePath())
-        path = fname[0]
-        #print(path)
+        fname,_=QtWidgets.QFileDialog.getOpenFileName(self,'Open file',QtCore.QDir.homePath())
+        #path = fname[0]
+
+        outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
         
-        redcap_path = Path(path)
-        redcap_output = redcap_path.parent.with_name('output')
-        self.userMessageBox.setText('Converting: '  + path + '\n\n\n' + 'Output path: ' + redcap_output.__str__())
+        #redcap_path = Path(path)
+        #redcap_output = redcap_path.parent.with_name('output')
+        #self.userMessageBox.setText('Converting: '  + path + '\n\n\n' + 'Output path: ' + redcap_output.__str__())
 
-        #print(redcap_path)
-        #print(redcap_output)
-
-        to_json(
-            filepath=redcap_path,
-            outputdir=redcap_output,
+        convert_to_vlmd(
+            #filepath=redcap_path,
+            filepath=fname,
+            outputdir=outputFolderPath,
             data_dictionary_props={
                 "title":"my dd title",
                 "description":"my dd description"
             },
             inputtype="redcap.csv"
         )
-
-        to_csv_from_json(redcap_output/redcap_path.with_suffix(".json").name,redcap_output)
+#  
+#        to_json(
+#            filepath=redcap_path,
+#            outputdir=redcap_output,
+#            data_dictionary_props={
+#                "title":"my dd title",
+#                "description":"my dd description"
+#            },
+#            inputtype="redcap.csv"
+#        )
+#
+#        to_csv_from_json(redcap_output/redcap_path.with_suffix(".json").name,redcap_output)
 
 
     def show_new_window(self,checked):
@@ -527,6 +570,7 @@ if __name__ == "__main__":
    import sys
  
    app = QtWidgets.QApplication(sys.argv)
+   app.setWindowIcon(QtGui.QIcon(os.path.join(basedir,'heal-icon.ico')))
    #app.setApplicationName('MyWindow')
    
    w = MainWindow()

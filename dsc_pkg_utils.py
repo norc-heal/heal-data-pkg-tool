@@ -1,8 +1,10 @@
 from frictionless import describe
 import pandas as pd
-import json
+import json # base python, no pip install needed
 import requests
 import pipe
+import os # base python, no pip install needed
+import shutil # base python, no pip install needed
 
 def everything_after(df, cols):
     # convenience function to bring one or more cols in a dataframe to the front, while leaving all others in same order following
@@ -86,4 +88,44 @@ def add_dd_to_heal_dd_template(csv_dd_df,required_first=True,save_path=None):
         heal_dd_df.to_csv(save_path,index=False)
 
     return heal_dd_df
+
+def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path='./resources/'):
+    
+    #if not pkg_dir_name:
+    #    pkg_dir_name = 'dsc-pkg'
+
+    #if not dsc_pkg_resource_dir_path:
+    #    dsc_pkg_resource_dir_path = './resources/'
+
+    pkg_path = os.path.join(pkg_parent_dir_path,pkg_dir_name)
+
+    # create the new package directory    
+    try:
+        os.makedirs(pkg_path, exist_ok = False)
+        print("Directory '%s' created successfully" %pkg_dir_name)
+    except OSError as error:
+        print("Directory '%s' can not be created - check to see if the directory already exists")
+
+    
+    # add template starter files to new package directory
+    source_folder = dsc_pkg_resource_dir_path
+    destination_folder = pkg_path
+
+    # fetch all files
+    for file_name in os.listdir(source_folder):
+        # construct full file path
+        #source = source_folder + file_name
+        #destination = destination_folder + file_name
+        source = os.path.join(source_folder,file_name)
+        destination = os.path.join(destination_folder,file_name)
+        # copy only files
+        if os.path.isfile(source):
+            shutil.copy(source, destination)
+            print('copied', file_name)
+
+    return pkg_path
+
+    
+
+
     

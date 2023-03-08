@@ -1,0 +1,21 @@
+field,description,notes,frictionless-standard,in-heal-csv-resource-tracker-template
+exp.belongs.to,experiment id (should link to experiment.id in experiment tracker file) indicating which experiment the data 'belongs to' (which experiment was used to generate the data),,no,yes
+name,resource file name,auto-infers the file name as name,yes,yes
+path,resource file path,auto-infers the path relative to the working directory,yes,yes
+title,human readable name of resource,,no,yes
+description,resource description,description of the resource,no,yes
+description.row,row description,e.g. one row represents one subject at one timepoint,no,yes
+category.data.metadata.code,data/metadata/code,,no,yes
+category.sub.metadata,metadata > type: dd/id-lookup-description/protocol/experiments-description,,no,yes
+category.sub.data,data > stage: raw/processed-intermediate/processed-final,,no,yes
+assoc.file.dd,dd file ref (heal csv),"references a heal csv dd file; this file will be converted to a heal json dd, then to a frictionless tabular resource schema format and either referenced or placed inline in the resource schema property; if this field is empty then the contents of the schema property are the minimal frictionless-inferred fields  ",no,yes
+assoc.file.protocol,protocol file ref(s),,no,yes
+assoc.file.id.lookup,id lookup description file ref(s),,no,yes
+access,permanent-private/temporary-private/permanent-restricted-access/temporary-restricted-access/public,private means members of the public cannot request access; restricted access means they can request access but there is gate-keeping,no,yes
+access.date,private/restricted access - expiration date,,no,yes
+assoc.file.depends.on,source file ref(s),"if other files are necessary to make this file (e.g. raw data file necessary to  make processed data file) list them here; only one layer deep; can be data, code, protocol (?)",no,yes
+profile,,e.g. tabular-data-resource,yes,no
+format,,e.g. csv,yes,no
+mediatype,,e.g. text/csv,yes,no
+encoding,"for text file, encoding",e.g. utf-8,yes,no
+schema,"for tabular resource, schema of fields contained in tabular resource",auto-infers the fields in a tabular data set; can also manually populate this property with either inline frictionless tabular resource schema OR with a path as a reference to a schema in another file,yes,no

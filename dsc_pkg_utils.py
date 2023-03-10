@@ -21,7 +21,7 @@ def get_heal_csv_dd_cols(heal_json_dd_schema_url=None, required_first=True, retu
     ###########################################################################
     
     if not heal_json_dd_schema_url:
-        heal_json_dd_schema_url = 'https://raw.githubusercontent.com/HEAL/heal-metadata-schemas/main/variable-level-metadata-schema/schemas/fields.json'
+        heal_json_dd_schema_url = 'https://raw.githubusercontent.com/HEAL/heal-metadata-schemas/main/variable-level-metadata-schema/schemas/jsonschema/fields.json'
     
     r = requests.get(heal_json_dd_schema_url)
     heal_json_dd_schema = r.json()

@@ -1,0 +1,27 @@
+field,description,notes,frictionless-standard,frictionless-auto,in-heal-csv-resource-tracker-template
+exp.belongs.to,experiment id (should link to experiment.id in experiment tracker file) indicating which experiment the data 'belongs to' (which experiment was used to generate the data),,no,no,yes
+name,resource file name,auto-infers the file name as name,yes,yes,yes
+path,resource file path,auto-infers the path relative to the working directory,yes,yes,yes
+title,human readable name of resource,,no,no,yes
+description,resource description,description of the resource,no,no,yes
+description.row,"for tabular data resource, row description",e.g. one row represents one subject at one timepoint,no,no,yes
+description.file,"for multi-file resource containing multiple files of the same type, file description",,no,no,yes
+description.file.name.convention,"for multi-file resource containing multiple files of the same type, provide the naming convention of files (e.g. subject-xx-protocol-xxx-day-xxxxxxxx",,no,no,yes
+category.results.data.metadata.code,results/data/metadata/code,,no,no,yes
+category.sub.metadata,metadata > type: dd/id-lookup-description/protocol/experiments-description/statistical analysis plan,,no,no,yes
+category.sub.data,data > stage: raw/processed-intermediate/processed-final,,no,no,yes
+category.sub.results,figure/text/publication,,no,no,yes
+assoc.file.dd,dd file ref (heal csv),"references a heal csv dd file; this file will be converted to a heal json dd, then to a frictionless tabular resource schema format and either referenced or placed inline in the resource schema property; if this field is empty then the contents of the schema property are the minimal frictionless-inferred fields  ",no,no,yes
+assoc.file.protocol,protocol file ref(s),,no,no,yes
+assoc.file.id.lookup,id lookup description file ref(s),,no,no,yes
+access,permanent-private/temporary-private/restricted-access/public,private means members of the public cannot request access; restricted access means they can request access but there is gate-keeping,no,no,yes
+access.date,"if 'access' field includes the value of 'temporary - private' what is the date at which private status 'expires' (at which point, it is expected that the file will either have access of 'public' or 'restricted access' as indicated by 'access' field values specified as 'temporary - private|public' or 'temporary - private|restricted-access' respectively)",,no,no,yes
+assoc.file.depends.on,source file ref(s),"if other files are necessary to make this file (e.g. raw data file necessary to  make processed data file) list them here; only one layer deep; can be data, code, protocol (?)",no,no,yes
+profile,,e.g. tabular-data-resource,yes,yes,yes
+format,,e.g. csv,yes,yes,yes
+format.software,"if the format is proprietary and requires specific software to open/interpret, provide the software name and version","e.g. Origin, CorelDraw",no,no,yes
+format.open.type,"If the format is proprietary but can be opened/converted to open source format using open source tools, provide the open source format to which the file can be converted (e.g. csv)",,no,no,yes
+format.open.protocol,"If the format is proprietary but can be opened/converted to open source format using open source tools, provide the open source tools required and the protocol for converting the file to an open source format (open in excel, specify space delimited, 3 line header)",,no,no,yes
+mediatype,,e.g. text/csv,yes,yes,yes
+encoding,"for text file, encoding",e.g. utf-8,yes,yes,yes
+schema,"for tabular resource, schema of fields contained in tabular resource",auto-infers the fields in a tabular data set; can also manually populate this property with either inline frictionless tabular resource schema OR with a path as a reference to a schema in another file,yes,yes,yes

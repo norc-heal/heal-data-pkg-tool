@@ -2,6 +2,15 @@
 # copy only copies the last value
 # paste pastes everything into each highlighted cell
 
+# tutorial on using table view/model together:
+# https://doc.qt.io/qt-5/modelview.html
+# https://www.pythonguis.com/tutorials/qtableview-modelviews-numpy-pandas/
+# https://www.pythonguis.com/faq/adding-qcombobox-to-a-qtableview-and-getting-setting-values-after-creation/
+# https://stackoverflow.com/questions/30457935/pyqt4-adding-combobox-in-qtableview
+
+# guidance on how to create a user input form
+# https://www.geeksforgeeks.org/pyqt5-create-a-user-form-to-get-information/
+
 # using code here as main starting point for window that allows load, edit, save of csv
 # https://python-forum.io/thread-1785.html
 # https://github.com/Axel-Erfurt/TreeView/blob/master/Qt5_CSV.py
@@ -486,18 +495,27 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def redcap_csv_dd_convert(self):
-        fname,_=QtWidgets.QFileDialog.getOpenFileName(self,'Open file',QtCore.QDir.homePath())
+        fname,_=QtWidgets.QFileDialog.getOpenFileName(self,'Select Input Redcap CSV Data Dictionary file',QtCore.QDir.homePath())
+        #fname=QtWidgets.QFileDialog.getOpenFileName(self,'Open file',QtCore.QDir.homePath())
         #path = fname[0]
+
+        print(fname)
+        print(type(fname))
+        print(Path(fname))
+        print(type(Path(fname)))
 
         outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
         
+        print(outputFolderPath)
+
         #redcap_path = Path(path)
         #redcap_output = redcap_path.parent.with_name('output')
         #self.userMessageBox.setText('Converting: '  + path + '\n\n\n' + 'Output path: ' + redcap_output.__str__())
 
         convert_to_vlmd(
             #filepath=redcap_path,
-            filepath=fname,
+            #filepath=fname,
+            filepath=Path(fname),
             outputdir=outputFolderPath,
             data_dictionary_props={
                 "title":"my dd title",

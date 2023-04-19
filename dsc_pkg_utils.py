@@ -5,6 +5,7 @@ import requests
 import pipe
 import os # base python, no pip install needed
 import shutil # base python, no pip install needed
+import healdata_utils
 
 def everything_after(df, cols):
     # convenience function to bring one or more cols in a dataframe to the front, while leaving all others in same order following
@@ -21,8 +22,9 @@ def get_heal_csv_dd_cols(heal_json_dd_schema_url=None, required_first=True, retu
     ###########################################################################
     
     if not heal_json_dd_schema_url:
-        heal_json_dd_schema_url = 'https://raw.githubusercontent.com/HEAL/heal-metadata-schemas/main/variable-level-metadata-schema/schemas/fields.json'
-    
+        #heal_json_dd_schema_url = 'https://raw.githubusercontent.com/HEAL/heal-metadata-schemas/main/variable-level-metadata-schema/schemas/jsonschema/fields.json'
+         heal_json_dd_schema_url = healdata_utils.schemas.jsonschema_url
+
     r = requests.get(heal_json_dd_schema_url)
     heal_json_dd_schema = r.json()
     print(heal_json_dd_schema)

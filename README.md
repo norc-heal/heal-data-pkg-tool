@@ -34,3 +34,20 @@ $ dist\dscPkgTool\dscPkgTool.exe
 - if the application fails to launch check the console for point of failure to start debugging
 - once you've got the application launching properly from cmd, re-make the application in "no console" mode for distribution by repeating the pyinstaller command above, but adding --noconsole
 - confirm that the application launches when you double click on the executable and run through any testing protocols prior to distributing
+
+# to test application executable
+- double click on application executable to launch
+- test 'Create New HEAL-DSC Data Package' push button
+    - click on 'Create New HEAL-DSC Data Package' push button
+    - file explorer will open
+    - select directory where you'd like to create your new package
+    - check that the status text box in the application has a message saying "Created new HEAL DSC data package at: <file path of directory you selected>"
+    - check that a directory called "dsc-pkg" was created in the directory you selected
+    - check that the directory contains two files:
+        - heal-csv-experiment-tracker-template.csv
+        - heal-csv-resource-tracker-template.csv
+- test 'CSV Data >> HEAL CSV Data Dictionary' push button
+    - click 'CSV Data >> HEAL CSV Data Dictionary' push button
+
+
+

@@ -48,6 +48,9 @@ $ dist\dscPkgTool\dscPkgTool.exe
         - heal-csv-resource-tracker-template.csv
 - test 'CSV Data >> HEAL CSV Data Dictionary' push button
     - click 'CSV Data >> HEAL CSV Data Dictionary' push button
+    - file explorer will open
+    - select csv data file from which to create heal csv data dictionary (e.g. data-snp-exp-2.csv)
+    - 
 
 
 

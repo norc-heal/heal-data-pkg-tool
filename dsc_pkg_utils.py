@@ -1,4 +1,5 @@
 from frictionless import describe
+from frictionless import Resource
 import pandas as pd
 import json # base python, no pip install needed
 import requests
@@ -6,6 +7,7 @@ import pipe
 import os # base python, no pip install needed
 import shutil # base python, no pip install needed
 import healdata_utils
+import pathlib
 
 def everything_after(df, cols):
     # convenience function to bring one or more cols in a dataframe to the front, while leaving all others in same order following
@@ -63,10 +65,36 @@ def infer_dd(input_csv_data):
     # bring in a new tabular resource, infer minimal table schema/dd
     ###########################################################################
     # input csv data is a string file path to a csv data file
+    
+    #print("here-inside-0")
+    #cwd = os.getcwd()
+    #print(cwd)
+    #print("here-inside-1")
+    #pathdir = pathlib.Path(input_csv_data).parent 
+    #print(pathdir)
+    #filenm = pathlib.Path(input_csv_data).name
+    #print(filenm)
+    #print("here-inside-2")
+    #os.chdir(pathdir)
+    #print("here-inside-2.5")
+    print(os.getcwd())
+    #r = frictionless.describe(filenm) 
+    #print("here-inside-3")
+    #os.chdir(cwd)
+    #print(os.getcwd())
+    #print("here-inside-4")
+    #r = r.to_dict()
+    #print("here-inside-5")
+    #csv_dd_df = pd.json_normalize(r, record_path=['schema','fields'])
+
+    print(input_csv_data)
+    print(type(input_csv_data))
+    print("will this ever work?")
 
     resource = describe(input_csv_data)
+    print("it worked")
     resource = resource.to_dict()
-
+    #print("here 8")
     csv_dd_df = pd.json_normalize(resource, record_path=['schema','fields'])
     return csv_dd_df
 

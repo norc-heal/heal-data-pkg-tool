@@ -74,6 +74,12 @@ import pipe
 
 import dsc_pkg_utils # local module, no pip install needed
 
+#import unidecode
+#import text_unidecode
+#import slugify
+#import slugify.special
+#import slugify.slugify
+
 # this will prevent windows from setting the app icon to python automatically based on .py suffix
 try:
     from ctypes import windll # only exists on windows, base python, no pip install needed
@@ -469,16 +475,26 @@ class MainWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setText(messageText)
 
     def csv_data_infer_dd(self):
+        
+        print("here 1")
+
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",
                (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
-
-        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
+        print(ifileName)
+        print(type(ifileName))
         
+        #print(Path(ifileName).parent)
+        #print(type(Path(ifileName).parent))
+
+        print("here 2")
+        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
+        print("here 3")
+        print(ifname)
         messageText = 'Inferring minimal data dictionary from: ' + ifileName
         self.userMessageBox.setText(messageText)
-
+        print("here 4")
         first_dd_df = dsc_pkg_utils.infer_dd(ifileName)
-
+        print("here 5")
         messageText = messageText + '\n\n\n' + 'Success!'
         self.userMessageBox.setText(messageText)
 

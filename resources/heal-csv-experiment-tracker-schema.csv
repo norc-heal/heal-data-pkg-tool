@@ -1,0 +1,8 @@
+field,description,notes
+experiment.id,"id assigned to each experiment relevant to the data package; prefix is 'exp-' followed by a number starting with 1 for the first experiment, and iterating by 1 for each successive experiment (i.e. exp-1, exp-2, etc.)",
+experiment.type,discovery|materials and methods development,can select multiple; separate entries by pipe
+experiment.question,what question(s) does the experimentalist hope to address with this experiment? be as specific as possible ,can add multiple; separate entries by pipe
+experiment.description,provide a brief description of the experiment; this is NOT a protocol,
+experiment.hypothesis,"for each question the experimentalist hopes to address with this experiment, what does the experimentalist hypothesize will be the result(s) of the experiment? Be as specific as possible",can add multiple; separate entries by pipe
+experiment.protocol,"reference to protocol(s) relevant to the experiment; can include an overview protocol for the experiment, plus component protocols (e.g. protocol for consenting human subjects, protocol for mouse breeding, protocol for primary cell isolation); multiple experiments can reference the same component protocol (e.g. two experiment reference the same protocol for primary cell isolation); reference can be file path relative to data package root if included as a file in the package, a doi for a published protocol, etc.",can add multiple; separate entries by pipe
+experiment.data,reference to data file(s) relevant to the experiment; reference should generally be a file path relative to data package root ,can add multiple; separate entries by pipe

@@ -511,34 +511,40 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def redcap_csv_dd_convert(self):
-        fname,_=QtWidgets.QFileDialog.getOpenFileName(self,'Select Input Redcap CSV Data Dictionary file',QtCore.QDir.homePath())
-        #fname=QtWidgets.QFileDialog.getOpenFileName(self,'Open file',QtCore.QDir.homePath())
-        #path = fname[0]
-
-        print(fname)
-        print(type(fname))
-        print(Path(fname))
-        print(type(Path(fname)))
-
-        outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
+        #fname,_=QtWidgets.QFileDialog.getOpenFileName(self,'Select Input Redcap CSV Data Dictionary file',QtCore.QDir.homePath())
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Redcap CSV Data Dictionary file", QtCore.QDir.homePath(), "CSV (*.csv *.tsv)")
         
-        print(outputFolderPath)
+        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
 
-        #redcap_path = Path(path)
-        #redcap_output = redcap_path.parent.with_name('output')
-        #self.userMessageBox.setText('Converting: '  + path + '\n\n\n' + 'Output path: ' + redcap_output.__str__())
-
-        convert_to_vlmd(
+        messageText = 'Converting the Redcap CSV Data Dictionary at this path to HEAL CSV Data Dictionary: ' + ifileName 
+        self.userMessageBox.setText(messageText)      
+       
+        #outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
+        
+        mydicts = convert_to_vlmd(
             #filepath=redcap_path,
             #filepath=fname,
-            filepath=Path(fname),
-            outputdir=outputFolderPath,
+            filepath=ifileName,
+            #outputdir=outputFolderPath,
             data_dictionary_props={
                 "title":"my dd title",
                 "description":"my dd description"
             },
             inputtype="redcap.csv"
         )
+
+        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
+                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
+
+        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
+        self.userMessageBox.setText(messageText)
+
+        # write just the heal csv dd to file
+        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName)
+
+        messageText = messageText + '\n\n\n' + 'Success!'
+        self.userMessageBox.setText(messageText) 
+
 #  
 #        to_json(
 #            filepath=redcap_path,

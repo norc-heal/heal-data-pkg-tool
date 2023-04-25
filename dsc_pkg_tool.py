@@ -537,7 +537,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setText(messageText)
 
         # write just the heal csv dd to file
-        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName)
+        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
 
         messageText = messageText + '\n\n\n' + 'Success!'
         self.userMessageBox.setText(messageText) 

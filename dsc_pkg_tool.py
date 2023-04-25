@@ -476,7 +476,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def csv_data_infer_dd(self):
         
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Tabular CSV Data file",
                (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
         
         ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]

@@ -508,23 +508,7 @@ class MainWindow(QtWidgets.QMainWindow):
         messageText = messageText + '\n\n\n' + 'Saved - Success!'
         self.userMessageBox.setText(messageText)
 
-        #first_dd_df = dsc_pkg_utils.infer_dd(ifileName)
         
-        #messageText = messageText + '\n\n\n' + 'Inferred - Success!'
-        #self.userMessageBox.setText(messageText)
-
-        #ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", 
-        #               (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)")
-
-        #messageText = messageText + '\n\n\n' + 'Populating HEAL CSV data dictionary template with values from inferred data dictionary.' + '\n\n\n' + 'Output data dictionary in HEAL CSV data dictionary format will be saved as: ' + ofileName
-        #self.userMessageBox.setText(messageText)
-
-        #second_dd_df = dsc_pkg_utils.add_dd_to_heal_dd_template(first_dd_df,required_first=True,save_path=ofileName)
-
-        #messageText = messageText + '\n\n\n' + 'Success!'
-        #self.userMessageBox.setText(messageText)
-
-
     def redcap_csv_dd_convert(self):
         
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Redcap CSV Data Dictionary file", QtCore.QDir.homePath(), "CSV (*.csv *.tsv)")

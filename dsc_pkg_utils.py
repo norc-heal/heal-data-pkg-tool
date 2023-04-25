@@ -60,44 +60,6 @@ def get_heal_csv_dd_cols(heal_json_dd_schema_url=None, required_first=True, retu
         else:
             return heal_dd_df
 
-def infer_dd(input_csv_data):
-    ###########################################################################
-    # bring in a new tabular resource, infer minimal table schema/dd
-    ###########################################################################
-    # input csv data is a string file path to a csv data file
-    
-    #print("here-inside-0")
-    #cwd = os.getcwd()
-    #print(cwd)
-    #print("here-inside-1")
-    #pathdir = pathlib.Path(input_csv_data).parent 
-    #print(pathdir)
-    #filenm = pathlib.Path(input_csv_data).name
-    #print(filenm)
-    #print("here-inside-2")
-    #os.chdir(pathdir)
-    #print("here-inside-2.5")
-    print(os.getcwd())
-    #r = frictionless.describe(filenm) 
-    #print("here-inside-3")
-    #os.chdir(cwd)
-    #print(os.getcwd())
-    #print("here-inside-4")
-    #r = r.to_dict()
-    #print("here-inside-5")
-    #csv_dd_df = pd.json_normalize(r, record_path=['schema','fields'])
-
-    print(input_csv_data)
-    print(type(input_csv_data))
-    print("will this ever work?")
-
-    resource = describe(input_csv_data)
-    print("it worked")
-    resource = resource.to_dict()
-    #print("here 8")
-    csv_dd_df = pd.json_normalize(resource, record_path=['schema','fields'])
-    return csv_dd_df
-
 def add_dd_to_heal_dd_template(csv_dd_df,required_first=True,save_path=None):
     # csv_dd_df is a csv data dictionary - it can be user-created or come from running infer_dd function on a csv data file
     # if it is user-created, user must ensure that dd column names match those in the heal vlmd field properties

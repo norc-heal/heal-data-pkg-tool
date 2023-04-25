@@ -476,81 +476,73 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def csv_data_infer_dd(self):
         
-        print("here 1")
-
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",
                (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
-        print(ifileName)
-        print(type(ifileName))
         
-        #print(Path(ifileName).parent)
-        #print(type(Path(ifileName).parent))
-
-        print("here 2")
         ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-        print("here 3")
-        print(ifname)
-        messageText = 'Inferring minimal data dictionary from: ' + ifileName
-        self.userMessageBox.setText(messageText)
-        print("here 4")
-        first_dd_df = dsc_pkg_utils.infer_dd(ifileName)
-        print("here 5")
-        messageText = messageText + '\n\n\n' + 'Success!'
-        self.userMessageBox.setText(messageText)
-
-        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", 
-                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)")
-
-        messageText = messageText + '\n\n\n' + 'Populating HEAL CSV data dictionary template with values from inferred data dictionary.' + '\n\n\n' + 'Output data dictionary in HEAL CSV data dictionary format will be saved as: ' + ofileName
-        self.userMessageBox.setText(messageText)
-
-        second_dd_df = dsc_pkg_utils.add_dd_to_heal_dd_template(first_dd_df,required_first=True,save_path=ofileName)
-
-        messageText = messageText + '\n\n\n' + 'Success!'
-        self.userMessageBox.setText(messageText)
-
-
-    def redcap_csv_dd_convert(self):
-        fname,_=QtWidgets.QFileDialog.getOpenFileName(self,'Select Input Redcap CSV Data Dictionary file',QtCore.QDir.homePath())
-        #fname=QtWidgets.QFileDialog.getOpenFileName(self,'Open file',QtCore.QDir.homePath())
-        #path = fname[0]
-
-        print(fname)
-        print(type(fname))
-        print(Path(fname))
-        print(type(Path(fname)))
-
-        outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
         
-        print(outputFolderPath)
+        messageText = 'Inferring minimal data dictionary from tabular csv data file: ' + ifileName
+        self.userMessageBox.setText(messageText)
 
-        #redcap_path = Path(path)
-        #redcap_output = redcap_path.parent.with_name('output')
-        #self.userMessageBox.setText('Converting: '  + path + '\n\n\n' + 'Output path: ' + redcap_output.__str__())
+        mydicts = convert_to_vlmd(
+            filepath=ifileName,
+            data_dictionary_props={
+                "title":"my dd title",
+                "description":"my dd description"
+            },
+            inputtype="data.csv"
+        )
+        
+        messageText = messageText + '\n\n\n' + 'Inferred - Success!'
+        self.userMessageBox.setText(messageText)
 
-        convert_to_vlmd(
-            #filepath=redcap_path,
-            #filepath=fname,
-            filepath=Path(fname),
-            outputdir=outputFolderPath,
+        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
+                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
+
+        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
+        self.userMessageBox.setText(messageText)
+
+        # write just the heal csv dd to file
+        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
+
+        messageText = messageText + '\n\n\n' + 'Saved - Success!'
+        self.userMessageBox.setText(messageText)
+
+        
+    def redcap_csv_dd_convert(self):
+        
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Redcap CSV Data Dictionary file", QtCore.QDir.homePath(), "CSV (*.csv *.tsv)")
+        
+        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
+
+        messageText = 'Converting the Redcap CSV Data Dictionary at this path to HEAL CSV Data Dictionary: ' + ifileName 
+        self.userMessageBox.setText(messageText)      
+       
+        #outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
+        
+        mydicts = convert_to_vlmd(
+            filepath=ifileName,
             data_dictionary_props={
                 "title":"my dd title",
                 "description":"my dd description"
             },
             inputtype="redcap.csv"
         )
-#  
-#        to_json(
-#            filepath=redcap_path,
-#            outputdir=redcap_output,
-#            data_dictionary_props={
-#                "title":"my dd title",
-#                "description":"my dd description"
-#            },
-#            inputtype="redcap.csv"
-#        )
-#
-#        to_csv_from_json(redcap_output/redcap_path.with_suffix(".json").name,redcap_output)
+
+        messageText = messageText + '\n\n\n' + 'Converted - Success!'
+        self.userMessageBox.setText(messageText)
+
+        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
+                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
+
+        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
+        self.userMessageBox.setText(messageText)
+
+        # write just the heal csv dd to file
+        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
+
+        messageText = messageText + '\n\n\n' + 'Saved - Success!'
+        self.userMessageBox.setText(messageText) 
 
 
     def show_new_window(self,checked):

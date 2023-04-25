@@ -511,7 +511,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def redcap_csv_dd_convert(self):
-        #fname,_=QtWidgets.QFileDialog.getOpenFileName(self,'Select Input Redcap CSV Data Dictionary file',QtCore.QDir.homePath())
+        
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Redcap CSV Data Dictionary file", QtCore.QDir.homePath(), "CSV (*.csv *.tsv)")
         
         ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
@@ -522,10 +522,7 @@ class MainWindow(QtWidgets.QMainWindow):
         #outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
         
         mydicts = convert_to_vlmd(
-            #filepath=redcap_path,
-            #filepath=fname,
             filepath=ifileName,
-            #outputdir=outputFolderPath,
             data_dictionary_props={
                 "title":"my dd title",
                 "description":"my dd description"
@@ -544,19 +541,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         messageText = messageText + '\n\n\n' + 'Success!'
         self.userMessageBox.setText(messageText) 
-
-#  
-#        to_json(
-#            filepath=redcap_path,
-#            outputdir=redcap_output,
-#            data_dictionary_props={
-#                "title":"my dd title",
-#                "description":"my dd description"
-#            },
-#            inputtype="redcap.csv"
-#        )
-#
-#        to_csv_from_json(redcap_output/redcap_path.with_suffix(".json").name,redcap_output)
 
 
     def show_new_window(self,checked):

@@ -1,0 +1,13 @@
+{
+    "experiment.id": "exp-15",
+    "experiment.type": "discovery",
+    "experiment.description": "blah blah",
+    "experiment.question": [
+        "my quest",
+        "my quest 2"
+    ],
+    "experiment.hypothesis": [
+        "my hypothesis",
+        "my hypothesis 2"
+    ]
+}

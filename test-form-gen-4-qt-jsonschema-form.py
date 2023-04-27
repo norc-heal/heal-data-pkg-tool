@@ -1,15 +1,17 @@
 import sys
-from json import dumps, dump
+from json import dumps
 
-from PyQt5 import QtWidgets
+from qtpy import QtWidgets
 
-from pyqtschema.builder import WidgetBuilder
+from qt_jsonschema_form import WidgetBuilder
 
 from schema_experiment_tracker import schema_experiment_tracker
 import pandas as pd
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
+
+    builder = WidgetBuilder()
 
     schema = schema_experiment_tracker
 
@@ -25,8 +27,8 @@ if __name__ == "__main__":
 #
     #}
 
-    builder = WidgetBuilder(schema)
-    form = builder.create_form(ui_schema)
+    
+    form = builder.create_form(schema, ui_schema)
     form.widget.state = {
         "experiment.id": "exp-1",
         #"schema_path": "some_file.py",
@@ -34,7 +36,7 @@ if __name__ == "__main__":
         #"sky_colour": "#8f5902"
     }
     form.show()
-    form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4)))
+    form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4), file=open('test-out.txt','w')))
     #form.widget.on_changed.connect(lambda d: dumps(d, indent=4))
 
     app.exec_()

@@ -1,5 +1,5 @@
 import sys
-from json import dumps
+from json import dumps, loads
 
 from qtpy import QtWidgets
 
@@ -36,7 +36,10 @@ if __name__ == "__main__":
         #"sky_colour": "#8f5902"
     }
     form.show()
-    form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4), file=open('test-out.txt','w')))
-    #form.widget.on_changed.connect(lambda d: dumps(d, indent=4))
+
+    #form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4)))
+    #form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4), file=open('test-out.txt','w')))
+    #form.widget.on_changed.connect(lambda d: print(loads(dumps(d, indent=4))['experiment.id']))
+    form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experiment.id'] + '.txt','w')))
 
     app.exec_()

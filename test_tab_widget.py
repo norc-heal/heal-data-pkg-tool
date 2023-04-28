@@ -41,7 +41,8 @@ from PyQt5.QtWidgets import (
 
 from layout_colorwidget import Color
 #from layout_vlmdwidget import VLMDWindow
-from layout_vlmdcreatewidget import VLMDCreateWindow
+from layout_vlmdtabswidget import VLMDTabsWindow
+#from layout_vlmdcreatewidget import VLMDCreateWindow
 from layout_csveditwidget import CSVEditWindow
 
 # this will prevent windows from setting the app icon to python automatically based on .py suffix
@@ -68,7 +69,7 @@ class MainWindow(QMainWindow):
         for n, color in enumerate(["red", "green", "blue", "yellow"]):
             tabs.addTab(Color(color), color)
 
-        tabs.addTab(VLMDCreateWindow(), "vlmd")
+        tabs.addTab(VLMDTabsWindow(), "Data Dictionary")
         self.setCentralWidget(tabs)
 
 

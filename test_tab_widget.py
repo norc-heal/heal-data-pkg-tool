@@ -66,10 +66,11 @@ class MainWindow(QMainWindow):
         tabs.setTabPosition(QTabWidget.West)
         tabs.setMovable(True)
 
+        tabs.addTab(VLMDTabsWindow(), "Data Dictionary")
         for n, color in enumerate(["red", "green", "blue", "yellow"]):
             tabs.addTab(Color(color), color)
 
-        tabs.addTab(VLMDTabsWindow(), "Data Dictionary")
+        
         self.setCentralWidget(tabs)
 
 

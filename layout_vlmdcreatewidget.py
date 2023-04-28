@@ -37,10 +37,19 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         #self.buttonNewPkg = QtWidgets.QPushButton(text="Create New HEAL-DSC Data Package",parent=self)
         #self.buttonNewPkg.clicked.connect(self.create_new_pkg)
 
-        self.buttonInferHealCsvDd = QtWidgets.QPushButton(text="CSV Data >> HEAL CSV Data Dictionary",parent=self)
+        self.buttonInferHealCsvDd = QtWidgets.QPushButton(text="CSV Data File >> HEAL CSV Data Dictionary",parent=self)
         self.buttonInferHealCsvDd.clicked.connect(self.csv_data_infer_dd)
 
-        self.buttonConvertRedcapCsvDd = QtWidgets.QPushButton(text="Redcap CSV Data Dictionary >> HEAL CSV Data Dictionary",parent=self)
+        self.buttonSPSSSavExtractHealCsvDd = QtWidgets.QPushButton(text="SPSS Sav Data File >> HEAL CSV Data Dictionary",parent=self)
+        self.buttonSPSSSavExtractHealCsvDd.clicked.connect(self.spss_sav_data_extract_dd)
+
+        #self.buttonStataDtaExtractHealCsvDd = QtWidgets.QPushButton(text="Stata Dta Data File >> HEAL CSV Data Dictionary",parent=self)
+        #self.buttonStataDtaExtractHealCsvDd.clicked.connect(self.stata_dta_data_extract_dd)
+
+        #self.buttonSASSas7bdatExtractHealCsvDd = QtWidgets.QPushButton(text="SAS Sas7bdat Data File >> HEAL CSV Data Dictionary",parent=self)
+        #self.buttonSASSas7bdatExtractHealCsvDd.clicked.connect(self.sas_sas7bdat_data_extract_dd)
+
+        self.buttonConvertRedcapCsvDd = QtWidgets.QPushButton(text="Redcap CSV Data Dictionary File >> HEAL CSV Data Dictionary",parent=self)
         self.buttonConvertRedcapCsvDd.clicked.connect(self.redcap_csv_dd_convert)
         #self.buttonConvertRedcapCsvDd.setFixedSize(100,60)
 
@@ -60,6 +69,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         layout = QtWidgets.QVBoxLayout()
         #layout.addWidget(self.buttonNewPkg)
         layout.addWidget(self.buttonInferHealCsvDd)
+        layout.addWidget(self.buttonSPSSSavExtractHealCsvDd)
         layout.addWidget(self.buttonConvertRedcapCsvDd)
         #layout.addWidget(self.buttonEditCsv)
         #layout.addWidget(self.buttonValidateHealCsvDd)
@@ -112,7 +122,40 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         messageText = messageText + '\n\n\n' + 'Saved - Success!'
         self.userMessageBox.setText(messageText)
 
+    def spss_sav_data_extract_dd(self):
         
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input SPSS Sav Data file",
+               (QtCore.QDir.homePath()), "SAV Files (*.sav)")
+        
+        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
+        
+        messageText = 'Extracting metadata to populate HEAL CSV Data Dictionary from SPSS Sav data file: ' + ifileName
+        self.userMessageBox.setText(messageText)
+
+        mydicts = convert_to_vlmd(
+            filepath=ifileName,
+            data_dictionary_props={
+                "title":"my dd title",
+                "description":"my dd description"
+            },
+            inputtype="sav"
+        )
+        
+        messageText = messageText + '\n\n\n' + 'Extracted - Success!'
+        self.userMessageBox.setText(messageText)
+
+        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
+                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
+
+        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
+        self.userMessageBox.setText(messageText)
+
+        # write just the heal csv dd to file
+        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
+
+        messageText = messageText + '\n\n\n' + 'Saved - Success!'
+        self.userMessageBox.setText(messageText)    
+    
     def redcap_csv_dd_convert(self):
         
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Redcap CSV Data Dictionary file", QtCore.QDir.homePath(), "CSV (*.csv *.tsv)")

@@ -218,7 +218,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
             "FileExplorerOpenMessage" : "Select Input SAS Sas7bdat Data file",
             "FileExplorerOpenFileExt" : "Sas7bdat Files (*.sas7bdat)",
             "GetDDAction": "Extracted",
-            "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from Stata Dta data file: ",
+            "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from SAS Sas7bdat data file: ",
             "UtilsInputType" : "sas7bdat"
         }
 

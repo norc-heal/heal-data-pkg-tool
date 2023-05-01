@@ -1,52 +1,3 @@
-# issues: 
-# copy only copies the last value
-# paste pastes everything into each highlighted cell
-
-# tutorial on using table view/model together:
-# https://doc.qt.io/qt-5/modelview.html
-# https://www.pythonguis.com/tutorials/qtableview-modelviews-numpy-pandas/
-# https://www.pythonguis.com/faq/adding-qcombobox-to-a-qtableview-and-getting-setting-values-after-creation/
-# https://stackoverflow.com/questions/30457935/pyqt4-adding-combobox-in-qtableview
-
-# guidance on how to create a user input form
-# https://www.geeksforgeeks.org/pyqt5-create-a-user-form-to-get-information/
-
-# using code here as main starting point for window that allows load, edit, save of csv
-# https://python-forum.io/thread-1785.html
-# https://github.com/Axel-Erfurt/TreeView/blob/master/Qt5_CSV.py
-
-# may be helpful with implementing validation/drop downs in qtableview csv editor
-# https://stackoverflow.com/questions/6571209/how-to-display-drop-down-in-column-of-qtableview-and-filter-based-on-drop-down
-
-# guidance on adding header to qtableview/qstandarditemmodel
-# https://stackoverflow.com/questions/42094545/cant-set-and-display-a-qtabelview-horizontal-header
-# https://stackoverflow.com/questions/37222081/pyqt-qtableview-set-horizontal-vertical-header-labels
-# https://stackoverflow.com/questions/17478993/how-to-change-headers-title-of-a-qtableview
-
-# using this here for example of how to open a new window from main window
-# https://www.pythonguis.com/tutorials/creating-multiple-windows/
-
-# this helped with guidance on why qpushbuttons were not showing up in main window
-# https://stackoverflow.com/questions/37304684/qwidgetsetlayout-attempting-to-set-qlayout-on-mainwindow-which-already
-
-# guidance on using qtextedit (better replacement in this context for qlineedit)
-# https://stackoverflow.com/questions/16568451/pyqt-how-to-make-a-textarea-to-write-messages-to-kinda-like-printing-to-a-co
-
-# guidance on packaging with pyinstaller
-# https://www.pythonguis.com/tutorials/packaging-pyqt5-pyside2-applications-windows-pyinstaller/
-
-# guidance on packaging with fbs 
-# https://www.pythonguis.com/tutorials/packaging-pyqt5-apps-fbs/
-# fbs tutorial
-# https://github.com/mherrmann/fbs-tutorial
-# fbs manual
-# https://build-system.fman.io/manual/
-
-# not used here but may be useful later
-# https://realpython.com/python-menus-toolbars/
-
-#!/usr/bin/python3
-#-*- coding:utf-8 -*-
 import csv, codecs # base python, no pip install needed
 import os # base python, no pip install needed
  
@@ -74,25 +25,9 @@ import pipe
 
 import dsc_pkg_utils # local module, no pip install needed
 
-#import unidecode
-#import text_unidecode
-#import slugify
-#import slugify.special
-#import slugify.slugify
-
-# this will prevent windows from setting the app icon to python automatically based on .py suffix
-try:
-    from ctypes import windll # only exists on windows, base python, no pip install needed
-    myappid = 'mycompany.myproduct.subproduct.version' # somewhat arbitrary string, can set this to the recommendation but not really necessary
-    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-except ImportError:
-    pass
-
-basedir = os.path.dirname(__file__)
- 
-class MyWindow(QtWidgets.QWidget):
+class CSVEditWindow(QtWidgets.QWidget):
    def __init__(self, fileName, parent=None):
-       super(MyWindow, self).__init__(parent)
+       super(CSVEditWindow, self).__init__(parent)
        self.fileName = ""
        self.fname = "Liste"
        self.myColNames = []
@@ -421,138 +356,6 @@ class MyWindow(QtWidgets.QWidget):
                clip = QtWidgets.QApplication.clipboard()
                clip.setText(myitem.text())
                myitem.setText("")
- 
-class MainWindow(QtWidgets.QMainWindow):
-
-    def __init__(self):
-        super().__init__()
-        self.w = None  # No external window yet.
-        
-        widget = QtWidgets.QWidget()
-        
-        self.buttonNewPkg = QtWidgets.QPushButton(text="Create New HEAL-DSC Data Package",parent=self)
-        self.buttonNewPkg.clicked.connect(self.create_new_pkg)
-
-        self.buttonInferHealCsvDd = QtWidgets.QPushButton(text="CSV Data >> HEAL CSV Data Dictionary",parent=self)
-        self.buttonInferHealCsvDd.clicked.connect(self.csv_data_infer_dd)
-
-        self.buttonConvertRedcapCsvDd = QtWidgets.QPushButton(text="Redcap CSV Data Dictionary >> HEAL CSV Data Dictionary",parent=self)
-        self.buttonConvertRedcapCsvDd.clicked.connect(self.redcap_csv_dd_convert)
-        #self.buttonConvertRedcapCsvDd.setFixedSize(100,60)
-
-        self.buttonEditCsv = QtWidgets.QPushButton(text="View/Edit CSV", parent=self)
-        self.buttonEditCsv.clicked.connect(self.show_new_window)
-        #self.setCentralWidget(self.buttonEditCsv)
-        #self.buttonEditCsv.setFixedSize(100,60)
-
-        self.buttonValidateHealCsvDd = QtWidgets.QPushButton(text="Validate HEAL CSV Data Dictionary", parent=self)
-        #self.buttonValidateHealCsvDd.setFixedSize(100,60)
-
-        # maybe switch Line edit to this: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QPlainTextEdit.html#more
-        #self.userMessageBox = QtWidgets.QLineEdit(parent=self)
-        self.userMessageBox = QtWidgets.QTextEdit(parent=self)
-        self.userMessageBox.setReadOnly(True)
-        
-        layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.buttonNewPkg)
-        layout.addWidget(self.buttonInferHealCsvDd)
-        layout.addWidget(self.buttonConvertRedcapCsvDd)
-        layout.addWidget(self.buttonEditCsv)
-        layout.addWidget(self.buttonValidateHealCsvDd)
-        layout.addWidget(self.userMessageBox)
-        
-        widget.setLayout(layout)
-        self.setCentralWidget(widget)
-
-    def create_new_pkg(self):
-        #file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-        #folder = str(QFileDialog.getExistingDirectory(None, "Select Directory"))
-        #filepath = QtWidgets.QFileDialog.getOpenFileName(self, 'Hey! Select a File')
-        parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Parent Directory Where Data Package Should Be Created!')
-        pkgPath = dsc_pkg_utils.new_pkg(pkg_parent_dir_path=parentFolderPath)
-
-        messageText = 'Created new HEAL DSC data package at: ' + pkgPath
-        self.userMessageBox.setText(messageText)
-
-    def csv_data_infer_dd(self):
-        
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Tabular CSV Data file",
-               (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
-        
-        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-        
-        messageText = 'Inferring minimal data dictionary from tabular csv data file: ' + ifileName
-        self.userMessageBox.setText(messageText)
-
-        mydicts = convert_to_vlmd(
-            filepath=ifileName,
-            data_dictionary_props={
-                "title":"my dd title",
-                "description":"my dd description"
-            },
-            inputtype="data.csv"
-        )
-        
-        messageText = messageText + '\n\n\n' + 'Inferred - Success!'
-        self.userMessageBox.setText(messageText)
-
-        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
-
-        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        self.userMessageBox.setText(messageText)
-
-        # write just the heal csv dd to file
-        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
-
-        messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        self.userMessageBox.setText(messageText)
-
-        
-    def redcap_csv_dd_convert(self):
-        
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Redcap CSV Data Dictionary file", QtCore.QDir.homePath(), "CSV (*.csv *.tsv)")
-        
-        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-
-        messageText = 'Converting the Redcap CSV Data Dictionary at this path to HEAL CSV Data Dictionary: ' + ifileName 
-        self.userMessageBox.setText(messageText)      
-       
-        #outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
-        
-        mydicts = convert_to_vlmd(
-            filepath=ifileName,
-            data_dictionary_props={
-                "title":"my dd title",
-                "description":"my dd description"
-            },
-            inputtype="redcap.csv"
-        )
-
-        messageText = messageText + '\n\n\n' + 'Converted - Success!'
-        self.userMessageBox.setText(messageText)
-
-        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
-
-        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        self.userMessageBox.setText(messageText)
-
-        # write just the heal csv dd to file
-        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
-
-        messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        self.userMessageBox.setText(messageText) 
-
-
-    def show_new_window(self,checked):
-        if self.w is None:
-            self.w = MyWindow('')
-            self.w.show()
-
-        else:
-            self.w.close()  # Close window.
-            self.w = None  # Discard reference.
 
 
 def stylesheet(self):
@@ -591,21 +394,3 @@ color: #e8e8e8;
 background-color: green;
 } 
 """
- 
-if __name__ == "__main__":
-   import sys
- 
-   app = QtWidgets.QApplication(sys.argv)
-   app.setWindowIcon(QtGui.QIcon(os.path.join(basedir,'heal-icon.ico')))
-   #app.setApplicationName('MyWindow')
-   
-   w = MainWindow()
-   w.show()
-   
-   #main = MyWindow('')
-   #main.setMinimumSize(820, 300)
-   #main.setGeometry(0,0,820,700)
-   #main.setWindowTitle("CSV Viewer")
-   #main.show()
- 
-sys.exit(app.exec_())

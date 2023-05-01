@@ -2,3 +2,4 @@ healdata-utils @ git+https://github.com/norc-heal/healdata-utils
 PyQt5==5.15.9
 pyinstaller==5.8.0
 pipe==2.0
+pyqtschema==0.1.9

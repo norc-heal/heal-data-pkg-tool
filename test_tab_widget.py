@@ -42,6 +42,7 @@ from PyQt5.QtWidgets import (
 from layout_colorwidget import Color
 #from layout_vlmdwidget import VLMDWindow
 from layout_vlmdtabswidget import VLMDTabsWindow
+from layout_exptrktabswidget import ExpTrkTabsWindow
 #from layout_vlmdcreatewidget import VLMDCreateWindow
 from layout_csveditwidget import CSVEditWindow
 
@@ -67,6 +68,7 @@ class MainWindow(QMainWindow):
         tabs.setMovable(True)
 
         tabs.addTab(VLMDTabsWindow(), "Data Dictionary")
+        tabs.addTab(ExpTrkTabsWindow(), "Experiment Tracker")
         for n, color in enumerate(["red", "green", "blue", "yellow"]):
             tabs.addTab(Color(color), color)
 

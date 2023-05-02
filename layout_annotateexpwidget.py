@@ -83,7 +83,9 @@ class AnnotateExpWindow(QtWidgets.QWidget):
         if os.path.isfile(saveFilePath):
             messageText = "An experiment file for an experiment with id " + exp_id + " already exists at " + saveFilePath + ". You may want to do one or both of: 1) Use the View/Edit tab to view your experiment tracker file and check which experiment IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which experiment IDs you've already used and for which you've already created experiment files - these files will be called \'exp-trk-exp-{a number}.txt\'. While you perform these checks, your experiment tracker form will remain open unless you explicitly close it. You can come back to it, change your experiment ID, and hit the save button again to save with an experiment ID that is not already in use. If you meant to overwrite an experiment file you previously created for an experiment with this experiment ID, please delete the previously created experiment file and try saving again." 
         else:
-            print(dumps(exp, indent=4), file=open(saveFilePath,'w'))
+            f=open(saveFilePath,'w')
+            print(dumps(exp, indent=4), file=f)
+            f.close()
             messageText = "Your experiment file was successfully written at: " + saveFilePath + ". You'll want to head back to the \'Add Experiment\' tab and use the \'Add Experiment\' button to add this experiment file to your experiment tracker file! You can do this now, or later - You can add experiment files to the experiment tracker file one at a time, or you can add multiple experiment files all at once, so you may choose to create experiment files for all of your experiments and then add them in one go to your experiment tracker file."
         
         self.userMessageBox.setText(messageText)

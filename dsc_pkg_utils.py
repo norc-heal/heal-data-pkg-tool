@@ -8,6 +8,8 @@ import os # base python, no pip install needed
 import shutil # base python, no pip install needed
 import healdata_utils
 import pathlib
+import jsonschema
+from jsonschema import validate
 
 
 
@@ -180,7 +182,13 @@ def qt_object_properties(qt_object: object) -> dict:
 
     return properties
 
-
+def validateJson(jsonData,jsonSchema):
+    # source: https://pynative.com/python-json-validation/
+    try:
+        validate(instance=jsonData, schema=jsonSchema)
+    except jsonschema.exceptions.ValidationError as err:
+        return False
+    return True
     
 
 

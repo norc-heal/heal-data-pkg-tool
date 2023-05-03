@@ -26,6 +26,10 @@ import pipe
 import dsc_pkg_utils # local module, no pip install needed
 from layout_annotateexpwidget import AnnotateExpWindow
 
+import jsonschema
+from jsonschema import validate
+from schema_experiment_tracker import schema_experiment_tracker
+
 class ExpTrkAddWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
@@ -38,7 +42,7 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
         self.buttonAnnotateExp.clicked.connect(self.annotate_exp)
 
         self.buttonAddExp = QtWidgets.QPushButton(text="Add experiment to tracker",parent=self)
-        #self.buttonAddExp.clicked.connect(self.add_exp)
+        self.buttonAddExp.clicked.connect(self.add_exp)
 
         # maybe switch Line edit to this: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QPlainTextEdit.html#more
         #self.userMessageBox = QtWidgets.QLineEdit(parent=self)
@@ -63,180 +67,42 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
         else:
             self.w.close()  # Close window.
             self.w = None  # Discard reference.
+
+    def add_exp(self):
+
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Input Experiment Txt Data file",
+               (QtCore.QDir.homePath()), "Text (*.txt)")
+        
+        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
+
+        # load experiment file - txt file with json data and convert json to python object
+        data =[]
+        with open(ifileName) as f:
+            data = json.load(f)
+        print(data)
+        body_json = json.dumps(data)
+        print(body_json)
+            
+            #for line in f:
+            #    data = json.loads(line)
+            #    print(data)
+            #    body_json=json.dumps(data)
+            #    print(body_json)
+
+        # validate against experiment tracker schema
+        print(schema_experiment_tracker)
+        isValid = dsc_pkg_utils.validateJson(body_json, schema_experiment_tracker)
+        
+        if isValid:
+            print("Given JSON data is Valid")
+        else:
+            print("Given JSON data is InValid")
+
+         
+        
+        #messageText = 'Inferring minimal data dictionary from tabular csv data file: ' + ifileName
+        #self.userMessageBox.setText(messageText)
+
+
     
-    def csv_data_infer_dd(self):
-        
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Tabular CSV Data file",
-               (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
-        
-        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-        
-        messageText = 'Inferring minimal data dictionary from tabular csv data file: ' + ifileName
-        self.userMessageBox.setText(messageText)
-
-        mydicts = convert_to_vlmd(
-            filepath=ifileName,
-            data_dictionary_props={
-                "title":"my dd title",
-                "description":"my dd description"
-            },
-            inputtype="data.csv"
-        )
-        
-        messageText = messageText + '\n\n\n' + 'Inferred - Success!'
-        self.userMessageBox.setText(messageText)
-
-        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
-
-        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        self.userMessageBox.setText(messageText)
-
-        # write just the heal csv dd to file
-        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
-
-        messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        self.userMessageBox.setText(messageText)
-
-    def spss_sav_data_extract_dd(self):
-        
-        get_dd_dict = {
-            "FileExplorerOpenMessage" : "Select Input SPSS Sav Data file",
-            "FileExplorerOpenFileExt" : "SAV Files (*.sav)",
-            "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from SPSS Sav data file: ",
-            "UtilsInputType" : "sav"
-        }
-
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input SPSS Sav Data file",
-               (QtCore.QDir.homePath()), "SAV Files (*.sav)")
-        
-        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-        
-        messageText = 'Extracting metadata to populate HEAL CSV Data Dictionary from SPSS Sav data file: ' + ifileName
-        self.userMessageBox.setText(messageText)
-
-        mydicts = convert_to_vlmd(
-            filepath=ifileName,
-            data_dictionary_props={
-                "title":"my dd title",
-                "description":"my dd description"
-            },
-            inputtype="sav"
-        )
-        
-        messageText = messageText + '\n\n\n' + 'Extracted - Success!'
-        self.userMessageBox.setText(messageText)
-
-        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
-
-        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        self.userMessageBox.setText(messageText)
-
-        # write just the heal csv dd to file
-        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
-
-        messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        self.userMessageBox.setText(messageText)    
     
-    def get_heal_csv_dd(self,get_dd_dict):
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, get_dd_dict["FileExplorerOpenMessage"],
-               (QtCore.QDir.homePath()), get_dd_dict["FileExplorerOpenFileExt"])
-        
-        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-        
-        messageText = get_dd_dict["GetDDActionStatusMessage"] + ifileName
-        self.userMessageBox.setText(messageText)
-
-        mydicts = convert_to_vlmd(
-            filepath=ifileName,
-            data_dictionary_props={
-                "title":"my dd title",
-                "description":"my dd description"
-            },
-            inputtype=get_dd_dict["UtilsInputType"]
-        )
-        
-        messageText = messageText + '\n\n\n' + get_dd_dict["GetDDAction"] + ' - Success!'
-        self.userMessageBox.setText(messageText)
-
-        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
-
-        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        self.userMessageBox.setText(messageText)
-
-        # write just the heal csv dd to file
-        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
-
-        messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        self.userMessageBox.setText(messageText)
-
-    def stata_dta_data_extract_dd(self):
-        
-        get_dd_dict = {
-            "FileExplorerOpenMessage" : "Select Input Stata Dta Data file",
-            "FileExplorerOpenFileExt" : "DTA Files (*.dta)",
-            "GetDDAction": "Extracted",
-            "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from Stata Dta data file: ",
-            "UtilsInputType" : "dta"
-        }
-
-        self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
-        
-    def sas_sas7bdat_data_extract_dd(self):
-        
-        get_dd_dict = {
-            "FileExplorerOpenMessage" : "Select Input SAS Sas7bdat Data file",
-            "FileExplorerOpenFileExt" : "Sas7bdat Files (*.sas7bdat)",
-            "GetDDAction": "Extracted",
-            "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from SAS Sas7bdat data file: ",
-            "UtilsInputType" : "sas7bdat"
-        }
-
-        self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
-    
-    def redcap_csv_dd_convert(self):
-        
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Redcap CSV Data Dictionary file", QtCore.QDir.homePath(), "CSV (*.csv *.tsv)")
-        
-        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-
-        messageText = 'Converting the Redcap CSV Data Dictionary at this path to HEAL CSV Data Dictionary: ' + ifileName 
-        self.userMessageBox.setText(messageText)      
-       
-        #outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
-        
-        mydicts = convert_to_vlmd(
-            filepath=ifileName,
-            data_dictionary_props={
-                "title":"my dd title",
-                "description":"my dd description"
-            },
-            inputtype="redcap.csv"
-        )
-
-        messageText = messageText + '\n\n\n' + 'Converted - Success!'
-        self.userMessageBox.setText(messageText)
-
-        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
-
-        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        self.userMessageBox.setText(messageText)
-
-        # write just the heal csv dd to file
-        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
-
-        messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        self.userMessageBox.setText(messageText) 
-
-
-    #def show_new_window(self,checked):
-    #    if self.w is None:
-    #        self.w = CSVEditWindow('')
-    #        self.w.show()
-
-    #    else:
-    #        self.w.close()  # Close window.
-    #        self.w = None  # Discard reference.

@@ -93,6 +93,7 @@ class AnnotateExpWindow(QtWidgets.QWidget):
         
 
 if __name__ == "__main__":
+    
     #app = QtWidgets.QApplication(sys.argv)
 
     #app.exec_()

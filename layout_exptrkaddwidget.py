@@ -73,38 +73,58 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
 
     def add_exp(self):
 
+        # get experiment file path
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Input Experiment Txt Data file",
                (QtCore.QDir.homePath()), "Text (*.txt)")
         
-        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-
-        # load experiment file - txt file with json data and convert json to python object
-        data =[]
-        with open(ifileName) as f:
-            data = json.load(f)
+        # load experiment file and convert to python object
+        path = ifileName
+        data = json.loads(Path(path).read_text())
         print(data)
-        body_json = json.dumps(data)
-        print(body_json)
-            
-            #for line in f:
-            #    data = json.loads(line)
-            #    print(data)
-            #    body_json=json.dumps(data)
-            #    print(body_json)
 
-        # validate against experiment tracker schema
-        print(schema_experiment_tracker)
-        isValid = dsc_pkg_utils.validateJson(body_json, schema_experiment_tracker)
-        
-        if isValid:
-            print("Given JSON data is Valid")
+        # validate experiment file json content against experiment tracker json schema
+        out = validate_against_jsonschema(data, schema_experiment_tracker)
+        print(out["valid"])
+        print(out["errors"])
+
+        # print validation errors and exit if not valid
+        if out["valid"]:
+            messageText = "The following experiment file is valid: " + ifileName
+            self.userMessageBox.setText(messageText)
         else:
-            print("Given JSON data is InValid")
+            messageText = "The following experiment file is NOT valid and will not be added to your Experiment Tracker file: " + ifileName + "\n\n\n" + "Validation errors are as follows: " + out["errors"] + "\n\n\n" + "Exiting \"Add Experiment\" function now."
+            self.userMessageBox.setText(messageText)
+            return
+        
+        # if valid, convert json to pd
+        df = pd.json_normalize(data)
+        print(df)
+
+        # get data package directory path
+        parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your Data Package Directory - Your Experiment Tracker File lives here!')
+        
+        # check if experiment tracker file exists
+        # if exists, append the pd data object from the experiment file as a new row in the experiment tracker file
+        # if doesn't exist, print error/info message and exit
+        if "heal-csv-experiment-tracker.csv" in os.listdir(parentFolderPath):
+            
+            output_path=os.path.join(parentFolderPath,"heal-csv-experiment-tracker.csv")
+            df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
+
+            messageText = messageText + "The contents of the Experiment file: " + "\n\n\n" + ifileName + "\n\n\n" + "were added as an experiment to the Experiment Tracker file: " + "\n\n\n" + output_path
+            self.userMessageBox.setText(messageText)
+        else:
+            messageText = messageText + "No Experiment Tracker file exists at the designated directory. Are you sure this is a Data Package Directory? If you haven't yet created a Data Package Directory for your work, please head to the \"Data Package\" tab and use the \"Create new Data Package\" button to create your Data Package Directory. Your new Data Package Directory will contain your Experiment Tracker file. You can then come back here and try adding your experiment file again!" + "\n\n\n" + "Exiting \"Add Experiment\" function now."
+            self.userMessageBox.setText(messageText)
+            return
+        
+        
+        
+      
 
          
         
-        #messageText = 'Inferring minimal data dictionary from tabular csv data file: ' + ifileName
-        #self.userMessageBox.setText(messageText)
+        
 
 
     

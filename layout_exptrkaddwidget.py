@@ -30,6 +30,9 @@ import jsonschema
 from jsonschema import validate
 from schema_experiment_tracker import schema_experiment_tracker
 
+from healdata_utils.validators.jsonschema import validate_against_jsonschema
+
+
 class ExpTrkAddWindow(QtWidgets.QMainWindow):
 
     def __init__(self):

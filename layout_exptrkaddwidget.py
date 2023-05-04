@@ -111,10 +111,10 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
             output_path=os.path.join(parentFolderPath,"heal-csv-experiment-tracker.csv")
             df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
 
-            messageText = messageText + "The contents of the Experiment file: " + "\n\n\n" + ifileName + "\n\n\n" + "were added as an experiment to the Experiment Tracker file: " + "\n\n\n" + output_path
+            messageText = messageText + "\n\n\n" + "The contents of the Experiment file: " + "\n\n\n" + ifileName + "\n\n\n" + "were added as an experiment to the Experiment Tracker file: " + "\n\n\n" + output_path
             self.userMessageBox.setText(messageText)
         else:
-            messageText = messageText + "No Experiment Tracker file exists at the designated directory. Are you sure this is a Data Package Directory? If you haven't yet created a Data Package Directory for your work, please head to the \"Data Package\" tab and use the \"Create new Data Package\" button to create your Data Package Directory. Your new Data Package Directory will contain your Experiment Tracker file. You can then come back here and try adding your experiment file again!" + "\n\n\n" + "Exiting \"Add Experiment\" function now."
+            messageText = messageText + "\n\n\n" + "No Experiment Tracker file exists at the designated directory. Are you sure this is a Data Package Directory? If you haven't yet created a Data Package Directory for your work, please head to the \"Data Package\" tab and use the \"Create new Data Package\" button to create your Data Package Directory. Your new Data Package Directory will contain your Experiment Tracker file. You can then come back here and try adding your experiment file again!" + "\n\n\n" + "Exiting \"Add Experiment\" function now."
             self.userMessageBox.setText(messageText)
             return
         

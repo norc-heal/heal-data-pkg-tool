@@ -3,6 +3,7 @@
 # issue: use pydantic to require path to be a valid file path - maybe use https://stackoverflow.com/questions/60173776/check-with-jsonschema-if-path-is-valid
 # issue: allow mutiple file refs in assoc.dd, assoc.protocol, assoc.id.map, and assoc.depends.on AND provide browse to file option implemented (currently can only implement browse to file for single value field)
 # issue: make some fields depend on others - maybe use https://stackoverflow.com/questions/62690633/in-jsonschema-specific-field-is-required-based-on-value-of-another-field#:~:text=1-,Answer,-Sorted%20by%3A
+# issue: get tooltip to work in form so that field description from schema shows up on mouse over of field name - maybe use https://github.com/agoose77/qt-jsonschema-form/blob/fc0faab5b2635449eef6e6e3fbda1352a6f28203/qt_jsonschema_form/widgets.py#L11:~:text=self.setToolTip(%22%22%20if%20error%20is%20None%20else%20error.message)%20%20%23%20TODO
 
 # upon adding resource check for:
 # if tabular data resource - info to create a dd, and come back to add ref to dd in this resource file

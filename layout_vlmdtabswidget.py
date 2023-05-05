@@ -10,7 +10,11 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+#from layout_vlmdinfowidget import VLMDInfoWindow
+from layout_infotextwidget import InfoTextWindow
 from layout_vlmdcreatewidget import VLMDCreateWindow
+from layout_csvpushtoloadwidget import CSVPushToLoadWindow
+from layout_vlmdvalidatewidget import VLMDValidateWindow
 
 class VLMDTabsWindow(QWidget):
     def __init__(self):
@@ -21,31 +25,17 @@ class VLMDTabsWindow(QWidget):
         # Create a top-level layout
         layout = QVBoxLayout()
         self.setLayout(layout)
+        self.infoText = "You should create a data dictionary for every tabular or tabular-like data file you collect/share as part of your study. This allows you to memorialize what each variable in your dataset is/represents, what values it can take on, etc. This will facilitate continuity and passed-down knowledge within study groups, and sharing and re-use of the data outside of the original study group."
         
         # Create the tab widget with two tabs
         tabs = QTabWidget()
+        tabs.addTab(InfoTextWindow(infoText=self.infoText), "Info")
         tabs.addTab(VLMDCreateWindow(), "Create")
-        tabs.addTab(self.generalTabUI(), "View/Edit")
-        tabs.addTab(self.networkTabUI(), "Validate")
+        tabs.addTab(CSVPushToLoadWindow(), "View/Edit")
+        tabs.addTab(VLMDValidateWindow(), "Validate")
         layout.addWidget(tabs)
 
-    def generalTabUI(self):
-        """Create the General page UI."""
-        generalTab = QWidget()
-        layout = QVBoxLayout()
-        layout.addWidget(QCheckBox("General Option 1"))
-        layout.addWidget(QCheckBox("General Option 2"))
-        generalTab.setLayout(layout)
-        return generalTab
-
-    def networkTabUI(self):
-        """Create the Network page UI."""
-        networkTab = QWidget()
-        layout = QVBoxLayout()
-        layout.addWidget(QCheckBox("Network Option 1"))
-        layout.addWidget(QCheckBox("Network Option 2"))
-        networkTab.setLayout(layout)
-        return networkTab
+    
 
 
 if __name__ == "__main__":

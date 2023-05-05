@@ -28,7 +28,7 @@ class ResourceTrkTabsWindow(QWidget):
         tabs = QTabWidget()
         tabs.addTab(self.networkTabUI(), "Info")
         tabs.addTab(self.generalTabUI(), "View/Edit Tracker")
-        tabs.addTab(ExpTrkAddWindow(), "Add Resource")
+        tabs.addTab(ResourceTrkAddWindow(), "Add Resource")
                 
         layout.addWidget(tabs)
 

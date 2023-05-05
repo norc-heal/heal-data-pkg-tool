@@ -7,10 +7,10 @@ description,resource description,description of the resource,no,no,yes
 description.row,"for tabular data resource, row description",e.g. one row represents one subject at one timepoint,no,no,yes
 description.file,"for multi-file resource containing multiple files of the same type, file description",,no,no,yes
 description.file.name.convention,"for multi-file resource containing multiple files of the same type, provide the naming convention of files (e.g. subject-xx-protocol-xxx-day-xxxxxxxx",,no,no,yes
-category.results.data.metadata.code,results/data/metadata/code,,no,no,yes
-category.sub.metadata,metadata > type: data-dictionary/id-map/protocol/experiment-tracker/results-tracker/statistical-analysis-plan,,no,no,yes
+category,multi-result/single result/data/metadata/code,,no,no,yes
+category.sub.metadata,metadata > type: data-dictionary/id-map/protocol/experiment-tracker/results-tracker/analysis-plan,,no,no,yes
 category.sub.data,data > stage: raw/processed-intermediate/processed-final,,no,no,yes
-category.sub.results,figure/text/publication,,no,no,yes
+category.sub.results,figure/text/draft publication/publication,,no,no,yes
 assoc.file.dd,dd file ref (heal csv),"references a heal csv dd file; this file will be converted to a heal json dd, then to a frictionless tabular resource schema format and either referenced or placed inline in the resource schema property; if this field is empty then the contents of the schema property are the minimal frictionless-inferred fields  ",no,no,yes
 assoc.file.protocol,protocol file ref(s),,no,no,yes
 assoc.file.id.map,id lookup description file ref(s),,no,no,yes

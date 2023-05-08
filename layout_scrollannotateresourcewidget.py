@@ -97,7 +97,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #self.form.widget(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experiment.id'] + '.txt','w')))
         print(self.form.widget.state)
         resource = self.form.widget.state
-        resource_id = exp["resource.id"]
+        resource_id = resource["resource.id"]
         print(resource_id)
 
         saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')

@@ -12,6 +12,8 @@ from PyQt5.QtWidgets import (
 
 from layout_vlmdcreatewidget import VLMDCreateWindow
 from layout_exptrkaddwidget import ExpTrkAddWindow
+from layout_csvpushtoloadwidget import CSVPushToLoadWindow
+from layout_infotextwidget import InfoTextWindow
 
 class ExpTrkTabsWindow(QWidget):
     def __init__(self):
@@ -22,11 +24,13 @@ class ExpTrkTabsWindow(QWidget):
         # Create a top-level layout
         layout = QVBoxLayout()
         self.setLayout(layout)
+        self.infoText = "You'll create a single experiment tracker for your study and add one entry per component experiment that is part of your study. Many clinical studies may have a single experiment to list, whereas many pre-clinical/basic science studies use several component experiments to address study aims, and should list each of those experiments in the Experiment Tracker. This will provide a clear overview of what experiments/activities were undertaken as part of your study, why (what questions you hoped to address with these experiments/activities), and what you thought might be the results of these experiments/activities. This allows you to memorialize what each experiment/activity undertaken by your study is/represents, and how it was approached by your study group. This will facilitate continuity and passed-down knowledge within study groups, and sharing and re-use of the data and knowledge produced by your study outside of the original study group."
+        
         
         # Create the tab widget with two tabs
         tabs = QTabWidget()
-        tabs.addTab(self.networkTabUI(), "Info")
-        tabs.addTab(self.generalTabUI(), "View/Edit Tracker")
+        tabs.addTab(InfoTextWindow(self.infoText), "Info")
+        tabs.addTab(CSVPushToLoadWindow(), "View/Edit Tracker")
         tabs.addTab(ExpTrkAddWindow(), "Add Experiment")
                 
         layout.addWidget(tabs)

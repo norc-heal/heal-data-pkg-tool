@@ -24,7 +24,7 @@ import requests # requests already installed as a healdata_utils dependency, no 
 import pipe
 
 import dsc_pkg_utils # local module, no pip install needed
-from layout_annotateresourcewidget import AnnotateResourceWindow
+from layout_scrollannotateresourcewidget import ScrollAnnotateResourceWindow
 
 import jsonschema
 from jsonschema import validate
@@ -64,7 +64,7 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
     
     def annotate_resource(self,checked):
         if self.w is None:
-            self.w = AnnotateResourceWindow()
+            self.w = ScrollAnnotateResourceWindow()
             self.w.show()
 
         else:
@@ -83,16 +83,16 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         print(data)
 
         # validate experiment file json content against experiment tracker json schema
-        out = validate_against_jsonschema(data, schema_experiment_tracker)
+        out = validate_against_jsonschema(data, schema_resource_tracker)
         print(out["valid"])
         print(out["errors"])
 
         # print validation errors and exit if not valid
         if out["valid"]:
-            messageText = "The following experiment file is valid: " + ifileName
+            messageText = "The following resource file is valid: " + ifileName
             self.userMessageBox.setText(messageText)
         else:
-            messageText = "The following experiment file is NOT valid and will not be added to your Experiment Tracker file: " + ifileName + "\n\n\n" + "Validation errors are as follows: " + out["errors"] + "\n\n\n" + "Exiting \"Add Experiment\" function now."
+            messageText = "The following resource file is NOT valid and will not be added to your Resource Tracker file: " + ifileName + "\n\n\n" + "Validation errors are as follows: " + out["errors"] + "\n\n\n" + "Exiting \"Add Resource\" function now."
             self.userMessageBox.setText(messageText)
             return
         
@@ -101,20 +101,20 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         print(df)
 
         # get data package directory path
-        parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your Data Package Directory - Your Experiment Tracker File lives here!')
+        parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your Data Package Directory - Your Resource Tracker File lives here!')
         
-        # check if experiment tracker file exists
+        # check if resource tracker file exists
         # if exists, append the pd data object from the experiment file as a new row in the experiment tracker file
         # if doesn't exist, print error/info message and exit
-        if "heal-csv-experiment-tracker.csv" in os.listdir(parentFolderPath):
+        if "heal-csv-resource-tracker.csv" in os.listdir(parentFolderPath):
             
-            output_path=os.path.join(parentFolderPath,"heal-csv-experiment-tracker.csv")
+            output_path=os.path.join(parentFolderPath,"heal-csv-resource-tracker.csv")
             df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
 
-            messageText = messageText + "\n\n\n" + "The contents of the Experiment file: " + "\n\n\n" + ifileName + "\n\n\n" + "were added as an experiment to the Experiment Tracker file: " + "\n\n\n" + output_path
+            messageText = messageText + "\n\n\n" + "The contents of the Resource file: " + "\n\n\n" + ifileName + "\n\n\n" + "were added as a resource to the Resource Tracker file: " + "\n\n\n" + output_path
             self.userMessageBox.setText(messageText)
         else:
-            messageText = messageText + "\n\n\n" + "No Experiment Tracker file exists at the designated directory. Are you sure this is a Data Package Directory? If you haven't yet created a Data Package Directory for your work, please head to the \"Data Package\" tab and use the \"Create new Data Package\" button to create your Data Package Directory. Your new Data Package Directory will contain your Experiment Tracker file. You can then come back here and try adding your experiment file again!" + "\n\n\n" + "Exiting \"Add Experiment\" function now."
+            messageText = messageText + "\n\n\n" + "No Resource Tracker file exists at the designated directory. Are you sure this is a Data Package Directory? If you haven't yet created a Data Package Directory for your work, please head to the \"Data Package\" tab and use the \"Create new Data Package\" button to create your Data Package Directory. Your new Data Package Directory will contain your Resource Tracker file. You can then come back here and try adding your resource file again!" + "\n\n\n" + "Exiting \"Add Resource\" function now."
             self.userMessageBox.setText(messageText)
             return
         

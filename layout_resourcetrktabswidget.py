@@ -13,6 +13,8 @@ from PyQt5.QtWidgets import (
 #from layout_vlmdcreatewidget import VLMDCreateWindow
 #from layout_exptrkaddwidget import ExpTrkAddWindow
 from layout_resourcetrkaddwidget import ResourceTrkAddWindow
+from layout_infotextwidget import InfoTextWindow
+from layout_csvpushtoloadwidget import CSVPushToLoadWindow
 
 class ResourceTrkTabsWindow(QWidget):
     def __init__(self):
@@ -23,12 +25,15 @@ class ResourceTrkTabsWindow(QWidget):
         # Create a top-level layout
         layout = QVBoxLayout()
         self.setLayout(layout)
+        self.infoText = "You'll create a single Resource Tracker for your study and add one entry per data or non-data/supporting file produced by or used to support the experiments/activities of your study. Through this process you'll memorialize what each data and non-data/supporting file in your study data package is/represents, how these files relate to each other, and how to drill down into these componenet data and non-data/supporting files to recreate specific published results. This will facilitate continuity and passed-down knowledge within study groups, and discovery, sharing, and re-use of the data and knowledge produced by the study outside of the original study group."
+        
         
         # Create the tab widget with two tabs
         tabs = QTabWidget()
-        tabs.addTab(self.networkTabUI(), "Info")
-        tabs.addTab(self.generalTabUI(), "View/Edit Tracker")
+        tabs.addTab(InfoTextWindow(self.infoText), "Info")
+        tabs.addTab(CSVPushToLoadWindow(), "View/Edit Tracker")
         tabs.addTab(ResourceTrkAddWindow(), "Add Resource")
+        
                 
         layout.addWidget(tabs)
 
@@ -53,7 +58,7 @@ class ResourceTrkTabsWindow(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = ResourceTrkAddWindow()
+    window = ResourceTrkTabsWindow()
     window.show()
     sys.exit(app.exec_())
 

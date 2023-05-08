@@ -16,7 +16,7 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5 import QtWidgets, uic
 import sys
 
-class AnnotateResourceWindow(QtWidgets.QMainWindow):
+class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         #self.setWindowTitle("Annotate Resource")

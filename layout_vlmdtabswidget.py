@@ -27,7 +27,7 @@ class VLMDTabsWindow(QWidget):
         self.setLayout(layout)
         self.infoText = "You should create a data dictionary for every tabular or tabular-like data file you collect/share as part of your study. This allows you to memorialize what each variable in your dataset is/represents, what values it can take on, etc. This will facilitate continuity and passed-down knowledge within study groups, and sharing and re-use of the data outside of the original study group."
         
-        # Create the tab widget with two tabs
+        # Create the tab widget 
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(infoText=self.infoText), "Info")
         tabs.addTab(VLMDCreateWindow(), "Create")

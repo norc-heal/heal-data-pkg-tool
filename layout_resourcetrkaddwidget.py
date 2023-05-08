@@ -45,7 +45,7 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         self.buttonAnnotateResource.clicked.connect(self.annotate_resource)
 
         self.buttonAddResource = QtWidgets.QPushButton(text="Add resource to tracker",parent=self)
-        #self.buttonAddResource.clicked.connect(self.add_resource)
+        self.buttonAddResource.clicked.connect(self.add_resource)
 
         # maybe switch Line edit to this: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QPlainTextEdit.html#more
         #self.userMessageBox = QtWidgets.QLineEdit(parent=self)
@@ -73,11 +73,11 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
 
     def add_resource(self):
 
-        # get experiment file path
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Input Experiment Txt Data file",
+        # get resource file path
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Input Resource Txt Data file",
                (QtCore.QDir.homePath()), "Text (*.txt)")
         
-        # load experiment file and convert to python object
+        # load resource file and convert to python object
         path = ifileName
         data = json.loads(Path(path).read_text())
         print(data)
@@ -109,7 +109,14 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         if "heal-csv-resource-tracker.csv" in os.listdir(parentFolderPath):
             
             output_path=os.path.join(parentFolderPath,"heal-csv-resource-tracker.csv")
-            df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
+            all_df = pd.read_csv(output_path)
+            all_df = pd.concat([all_df, df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
+            
+            # before writing to file may want to check for duplicate resource IDs and if duplicate resource IDs, ensure that 
+            # user wants to overwrite the earlier instance of the resource ID in the resource tracker
+
+            all_df.to_csv(output_path, mode='w', header=True, index=False)
+            #df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
 
             messageText = messageText + "\n\n\n" + "The contents of the Resource file: " + "\n\n\n" + ifileName + "\n\n\n" + "were added as a resource to the Resource Tracker file: " + "\n\n\n" + output_path
             self.userMessageBox.setText(messageText)

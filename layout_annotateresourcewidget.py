@@ -65,7 +65,7 @@ class AnnotateResourceWindow(QtWidgets.QWidget):
 
         # create save button
         self.buttonSaveResource = QtWidgets.QPushButton(text="Save resource",parent=self)
-        #self.buttonSaveExp.clicked.connect(self.save_exp)
+        self.buttonSaveResource.clicked.connect(self.save_resource)
 
         # create status message box
         self.userMessageBox = QtWidgets.QTextEdit(parent=self)
@@ -84,27 +84,27 @@ class AnnotateResourceWindow(QtWidgets.QWidget):
         #form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experiment.id'] + '.txt','w')))
 
             
-    def save_exp(self):
+    def save_resource(self):
         #self.form.widget(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experiment.id'] + '.txt','w')))
         print(self.form.widget.state)
-        exp = self.form.widget.state
-        exp_id = exp["experiment.id"]
-        print(exp_id)
+        resource = self.form.widget.state
+        resource_id = exp["resource.id"]
+        print(resource_id)
 
-        saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new experiment will be saved there!')
+        saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')
         
-        expFileName = 'exp-trk-'+ exp_id + '.txt'
-        saveFilePath = os.path.join(saveFolderPath,expFileName)
+        resourceFileName = 'resource-trk-'+ resource_id + '.txt'
+        saveFilePath = os.path.join(saveFolderPath,resourceFileName)
         
         messageText = ""
         
         if os.path.isfile(saveFilePath):
-            messageText = "An experiment file for an experiment with id " + exp_id + " already exists at " + saveFilePath + ". You may want to do one or both of: 1) Use the View/Edit tab to view your experiment tracker file and check which experiment IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which experiment IDs you've already used and for which you've already created experiment files - these files will be called \'exp-trk-exp-{a number}.txt\'. While you perform these checks, your experiment tracker form will remain open unless you explicitly close it. You can come back to it, change your experiment ID, and hit the save button again to save with an experiment ID that is not already in use. If you meant to overwrite an experiment file you previously created for an experiment with this experiment ID, please delete the previously created experiment file and try saving again." 
+            messageText = "A resource file for a resource with id " + resource_id + " already exists at " + saveFilePath + ". You may want to do one or both of: 1) Use the View/Edit tab to view your resource tracker file and check which resource IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which resource IDs you've already used and for which you've already created resource files - these files will be called \'resource-trk-resource-{a number}.txt\'. While you perform these checks, your resource tracker form will remain open unless you explicitly close it. You can come back to it, change your resource ID, and hit the save button again to save with a resource ID that is not already in use. If you meant to overwrite a resource file you previously created for an resource with this resource ID, please delete the previously created resource file and try saving again." 
         else:
             f=open(saveFilePath,'w')
-            print(dumps(exp, indent=4), file=f)
+            print(dumps(resource, indent=4), file=f)
             f.close()
-            messageText = "Your experiment file was successfully written at: " + saveFilePath + ". You'll want to head back to the \'Add Experiment\' tab and use the \'Add Experiment\' button to add this experiment file to your experiment tracker file! You can do this now, or later - You can add experiment files to the experiment tracker file one at a time, or you can add multiple experiment files all at once, so you may choose to create experiment files for all of your experiments and then add them in one go to your experiment tracker file."
+            messageText = "Your resource file was successfully written at: " + saveFilePath + ". You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
         
         self.userMessageBox.setText(messageText)
         

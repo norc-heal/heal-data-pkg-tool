@@ -41,7 +41,10 @@ from PyQt5.QtWidgets import (
 
 from layout_colorwidget import Color
 #from layout_vlmdwidget import VLMDWindow
+from layout_pkgtabswidget import PkgTabsWindow
 from layout_vlmdtabswidget import VLMDTabsWindow
+from layout_exptrktabswidget import ExpTrkTabsWindow
+from layout_resourcetrktabswidget import ResourceTrkTabsWindow
 #from layout_vlmdcreatewidget import VLMDCreateWindow
 from layout_csveditwidget import CSVEditWindow
 
@@ -66,7 +69,11 @@ class MainWindow(QMainWindow):
         tabs.setTabPosition(QTabWidget.West)
         tabs.setMovable(True)
 
+        tabs.addTab(PkgTabsWindow(), "Data Package")
+        tabs.addTab(ExpTrkTabsWindow(), "Experiment Tracker")
+        tabs.addTab(ResourceTrkTabsWindow(), "Resource Tracker")
         tabs.addTab(VLMDTabsWindow(), "Data Dictionary")
+        
         for n, color in enumerate(["red", "green", "blue", "yellow"]):
             tabs.addTab(Color(color), color)
 
@@ -82,19 +89,21 @@ class MainWindow(QMainWindow):
 #app.exec()
 
 if __name__ == "__main__":
-   import sys
- 
-   app = QtWidgets.QApplication(sys.argv)
-   app.setWindowIcon(QtGui.QIcon(os.path.join(basedir,'heal-icon.ico')))
-   #app.setApplicationName('DSC Data Packaging Tool - alpha')
+
+    import sys
+
+    app = QtWidgets.QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon(os.path.join(basedir,'heal-icon.ico')))
+    app.setQuitOnLastWindowClosed(True) 
+    #app.setApplicationName('DSC Data Packaging Tool - alpha')
    
-   w = MainWindow()
-   w.show()
+    w = MainWindow()
+    w.show()
    
-   #main = MyWindow('')
-   #main.setMinimumSize(820, 300)
-   #main.setGeometry(0,0,820,700)
-   #main.setWindowTitle("CSV Viewer")
-   #main.show()
+    #main = MyWindow('')
+    #main.setMinimumSize(820, 300)
+    #main.setGeometry(0,0,820,700)
+    #main.setWindowTitle("CSV Viewer")
+    #main.show()
  
-sys.exit(app.exec_())
+    sys.exit(app.exec_())

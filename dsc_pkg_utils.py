@@ -8,6 +8,8 @@ import os # base python, no pip install needed
 import shutil # base python, no pip install needed
 import healdata_utils
 import pathlib
+import jsonschema
+from jsonschema import validate
 
 
 
@@ -153,7 +155,40 @@ def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path
 
     return pkg_path
 
+def qt_object_properties(qt_object: object) -> dict:
+    """
+    source: https://stackoverflow.com/questions/50556216/pyqt5-get-list-of-all-properties-in-an-object-qpushbutton
+    Create a dictionary of property names and values from a QObject.
 
+    :param qt_object: The QObject to retrieve properties from.
+    :type qt_object: object
+    :return: Dictionary with format
+        {'name': property_name, 'value': property_value}
+    :rtype: dict
+    """
+    properties: list = []
+
+    # Returns a list of QByteArray.
+    button_properties: list = qt_object.dynamicPropertyNames()
+
+    for prop in button_properties:
+        # Decode the QByteArray into a string.
+        name: str = str(prop, 'utf-8')
+
+        # Get the property value from the button.
+        value: str = qt_object.property(name)
+
+        properties.append({'name': name, 'value': value})
+
+    return properties
+
+def validateJson(jsonData,jsonSchema):
+    # source: https://pynative.com/python-json-validation/
+    try:
+        validate(instance=jsonData, schema=jsonSchema)
+    except jsonschema.exceptions.ValidationError as err:
+        return False
+    return True
     
 
 

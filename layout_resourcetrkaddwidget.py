@@ -156,7 +156,10 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
             all_df.sort_values(by = ["resource.id.num", "restrk.mod.time.stamp"], inplace=True)
             # drop any exact duplicate rows
             #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
-            #all_df = all_df[~all_df.astype(str).duplicated]
+            # this current approach does not appear to be working at the moment
+            print("rows: ", all_df.shape[0])
+            all_df = all_df[-(all_df.astype('string').duplicated())]
+            print("rows: ", all_df.shape[0])
             
             # before writing to file may want to check for duplicate resource IDs and if duplicate resource IDs, ensure that 
             # user wants to overwrite the earlier instance of the resource ID in the resource tracker - right now, dup entries 

@@ -14,17 +14,17 @@
 # if temporary-private is selected in access field, check that access.date has been changed from the default date and is a 'reasonable' date (e.g. within 5 years of current date?)
 # maybe create an accessory file for each resource file with data on all of these checks so that we can programmatically bring to attention all resources that need additional attention (e.g. all tabular data files still missing data dictionaries)
 
-schema_resource_tracker = {
+form_schema_resource_tracker = {
     "type": "object",
     "description": "HEAL DSC Core Metadata piece to track and provide basic information about resource(s)/file(s) that support/are produced by/result from experiments you perform/will perform as part of your HEAL study.Objective is to list at least all files that will be submitted to a data repository in order to describe what each file is, how they relate to each other/how to use them, and how they relate to results/publications shared by the study group. Files may include results files (e.g. publications or draft publications/pieces of publications), processed and raw data files, protocol and analytic plan files, data dictionaries for tabular data files, other metadata as appropriate to data/field type, etc.",
     "title": "HEAL Resource Tracker",
     "properties": {
-        "resource.id": {
-            "title": "Resource ID",
-            "description": "resource id; auto-assigned", 
-            "type": "string",
-            "pattern": "^resource-+-*[0-9]*[1-9][0-9]*$"
-        },
+        #"resource.id": {
+        #    "title": "Resource ID",
+        #    "description": "resource id; auto-assigned", 
+        #    "type": "string",
+        #    "pattern": "^resource-+-*[0-9]*[1-9][0-9]*$"
+        #},
         "exp.belongs.to": {
             "title": "Experiment Belong To",
             "description": "if the file pertains specifically to one of the study experiments, list here; if the file pertains to more than one experiment, or to all experiments/the study as a whole, leave this blank; use experiment ID as assigned/formatted in your Experiment Tracker file here; prefix is 'exp-' followed by a number starting with 1 for the first experiment, and iterating by 1 for each successive experiment (i.e. exp-1, exp-2, etc.)",

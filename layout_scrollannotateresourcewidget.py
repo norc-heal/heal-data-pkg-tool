@@ -69,6 +69,26 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             #"integerRangeSteps": 60,
             #"sky_colour": "#8f5902"
         }
+
+      
+        print(self.form.widget.widgets, type(self.form.widget.widgets))
+        for i in self.form.widget.widgets:
+            print(i)
+           #print(type(i))
+        
+        for key, value in self.form.widget.widgets.items():
+            name = key
+            print(name)
+            widget = value
+            print(widget)
+            print(type(widget))
+
+            toolTipContent = schema["properties"][name]["description"] 
+            print(toolTipContent)
+            widget.setToolTip(toolTipContent)
+            #print(self.form.widget.widgets.itemAt(i).widget())
+            #widget.setToolTip("" if error is None else error.message)  # TODO
+            #widget.setToolTip("hello")  # TODO
         
         # create 'add dsc data pkg directory' button
         self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)

@@ -31,7 +31,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.scroll = QtWidgets.QScrollArea()             # Scroll Area which contains the widgets, set as the centralWidget
         self.widget = QtWidgets.QWidget()                 # Widget that contains the collection of Vertical Box
         self.vbox = QtWidgets.QVBoxLayout()               # The Vertical Box that contains the Horizontal Boxes of  labels and buttons
-
+        
+        self.saveFilePath = None
         ################################## Create component widgets - form, save button, status message box
         # Create the form widget 
         #builder = WidgetBuilder()
@@ -93,8 +94,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             #widget.setToolTip("" if error is None else error.message)  # TODO
             #widget.setToolTip("hello")  # TODO
         
-        # initialize
+        # initialize tool tip for each form field based on the description text for the corresponding schema property
         self.add_tooltip()
+        # check for emptyp tooltip content whenever form changes and replace empty tooltip with original tooltip content
+        # (only relevant for fields with in situ validation - i.e. string must conform to a pattern - as pyqtschema will replace the 
+        # tooltip content with some error content, then replace the content with empty string once the error is cleared - this check will
+        # restore the original tooltip content - for efficiency, may want to only run this when a widget that can have validation 
+        # errors changes - #TODO)
         self.form.widget.on_changed.connect(self.check_tooltip)
 
         # create 'add dsc data pkg directory' button
@@ -212,10 +218,17 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
     
     def save_resource(self):
+        
+        
+        if not self.saveFilePath:
+            messageText = "You must add a DSC Data Package Directory before saving your resource file. Please add a DSC Data Package Directory and then try saving again." 
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return
+
         print(self.form.widget.state)
         resource = self.form.widget.state
-        
-        
+
         #saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')
         
         ## get new resource ID for new resource file - get the max id num used for existing resource files and add 1; if no resource files yet, set id num to 1

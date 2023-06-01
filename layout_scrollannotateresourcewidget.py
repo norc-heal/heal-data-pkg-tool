@@ -4,7 +4,8 @@ from json import dumps, loads
 
 from qtpy import QtWidgets
 
-from qt_jsonschema_form import WidgetBuilder
+#from qt_jsonschema_form import WidgetBuilder
+from pyqtschema.builder import WidgetBuilder
 
 #from schema_resource_tracker import schema_resource_tracker
 from form_schema_resource_tracker import form_schema_resource_tracker
@@ -33,29 +34,33 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         ################################## Create component widgets - form, save button, status message box
         # Create the form widget 
-        builder = WidgetBuilder()
+        #builder = WidgetBuilder()
 
         schema = form_schema_resource_tracker
-        ui_schema = {
-            "path": {
-                "ui:widget": "filepath"
-            }
-            ,
-            "assoc.file.dd": {
-                "ui:widget": "filepath"
-            },
-            "assoc.file.protocol": {
-                "ui:widget": "filepath"
-            },
-            "assoc.file.id.map": {
-                "ui:widget": "filepath"
-            },
-            "assoc.file.id.map": {
-                "ui:widget": "filepath"
-            }
-        }
+        ui_schema = {}
+        #ui_schema = {
+        #    "path": {
+        #        "ui:widget": "filepath"
+        #    }
+        #    ,
+        #    "assoc.file.dd": {
+        #        "ui:widget": "filepath"
+        #    },
+        #    "assoc.file.protocol": {
+        #        "ui:widget": "filepath"
+        #    },
+        #    "assoc.file.id.map": {
+        #        "ui:widget": "filepath"
+        #    },
+        #    "assoc.file.id.map": {
+        #        "ui:widget": "filepath"
+        #    }
+        #}
 
-        self.form = builder.create_form(schema, ui_schema)
+        self.builder = WidgetBuilder(schema)
+        self.form = self.builder.create_form(ui_schema)
+        
+        #self.form = builder.create_form(schema, ui_schema)
         self.form.widget.state = {
             "resource.id": "resource-1",
             "exp.belongs.to": "exp-999",

@@ -36,8 +36,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # Create the form widget 
         #builder = WidgetBuilder()
 
-        schema = form_schema_resource_tracker
-        ui_schema = {}
+        self.schema = form_schema_resource_tracker
+        self.ui_schema = {}
         #ui_schema = {
         #    "path": {
         #        "ui:widget": "filepath"
@@ -57,8 +57,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #    }
         #}
 
-        self.builder = WidgetBuilder(schema)
-        self.form = self.builder.create_form(ui_schema)
+        self.builder = WidgetBuilder(self.schema)
+        self.form = self.builder.create_form(self.ui_schema)
         
         #self.form = builder.create_form(schema, ui_schema)
         self.form.widget.state = {
@@ -71,25 +71,32 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         }
 
       
-        print(self.form.widget.widgets, type(self.form.widget.widgets))
-        for i in self.form.widget.widgets:
-            print(i)
-           #print(type(i))
+        #print(self.form.widget.widgets, type(self.form.widget.widgets))
+        #for i in self.form.widget.widgets:
+        #    print(i)
+        #   #print(type(i))
         
-        for key, value in self.form.widget.widgets.items():
-            name = key
-            print(name)
-            widget = value
-            print(widget)
-            print(type(widget))
+        #self.toolTipContentList = []
+        
+        #for key, value in self.form.widget.widgets.items():
+        #    name = key
+        #    print(name)
+        #    widget = value
+        #    print(widget)
+        #    print(type(widget))
 
-            toolTipContent = schema["properties"][name]["description"] 
-            print(toolTipContent)
-            widget.setToolTip(toolTipContent)
+        #    toolTipContent = schema["properties"][name]["description"] 
+        #    print(toolTipContent)
+        #    widget.setToolTip(toolTipContent)
+            #self.toolTipContentList.append(toolTipContent)
             #print(self.form.widget.widgets.itemAt(i).widget())
             #widget.setToolTip("" if error is None else error.message)  # TODO
             #widget.setToolTip("hello")  # TODO
         
+        # initialize
+        self.add_tooltip()
+        self.form.widget.on_changed.connect(self.check_tooltip)
+
         # create 'add dsc data pkg directory' button
         self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
         self.buttonAddDir.clicked.connect(self.add_dir)
@@ -128,7 +135,45 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         return
         
+
+    def add_tooltip(self):
         
+        self.toolTipContentList = []
+
+        for key, value in self.form.widget.widgets.items():
+            name = key
+            print(name)
+            widget = value
+            print(widget)
+            print(type(widget))
+
+            toolTipContent = self.schema["properties"][name]["description"] 
+            print(toolTipContent)
+            widget.setToolTip(toolTipContent)
+            self.toolTipContentList.append(toolTipContent)
+            #print(self.form.widget.widgets.itemAt(i).widget())
+            #widget.setToolTip("" if error is None else error.message)  # TODO
+            #widget.setToolTip("hello")  # TODO
+
+    def check_tooltip(self):
+        i = 0
+        for key, value in self.form.widget.widgets.items():
+            name = key
+            print(name)
+            widget = value
+            print(widget)
+            print(type(widget))
+
+            toolTipContent = widget.toolTip() # get current tool tip content
+            print(toolTipContent)
+            if not toolTipContent: # check if the tool tip string is empty (this will occur if a validation error happened and error message was displayed and then the error was resolved as tooltip will be set to empty by pyqtschema pkg upon clearing the error)
+                widget.setToolTip(self.toolTipContentList[i]) # if empty then set it to the tooltip content from schema description that was stored on initialization
+
+            i+=1 # inc
+
+
+
+
     def add_dir(self):
         
         self.saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')

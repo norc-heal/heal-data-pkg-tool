@@ -74,8 +74,8 @@ class MainWindow(QMainWindow):
         tabs.addTab(ResourceTrkTabsWindow(), "Resource Tracker")
         tabs.addTab(VLMDTabsWindow(), "Data Dictionary")
         
-        for n, color in enumerate(["red", "green", "blue", "yellow"]):
-            tabs.addTab(Color(color), color)
+        #for n, color in enumerate(["red", "green", "blue", "yellow"]):
+        #    tabs.addTab(Color(color), color)
 
         
         self.setCentralWidget(tabs)

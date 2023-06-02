@@ -14,7 +14,7 @@
 # if temporary-private is selected in access field, check that access.date has been changed from the default date and is a 'reasonable' date (e.g. within 5 years of current date?)
 # maybe create an accessory file for each resource file with data on all of these checks so that we can programmatically bring to attention all resources that need additional attention (e.g. all tabular data files still missing data dictionaries)
 
-schema_resource_tracker = {
+form_schema_resource_tracker = {
     "type": "object",
     "description": "HEAL DSC Core Metadata piece to track and provide basic information about resource(s)/file(s) that support/are produced by/result from experiments you perform/will perform as part of your HEAL study.Objective is to list at least all files that will be submitted to a data repository in order to describe what each file is, how they relate to each other/how to use them, and how they relate to results/publications shared by the study group. Files may include results files (e.g. publications or draft publications/pieces of publications), processed and raw data files, protocol and analytic plan files, data dictionaries for tabular data files, other metadata as appropriate to data/field type, etc.",
     "title": "HEAL Resource Tracker",
@@ -31,15 +31,16 @@ schema_resource_tracker = {
             "type": "string",
             "pattern": "^exp-+-*[0-9]*[1-9][0-9]*$"
         },
-        "name": {
-            "title" : "Resource Name",
-            "description": "this will be auto-inferred as the file name part of the file path",
-            "type": "string"
-        },
+        #"name": {
+        #    "title" : "Resource Name",
+        #    "description": "this will be auto-inferred as the file name part of the file path",
+        #    "type": "string"
+        #},
         "path": {
             "title": "Resource File Path",
             "description": "this will be auto-inferred as the full file path to resource",
-            "type": "string"
+            "type": "string",
+            "format": "path"
         },
         "title": {
             "title": "Resource Title",
@@ -123,7 +124,6 @@ schema_resource_tracker = {
         "assoc.file.depends.on": {
             "title": "Source Files/Dependencies",
             "description": "if the current resource file has dependencies/if other files are necessary to make this file (e.g. raw data file necessary to  make processed data file) list them here; only one layer deep; can be data, code, protocol (?); if already listed under assoc.file.dd, assoc.file.protocol, or assoc.file.id.map no need to repeat here. Alternatively, can use this field as a catch-all instead of using those other more specific assoc.file fields.",
-            #"type": "string"
             "type": "array",
             "items": {
                 "type": "string",
@@ -145,65 +145,66 @@ schema_resource_tracker = {
             "type": "string",
             "pattern": "(((19|20)([2468][048]|[13579][26]|0[48])|2000)[/-]02[/-]29|((19|20)[0-9]{2}[/-](0[4678]|1[02])[/-](0[1-9]|[12][0-9]|30)|(19|20)[0-9]{2}[/-](0[1359]|11)[/-](0[1-9]|[12][0-9]|3[01])|(19|20)[0-9]{2}[/-]02[/-](0[1-9]|1[0-9]|2[0-8])))"
         },
-        "format": {
-            "title": "Format",
-            "description": "auto inferred; e.g. csv",
-            "type": "string"
-        },
+        #"format": {
+        #    "title": "Format",
+        #    "description": "auto inferred; e.g. csv",
+        #    "type": "string"
+        #},
         "format.software": {
             "title": "Software used to produce/read the resource file",
             "description": "if the format is proprietary and requires specific software to open/interpret, provide the software name and version; e.g. Origin 11.0, CorelDraw 5.6",
             "type": "string"
-        },
-        "format.open.type": {
-            "title": "Format Open Type",
-            "description": "If the format is proprietary but can be opened/converted to open source format using open source tools, provide the open source format to which the file can be converted (e.g. csv)",
-            "type": "string"
-        },
-        "format.open.protocol": {
-            "title": "Format Open Protocol",
-            "description": "If the format is proprietary but can be opened/converted to open source format using open source tools, provide the open source tools required and the protocol for converting the file to an open source format (open in excel, specify space delimited, 3 line header)",
-            "type": "string"
-        },
-        "profile": {
-            "title": "Profile",
-            "description": "auto inferred; e.g. tabular-data-resource",
-            "type": "string"
-        },
-        "mediatype": {
-            "title": "Media Type",
-            "description": "auto inferred; e.g. text/csv",
-            "type": "string"
-        },
-        "encoding": {
-            "title": "Encoding",
-            "description": "auto inferred; e.g. utf-8",
-            "type": "string"
-        },
-        "schema": {
-            "title": "Schema",
-            "description": "auto inferred; for tabular resource, schema of fields contained in tabular resource; might replace this with ref to either heal csv dd or heal json dd",
-            "type": "string"
-        },
-        "resource.create.date.time": {
-            "title": "Resource creation datetime",
-            "description": "Date time of resource creation; auto-inferred",
-            "type": "string"
-        },
-        "resource.mod.date.time": {
-            "title": "Resource modification datetime",
-            "description": "Date time at which the resource was last modified; auto-inferred",
-            "type": "string"
-        },
-        "restrk.create.date.time": {
-            "title": "Resource tracker entry creation datetime",
-            "description": "Date time at which the resource tracker file for the resource was created; auto-inferred",
-            "type": "string"
-        },
-        "restrk.mod.date.time": {
-            "title": "Resource tracker entry modification datetime",
-            "description": "Date time at which the resource tracker file for the resource was last modified; auto-inferred",
-            "type": "string"
         }
+        #,
+        #"format.open.type": {
+        #    "title": "Format Open Type",
+        #    "description": "If the format is proprietary but can be opened/converted to open source format using open source tools, provide the open source format to which the file can be converted (e.g. csv)",
+        #    "type": "string"
+        #},
+        #"format.open.protocol": {
+        #    "title": "Format Open Protocol",
+        #    "description": "If the format is proprietary but can be opened/converted to open source format using open source tools, provide the open source tools required and the protocol for converting the file to an open source format (open in excel, specify space delimited, 3 line header)",
+        #    "type": "string"
+        #},
+        #"profile": {
+        #    "title": "Profile",
+        #    "description": "auto inferred; e.g. tabular-data-resource",
+        #    "type": "string"
+        #},
+        #"mediatype": {
+        #    "title": "Media Type",
+        #    "description": "auto inferred; e.g. text/csv",
+        #    "type": "string"
+        #},
+        #"encoding": {
+        #    "title": "Encoding",
+        #    "description": "auto inferred; e.g. utf-8",
+        #    "type": "string"
+        #},
+        #"schema": {
+        #    "title": "Schema",
+        #    "description": "auto inferred; for tabular resource, schema of fields contained in tabular resource; might replace this with ref to either heal csv dd or heal json dd",
+        #    "type": "string"
+        #},
+        #"resource.create.date.time": {
+        #    "title": "Resource creation datetime",
+        #    "description": "Date time of resource creation; auto-inferred",
+        #    "type": "string"
+        #},
+        #"resource.mod.date.time": {
+        #    "title": "Resource modification datetime",
+        #    "description": "Date time at which the resource was last modified; auto-inferred",
+        #    "type": "string"
+        #},
+        #"restrk.create.date.time": {
+        #    "title": "Resource tracker entry creation datetime",
+        #    "description": "Date time at which the resource tracker file for the resource was created; auto-inferred",
+        #    "type": "string"
+        #},
+        #"restrk.mod.date.time": {
+        #    "title": "Resource tracker entry modification datetime",
+        #    "description": "Date time at which the resource tracker file for the resource was last modified; auto-inferred",
+        #    "type": "string"
+        #}
     }
 }

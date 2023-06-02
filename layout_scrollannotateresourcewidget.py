@@ -4,9 +4,11 @@ from json import dumps, loads
 
 from qtpy import QtWidgets
 
-from qt_jsonschema_form import WidgetBuilder
+#from qt_jsonschema_form import WidgetBuilder
+from pyqtschema.builder import WidgetBuilder
 
-from schema_resource_tracker import schema_resource_tracker
+#from schema_resource_tracker import schema_resource_tracker
+from form_schema_resource_tracker import form_schema_resource_tracker
 from dsc_pkg_utils import qt_object_properties
 import pandas as pd
 
@@ -14,7 +16,10 @@ from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, Q
                              QHBoxLayout, QVBoxLayout, QMainWindow)
 from PyQt5.QtCore import Qt, QSize
 from PyQt5 import QtWidgets, uic
+from PyQt5.QtGui import QTextCursor
 import sys
+
+from pathlib import Path
 
 class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -26,32 +31,37 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.scroll = QtWidgets.QScrollArea()             # Scroll Area which contains the widgets, set as the centralWidget
         self.widget = QtWidgets.QWidget()                 # Widget that contains the collection of Vertical Box
         self.vbox = QtWidgets.QVBoxLayout()               # The Vertical Box that contains the Horizontal Boxes of  labels and buttons
-
+        
+        self.saveFilePath = None
         ################################## Create component widgets - form, save button, status message box
         # Create the form widget 
-        builder = WidgetBuilder()
+        #builder = WidgetBuilder()
 
-        schema = schema_resource_tracker
-        ui_schema = {
-            "path": {
-                "ui:widget": "filepath"
-            }
-            ,
-            "assoc.file.dd": {
-                "ui:widget": "filepath"
-            },
-            "assoc.file.protocol": {
-                "ui:widget": "filepath"
-            },
-            "assoc.file.id.map": {
-                "ui:widget": "filepath"
-            },
-            "assoc.file.id.map": {
-                "ui:widget": "filepath"
-            }
-        }
+        self.schema = form_schema_resource_tracker
+        self.ui_schema = {}
+        #ui_schema = {
+        #    "path": {
+        #        "ui:widget": "filepath"
+        #    }
+        #    ,
+        #    "assoc.file.dd": {
+        #        "ui:widget": "filepath"
+        #    },
+        #    "assoc.file.protocol": {
+        #        "ui:widget": "filepath"
+        #    },
+        #    "assoc.file.id.map": {
+        #        "ui:widget": "filepath"
+        #    },
+        #    "assoc.file.id.map": {
+        #        "ui:widget": "filepath"
+        #    }
+        #}
 
-        self.form = builder.create_form(schema, ui_schema)
+        self.builder = WidgetBuilder(self.schema)
+        self.form = self.builder.create_form(self.ui_schema)
+        
+        #self.form = builder.create_form(schema, ui_schema)
         self.form.widget.state = {
             "resource.id": "resource-1",
             "exp.belongs.to": "exp-999",
@@ -60,7 +70,43 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             #"integerRangeSteps": 60,
             #"sky_colour": "#8f5902"
         }
+
+      
+        #print(self.form.widget.widgets, type(self.form.widget.widgets))
+        #for i in self.form.widget.widgets:
+        #    print(i)
+        #   #print(type(i))
         
+        #self.toolTipContentList = []
+        
+        #for key, value in self.form.widget.widgets.items():
+        #    name = key
+        #    print(name)
+        #    widget = value
+        #    print(widget)
+        #    print(type(widget))
+
+        #    toolTipContent = schema["properties"][name]["description"] 
+        #    print(toolTipContent)
+        #    widget.setToolTip(toolTipContent)
+            #self.toolTipContentList.append(toolTipContent)
+            #print(self.form.widget.widgets.itemAt(i).widget())
+            #widget.setToolTip("" if error is None else error.message)  # TODO
+            #widget.setToolTip("hello")  # TODO
+        
+        # initialize tool tip for each form field based on the description text for the corresponding schema property
+        self.add_tooltip()
+        # check for emptyp tooltip content whenever form changes and replace empty tooltip with original tooltip content
+        # (only relevant for fields with in situ validation - i.e. string must conform to a pattern - as pyqtschema will replace the 
+        # tooltip content with some error content, then replace the content with empty string once the error is cleared - this check will
+        # restore the original tooltip content - for efficiency, may want to only run this when a widget that can have validation 
+        # errors changes - #TODO)
+        self.form.widget.on_changed.connect(self.check_tooltip)
+
+        # create 'add dsc data pkg directory' button
+        self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
+        self.buttonAddDir.clicked.connect(self.add_dir)
+
         # create save button
         self.buttonSaveResource = QtWidgets.QPushButton(text="Save resource",parent=self)
         self.buttonSaveResource.clicked.connect(self.save_resource)
@@ -68,12 +114,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # create status message box
         self.userMessageBox = QtWidgets.QTextEdit(parent=self)
         self.userMessageBox.setReadOnly(True)
+        self.messageText = ""
+        self.userMessageBox.setText(self.messageText)
         
         ################################## Finished creating component widgets
 
-        self.vbox.addWidget(self.form)
+        self.vbox.addWidget(self.buttonAddDir)
         self.vbox.addWidget(self.buttonSaveResource)
         self.vbox.addWidget(self.userMessageBox)
+        self.vbox.addWidget(self.form)
+        
 
         self.widget.setLayout(self.vbox)
 
@@ -91,31 +141,127 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         return
         
-        
-            
-    def save_resource(self):
-        #self.form.widget(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experiment.id'] + '.txt','w')))
-        print(self.form.widget.state)
-        resource = self.form.widget.state
-        resource_id = resource["resource.id"]
-        print(resource_id)
 
-        saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')
+    def add_tooltip(self):
         
-        resourceFileName = 'resource-trk-'+ resource_id + '.txt'
-        saveFilePath = os.path.join(saveFolderPath,resourceFileName)
+        self.toolTipContentList = []
+
+        for key, value in self.form.widget.widgets.items():
+            name = key
+            print(name)
+            widget = value
+            print(widget)
+            print(type(widget))
+
+            toolTipContent = self.schema["properties"][name]["description"] 
+            print(toolTipContent)
+            widget.setToolTip(toolTipContent)
+            self.toolTipContentList.append(toolTipContent)
+            #print(self.form.widget.widgets.itemAt(i).widget())
+            #widget.setToolTip("" if error is None else error.message)  # TODO
+            #widget.setToolTip("hello")  # TODO
+
+    def check_tooltip(self):
+        i = 0
+        for key, value in self.form.widget.widgets.items():
+            name = key
+            #print(name)
+            widget = value
+            #print(widget)
+            #print(type(widget))
+
+            toolTipContent = widget.toolTip() # get current tool tip content
+            #print(toolTipContent)
+            if not toolTipContent: # check if the tool tip string is empty (this will occur if a validation error happened and error message was displayed and then the error was resolved as tooltip will be set to empty by pyqtschema pkg upon clearing the error)
+                widget.setToolTip(self.toolTipContentList[i]) # if empty then set it to the tooltip content from schema description that was stored on initialization
+
+            i+=1 # increment
+
+
+
+
+    def add_dir(self):
+        
+        self.saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')
+        
+        # get new resource ID for new resource file - get the max id num used for existing resource files and add 1; if no resource files yet, set id num to 1
+        
+        resFileList = [filename for filename in os.listdir(self.saveFolderPath) if filename.startswith("resource-trk-resource-")]
+        print(resFileList)
+
+        if resFileList: # if the list is not empty
+            resFileStemList = [Path(filename).stem for filename in resFileList]
+            print(resFileStemList)
+            resIdNumList = [int(filename.rsplit('-',1)[1]) for filename in resFileStemList]
+            print(resIdNumList)
+            resIdNum = max(resIdNumList) + 1
+            print(max(resIdNumList),resIdNum)
+        else:
+            resIdNum = 1
+
+        
+        self.resource_id = 'resource-'+ str(resIdNum)
+        #resourceFileName = 'resource-trk-resource-'+ str(resIdNum) + '.txt'
+        resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
+        self.saveFilePath = os.path.join(self.saveFolderPath,resourceFileName)
+
+        self.messageText = self.messageText + "Based on other resources already saved in your DSC Package directory, your new resource will be saved with the unique ID: " + self.resource_id + "\n" + "Resource ID has been added to the resource form."
+        self.messageText = self.messageText + "\n"  + "Your new resource file will be saved in your DSC Package directory as: " + self.saveFilePath + "\n\n"
+        self.userMessageBox.setText(self.messageText)
+        #self.userMessageBox.moveCursor(QTextCursor.End)
+
+        self.form.widget.state = {
+            "resource.id": self.resource_id
+        }
+        
+        
+
+    
+    def save_resource(self):
+        
+        # check that a dsc data package dir has been added - this is the save folder
+        if not self.saveFolderPath:
+            messageText = "You must add a DSC Data Package Directory before saving your resource file. Please add a DSC Data Package Directory and then try saving again." 
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return
+
+        # check if user has modified the resource id from the one that was autogenerated when adding dsc data dir for saving
+        # this may happen if for example a user annotates a resource using the autogenerated resource id, then wants to keep 
+        # going using the same form window instance, modify the contents to annotate a new resource (perhaps one with some 
+        # form fields that will be the same), and save again with a new resource id - in this case the user can modify the 
+        # resource id manually, incrementing the id number by one - if resource id modified, updated it in memory and regenerate
+        # the save file path
+        if self.form.widget.state["resource.id"] != self.resource_id:
+            self.resource_id = self.form.widget.state["resource.id"]
+            resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
+            self.saveFilePath = os.path.join(self.saveFolderPath,resourceFileName)
         
         messageText = ""
         
-        if os.path.isfile(saveFilePath):
-            messageText = "A resource file for a resource with id " + resource_id + " already exists at " + saveFilePath + ". You may want to do one or both of: 1) Use the View/Edit tab to view your resource tracker file and check which resource IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which resource IDs you've already used and for which you've already created resource files - these files will be called \'resource-trk-resource-{a number}.txt\'. While you perform these checks, your resource tracker form will remain open unless you explicitly close it. You can come back to it, change your resource ID, and hit the save button again to save with a resource ID that is not already in use. If you meant to overwrite a resource file you previously created for an resource with this resource ID, please delete the previously created resource file and try saving again." 
+        # check if saveFilePath already exists (same as if a file for this resource id already exists); if exists, exit our with informative message;
+        # otherwise go ahead and save
+        if os.path.isfile(self.saveFilePath):
+            #self.messageText = self.messageText + '\n\n' + "A resource file for a resource with id " + self.resource_id + " already exists at " + self.saveFilePath + '\n' + "You may want to do one or both of: 1) Use the View/Edit tab to view your resource tracker file and check which resource IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which resource IDs you've already used and for which you've already created resource files - these files will be called \'resource-trk-resource-{a number}.txt\'. While you perform these checks, your resource tracker form will remain open unless you explicitly close it. You can come back to it, change your resource ID, and hit the save button again to save with a resource ID that is not already in use. If you meant to overwrite a resource file you previously created for an resource with this resource ID, please delete the previously created resource file and try saving again." 
+            messageText = "A resource file for a resource with id " + self.resource_id + " already exists at " + self.saveFilePath + "\n\n" + "You may want to do one or both of: 1) Use the View/Edit tab to view your resource tracker file and check which resource IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which resource IDs you've already used and for which you've already created resource files - these files will be called \'resource-trk-resource-{a number}.txt\'. While you perform these checks, your resource tracker form will remain open unless you explicitly close it. You can come back to it, change your resource ID, and hit the save button again to save with a resource ID that is not already in use. If you meant to overwrite a resource file you previously created for an resource with this resource ID, please delete the previously created resource file and try saving again." + "\n\n" 
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
         else:
-            f=open(saveFilePath,'w')
+            print(self.form.widget.state)
+            resource = self.form.widget.state
+            
+            f=open(self.saveFilePath,'w')
             print(dumps(resource, indent=4), file=f)
             f.close()
-            messageText = "Your resource file was successfully written at: " + saveFilePath + ". You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
-        
-        self.userMessageBox.setText(messageText)
+            #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
+            messageText = "Your resource file was successfully written at: " + self.saveFilePath + "\n\n" + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file." + "\n\n"
+            saveFormat = '<span style="color:green;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+
+        #saveFormat = '<span style="color:green;">{}</span>'
+        #self.userMessageBox.append(saveFormat.format(messageText))
+        #self.userMessageBox.setText(self.messageText)
+        self.userMessageBox.moveCursor(QTextCursor.End)
         
         
 
@@ -126,6 +272,6 @@ if __name__ == "__main__":
     #app.exec_()
 
     app = QtWidgets.QApplication(sys.argv)
-    window = AnnotateResourceWindow()
+    window = ScrollAnnotateResourceWindow()
     window.show()
     sys.exit(app.exec_())

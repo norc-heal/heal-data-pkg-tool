@@ -165,17 +165,17 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         i = 0
         for key, value in self.form.widget.widgets.items():
             name = key
-            print(name)
+            #print(name)
             widget = value
-            print(widget)
-            print(type(widget))
+            #print(widget)
+            #print(type(widget))
 
             toolTipContent = widget.toolTip() # get current tool tip content
-            print(toolTipContent)
+            #print(toolTipContent)
             if not toolTipContent: # check if the tool tip string is empty (this will occur if a validation error happened and error message was displayed and then the error was resolved as tooltip will be set to empty by pyqtschema pkg upon clearing the error)
                 widget.setToolTip(self.toolTipContentList[i]) # if empty then set it to the tooltip content from schema description that was stored on initialization
 
-            i+=1 # inc
+            i+=1 # increment
 
 
 

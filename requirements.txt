@@ -3,3 +3,6 @@ PyQt5==5.15.9
 pyinstaller==5.8.0
 pipe==2.0
 qt_jsonschema_form==1.0.0
+pyqtschema==0.2.0
+pydantic==1.10.8
+

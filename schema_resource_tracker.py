@@ -93,36 +93,41 @@ schema_resource_tracker = {
         "assoc.file.dd": {
             "title": "Data Resource - Associated Data Dictionary",
             "description": "generally relevant only for tabular data file resources; reference/file path to associated data dictionary file(s) - preferably in heal csv data dictionary format",
-            "type": "string"
-            #"type": "array",
-            #"items": {
-            #    "type": "string"
-            #}
+            #"type": "string"
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "path"
+            }
         },
         "assoc.file.protocol": {
             "title": "Data Resource - Associated Protocol",
             "description": "generally relevant only for data file resources; reference/file path to associated protocol file(s)",
-            "type": "string"
-            #"type": "array",
-            #"items": {
-            #    "type": "string"
-            #}
+            #"type": "string"
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "path"
+            }
         },
         "assoc.file.id.map": {
             "title": "Data Resource - Associated ID Map",
             "description": "generally relevant only for tabular data file resources; reference/file path to associated ID map file(s); e.g. if each row in a tabular data file represents a unique study subject at a unique study timepoint and the study subject is denoted by an ID in the data file, there may be an associated ID map that maps the subject ID to demographic variables relevant to each subject.",
-            "type": "string"
-            #"type": "array",
-            #"items": {
-            #    "type": "string"
-            #}
+            #"type": "string"
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "path"
+            }
         },
         "assoc.file.depends.on": {
             "title": "Source Files/Dependencies",
             "description": "if the current resource file has dependencies/if other files are necessary to make this file (e.g. raw data file necessary to  make processed data file) list them here; only one layer deep; can be data, code, protocol (?); if already listed under assoc.file.dd, assoc.file.protocol, or assoc.file.id.map no need to repeat here. Alternatively, can use this field as a catch-all instead of using those other more specific assoc.file fields.",
+            #"type": "string"
             "type": "array",
             "items": {
-                "type": "string"
+                "type": "string",
+                "format": "path"
             }
         },
         "access": {

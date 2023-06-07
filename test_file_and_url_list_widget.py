@@ -8,7 +8,7 @@ class ListboxWidget(QListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAcceptDrops(True)
-        self.resize(600,600)
+        #self.resize(600,600)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls:
@@ -72,7 +72,18 @@ class AppDemo(QMainWindow):
 
 
 
-app = QApplication(sys.argv)
-demo = AppDemo()
-demo.show()
-sys.exit(app.exec_())
+#app = QApplication(sys.argv)
+#demo = AppDemo()
+#demo.show()
+#sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    
+    #app = QtWidgets.QApplication(sys.argv)
+
+    #app.exec_()
+
+    app = QtWidgets.QApplication(sys.argv)
+    window = ScrollAnnotateResourceWindow()
+    window.show()
+    sys.exit(app.exec_())

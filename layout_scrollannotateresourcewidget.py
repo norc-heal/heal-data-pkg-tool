@@ -21,6 +21,10 @@ import sys
 
 from pathlib import Path
 
+
+from test_file_and_url_list_widget import ListboxWidget
+import re
+
 class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -31,6 +35,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.scroll = QtWidgets.QScrollArea()             # Scroll Area which contains the widgets, set as the centralWidget
         self.widget = QtWidgets.QWidget()                 # Widget that contains the collection of Vertical Box
         self.vbox = QtWidgets.QVBoxLayout()               # The Vertical Box that contains the Horizontal Boxes of  labels and buttons
+        self.mfilehbox = QtWidgets.QHBoxLayout()
         
         self.saveFilePath = None
         ################################## Create component widgets - form, save button, status message box
@@ -116,12 +121,32 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setReadOnly(True)
         self.messageText = ""
         self.userMessageBox.setText(self.messageText)
+
+        # create button to add multiple like resources
+        self.buttonAddMultiResource = QtWidgets.QPushButton(text="Add multiple 'like' resources" + "\n" + "(Drag and drop file paths/urls below)",parent=self)
+        self.buttonAddMultiResource.clicked.connect(self.add_multi_resource)
+
+        # create button to apply naming convention for multiple like resources
+        self.buttonApplyNameConvention = QtWidgets.QPushButton(text="Apply naming convention for multiple 'like' resources" + "\n" + "(Add Resource File Name Convention in form below)",parent=self)
+        self.buttonApplyNameConvention.clicked.connect(self.apply_name_convention)
+                
+        # create drag and drop window for multiple like file addition
+        self.lstbox_view = ListboxWidget(self)
+        self.lwModel = self.lstbox_view.model()
+        self.items = []
+        self.lwModel.rowsInserted.connect(self.get_items_list)
+        self.lwModel.rowsRemoved.connect(self.get_items_list)
         
         ################################## Finished creating component widgets
+        self.mfilehbox.addWidget(self.buttonAddMultiResource)
+        self.mfilehbox.addWidget(self.buttonApplyNameConvention)
 
         self.vbox.addWidget(self.buttonAddDir)
         self.vbox.addWidget(self.buttonSaveResource)
         self.vbox.addWidget(self.userMessageBox)
+        #self.vbox.addWidget(self.buttonAddMultiResource)
+        self.vbox.addLayout(self.mfilehbox)
+        self.vbox.addWidget(self.lstbox_view)
         self.vbox.addWidget(self.form)
         
 
@@ -145,6 +170,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
     def add_tooltip(self):
         
         self.toolTipContentList = []
+        self.formWidgetNameList =  []
+        self.formWidgetList = []
 
         for key, value in self.form.widget.widgets.items():
             name = key
@@ -157,6 +184,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             print(toolTipContent)
             widget.setToolTip(toolTipContent)
             self.toolTipContentList.append(toolTipContent)
+            
+            self.formWidgetNameList.append(name)
+            self.formWidgetList.append(widget)
             #print(self.form.widget.widgets.itemAt(i).widget())
             #widget.setToolTip("" if error is None else error.message)  # TODO
             #widget.setToolTip("hello")  # TODO
@@ -214,8 +244,74 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             "resource.id": self.resource_id
         }
         
+    def get_items_list(self):
+        #item = QListWidgetItem(self.lstbox_view.currentItem())
+        #print(item.text())
+        lw = self.lstbox_view
+
+        self.items = [lw.item(x).text() for x in range(lw.count())]
+        print(self.items)  
+        #print(type(self.items)) 
+
+        self.form.widget.state = {
+            "path": self.items[0]
+        } 
+
+    def add_multi_resource(self):
+        #item = QListWidgetItem(self.lstbox_view.currentItem())
+        #print(item.text())
+        #lw = self.lstbox_view
+
+        #self.items = [lw.item(x).text() for x in range(lw.count())]
+        #print(self.items)  
+        #print(type(self.items)) 
+        if self.items:
+
+            self.form.widget.state = {
+                "path": self.items[0]
+            } 
+        else:
+            print("you have not selected any resource files")
+            return
+
+    def apply_name_convention(self):
+        # have to do this after add_tooltip because these items are defined in that function - may want to change that at some point
+        # get the name convention widget 
+        # if the contents of the name convention widget
+        self.nameConventionWidgetIdx = self.formWidgetNameList.index("description.file.name.convention")
+        self.nameConventionWidget = self.formWidgetList[self.nameConventionWidgetIdx] 
+        print("my state: ", self.nameConventionWidget.state)
+        self.nameConvention = self.nameConventionWidget.state
+
+        try:
+            #found = re.search('{(.+?)}', self.nameConvention).group(1)
+            nameConventionExplanatoryList = re.findall('{(.+?)}', self.nameConvention)
+        except AttributeError:
+            # {} not found in the original string
+            nameConventionExplanatoryList = '' # apply your error handling
+            
+        print(nameConventionExplanatoryList)
+        
+        nameConventionAllList = re.split('[/{/}]', self.nameConvention)
+        nameConventionAllList = [i for i in nameConventionAllList if i]
+        print(nameConventionAllList)
+        
         
 
+
+        self.itemsDescription = []
+        for item in self.items:
+            #print(item)
+            itemParse = Path(item).stem
+            print(itemParse)
+
+            for a in nameConventionAllList:
+                
+
+
+        #self.form.widget.state = {
+        #    "description.file": self.items[0]
+        #} 
     
     def save_resource(self):
         

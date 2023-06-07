@@ -4,14 +4,14 @@ import itertools
 testNameConvention = "{measurement type}_batch_{batch number}"
 testItemList = ["cytokine_batch_1", "cytokine_batch_2", "mrna_batch_1", "mrna_batch_2", "mrna_batch_3",]
 
-def get_descriptions(testNameConvention,testItemList):
+def get_multi_like_file_descriptions(nameConvention,fileStemList):
 
-    nameConventionExplanatoryList = re.findall('{(.+?)}', testNameConvention) # list of items enclosed in curly braces
+    nameConventionExplanatoryList = re.findall('{(.+?)}', nameConvention) # list of items enclosed in curly braces
     print(nameConventionExplanatoryList)
 
     if nameConventionExplanatoryList: # check if user added any naming convention explanatory values in the correct format (between curly braces); if yes, continue, if no, print informative message and return
 
-        nameConventionAllList = re.split('[/{/}]', testNameConvention)
+        nameConventionAllList = re.split('[/{/}]', nameConvention)
         nameConventionAllList = [l for l in nameConventionAllList if l] # list of items delimited by curly braces (either direction)
         print(nameConventionAllList)
 
@@ -53,7 +53,7 @@ def get_descriptions(testNameConvention,testItemList):
 
         allFilesDescribeList = [] 
 
-        for i in testItemList:
+        for i in fileStemList:
         
             oneFileDescribeList = []  
 
@@ -105,13 +105,16 @@ def get_descriptions(testNameConvention,testItemList):
                         myDescribe = l + ": " + myVal
                         oneFileDescribeList.append(myDescribe)   
             
-                oneFileDescribe = '\n'.join(oneFileDescribeList)
+                oneFileDescribe = ', '.join(oneFileDescribeList)
                 print(oneFileDescribe)    
             
             allFilesDescribeList.append(oneFileDescribe) 
-            print(allFilesDescribeList)    
+            print(allFilesDescribeList) 
+    
+    return allFilesDescribeList   
 
-get_descriptions(testNameConvention = testNameConvention, testItemList = testItemList)   
+hi = get_multi_like_file_descriptions(nameConvention = testNameConvention, fileStemList = testItemList)   
+print("hi: ",hi)
             
            
 

@@ -318,6 +318,10 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # get just file stems from full path, this also removes file extensions
         self.fileStemList = [Path(p).stem for p in self.items]
         self.itemsDescriptionList = get_multi_like_file_descriptions(self.nameConvention, self.fileStemList)
+
+        self.form.widget.state = {
+            "description.file": self.itemsDescriptionList[0]
+        } 
     
     def save_resource(self):
         

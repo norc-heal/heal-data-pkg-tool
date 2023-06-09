@@ -24,6 +24,7 @@ from pathlib import Path
 
 from layout_fileurladdwidget import ListboxWidget
 import re
+from copy import deepcopy
 
 class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -252,11 +253,10 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         else:
             resIdNum = 1
 
-        
-        self.resource_id = 'resource-'+ str(resIdNum)
-        #resourceFileName = 'resource-trk-resource-'+ str(resIdNum) + '.txt'
-        resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
-        self.saveFilePath = os.path.join(self.saveFolderPath,resourceFileName)
+        self.resIdNum = resIdNum
+        self.resource_id = 'resource-'+ str(self.resIdNum)
+        self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
+        self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
 
         self.messageText = self.messageText + "Based on other resources already saved in your DSC Package directory, your new resource will be saved with the unique ID: " + self.resource_id + "\n" + "Resource ID has been added to the resource form."
         self.messageText = self.messageText + "\n"  + "Your new resource file will be saved in your DSC Package directory as: " + self.saveFilePath + "\n\n"
@@ -316,7 +316,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             return
 
         # get just file stems from full path, this also removes file extensions
-        self.fileStemList = [Path(p).stem for p in self.items]
+        if self.items:
+            self.fileStemList = [Path(p).stem for p in self.items]
+        else:
+            self.fileStemList = [Path(self.form.widget.state["path"]).stem]
+        
         self.itemsDescriptionList = get_multi_like_file_descriptions(self.nameConvention, self.fileStemList)
 
         self.form.widget.state = {
@@ -339,35 +343,107 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # resource id manually, incrementing the id number by one - if resource id modified, updated it in memory and regenerate
         # the save file path
         if self.form.widget.state["resource.id"] != self.resource_id:
-            self.resource_id = self.form.widget.state["resource.id"]
-            resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
-            self.saveFilePath = os.path.join(self.saveFolderPath,resourceFileName)
-        
-        messageText = ""
-        
-        # check if saveFilePath already exists (same as if a file for this resource id already exists); if exists, exit our with informative message;
-        # otherwise go ahead and save
-        if os.path.isfile(self.saveFilePath):
-            #self.messageText = self.messageText + '\n\n' + "A resource file for a resource with id " + self.resource_id + " already exists at " + self.saveFilePath + '\n' + "You may want to do one or both of: 1) Use the View/Edit tab to view your resource tracker file and check which resource IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which resource IDs you've already used and for which you've already created resource files - these files will be called \'resource-trk-resource-{a number}.txt\'. While you perform these checks, your resource tracker form will remain open unless you explicitly close it. You can come back to it, change your resource ID, and hit the save button again to save with a resource ID that is not already in use. If you meant to overwrite a resource file you previously created for an resource with this resource ID, please delete the previously created resource file and try saving again." 
-            messageText = "A resource file for a resource with id " + self.resource_id + " already exists at " + self.saveFilePath + "\n\n" + "You may want to do one or both of: 1) Use the View/Edit tab to view your resource tracker file and check which resource IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which resource IDs you've already used and for which you've already created resource files - these files will be called \'resource-trk-resource-{a number}.txt\'. While you perform these checks, your resource tracker form will remain open unless you explicitly close it. You can come back to it, change your resource ID, and hit the save button again to save with a resource ID that is not already in use. If you meant to overwrite a resource file you previously created for an resource with this resource ID, please delete the previously created resource file and try saving again." + "\n\n" 
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
-        else:
-            print(self.form.widget.state)
-            resource = self.form.widget.state
             
-            f=open(self.saveFilePath,'w')
-            print(dumps(resource, indent=4), file=f)
-            f.close()
-            #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
-            messageText = "Your resource file was successfully written at: " + self.saveFilePath + "\n\n" + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file." + "\n\n"
-            saveFormat = '<span style="color:green;">{}</span>'
-            self.userMessageBox.append(saveFormat.format(messageText))
+            self.resource_id = self.form.widget.state["resource.id"]
+            self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
+            self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
 
-        #saveFormat = '<span style="color:green;">{}</span>'
-        #self.userMessageBox.append(saveFormat.format(messageText))
-        #self.userMessageBox.setText(self.messageText)
-        self.userMessageBox.moveCursor(QTextCursor.End)
+            self.resIdNum = int(self.resource_id.split("-")[1])
+
+        # if the user used the drag and drop to add multiple files, get a list of resource ids num, resource id, resource file name, and resource file save path for each file added
+        
+        self.resIdNumList = [self.resIdNum]
+        self.resource_id_list = []
+        self.resourceFileNameList = []
+        self.saveFilePathList = []
+        
+        # assign a resource id to every resource file path added, construct a save file path for each resource
+        if self.items:
+            if len(self.items) > 1:
+                
+                
+                resCounter = 1
+                for i in self.items[1:]:
+                    
+                    self.resIdNumList.append(self.resIdNum + resCounter)
+                    print(self.resIdNumList)
+                    resCounter += 1
+
+                self.resource_id_list = ["resource-" + str(l) for l in self.resIdNumList]
+                print(self.resource_id_list)
+                self.resourceFileNameList = ["resource-trk-" + l + ".txt" for l in self.resource_id_list]
+                print(self.resourceFileNameList)
+                self.saveFilePathList = [os.path.join(self.saveFolderPath,l) for l in self.resourceFileNameList]
+                print(self.saveFilePathList)
+
+            else:
+                self.resource_id_list = [self.resource_id]
+                self.resourceFileNameList = [self.resourceFileName]
+                self.saveFilePathList = [self.saveFilePath]
+        else:
+            self.resource_id_list = [self.resource_id]
+            self.resourceFileNameList = [self.resourceFileName]
+            self.saveFilePathList = [self.saveFilePath]
+                
+                    
+        #messageText = ""
+
+        successResIdList = []
+        successSaveFilePathList = []
+        failResIdList = []
+        failSaveFilePathList = []
+
+        for idx, p in enumerate(self.saveFilePathList):
+        
+            # check if saveFilePath already exists (same as if a file for this resource id already exists); if exists, exit our with informative message;
+            # otherwise go ahead and save
+            if os.path.isfile(p):
+                #messageText = "A resource file for a resource with id " + self.resource_id_list[idx] + " already exists at " + self.saveFilePathList[idx] + "\n\n" + "You may want to do one or both of: 1) Use the View/Edit tab to view your resource tracker file and check which resource IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which resource IDs you've already used and for which you've already created resource files - these files will be called \'resource-trk-resource-{a number}.txt\'. While you perform these checks, your resource tracker form will remain open unless you explicitly close it. You can come back to it, change your resource ID, and hit the save button again to save with a resource ID that is not already in use. If you meant to overwrite a resource file you previously created for an resource with this resource ID, please delete the previously created resource file and try saving again." + "\n\n" 
+                #errorFormat = '<span style="color:red;">{}</span>'
+                #self.userMessageBox.append(errorFormat.format(messageText))
+                failSaveFilePathList.append(p)
+                failResIdList.append(self.resource_id_list[idx])
+            else:
+                successSaveFilePathList.append(p)
+                successResIdList.append(self.resource_id_list[idx])
+
+                
+            if failResIdList:
+                print("something went wrong - check the resource id in your form - do you already have a resource file saved for a resource with this resource id? if not, did you add multiple like resource files? resource ids will be autogenerated for all of the resource files you added - IDs will be generated by adding 1 to the resource id in your form for each file in turn - do you already have a resource file saved for a resource with one of the resource ids that may have been autogenerated based on this approach? the safest thing to do is to check the resource files you have saved in your dsc package folder, find the highest resource id number for which you have created/saved a resource file, and enter your resource id in the form as having an id number one higher than the max resource id number you identified - then try saving again - if you add your dsc package directory using the push button at the top of the form window, a resource id will be autogenerated for you using this approach automatically.")
+                return
+            else:
+                print(self.form.widget.state)
+                resource = self.form.widget.state
+
+                
+                for idx, p in enumerate(self.saveFilePathList):
+                    
+                    currentResource = deepcopy(resource)
+                    
+                    currentResource["resource.id"] = self.resource_id_list[idx]
+                    currentResource["path"] = self.items[idx]
+                    currentResource["description.file"] = self.itemsDescriptionList[idx]
+
+                    f=open(p,'w')
+                    print(dumps(currentResource, indent=4), file=f)
+                    f.close()
+                
+                if len(self.saveFilePathList) > 1:
+                    myString1 = "files were"
+                    myString2 = ', '.join(self.saveFilePathList)
+                else: 
+                    myString1 = "file was"
+                    myString2 = self.saveFilePathList[0]
+
+                #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
+                messageText = "Your resource " + myString1 + " successfully written at: " + myString2 + "\n\n" + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file." + "\n\n"
+                saveFormat = '<span style="color:green;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+
+                #saveFormat = '<span style="color:green;">{}</span>'
+                #self.userMessageBox.append(saveFormat.format(messageText))
+                #self.userMessageBox.setText(self.messageText)
+                self.userMessageBox.moveCursor(QTextCursor.End)
         
         
 

@@ -13,7 +13,7 @@ from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions
 import pandas as pd
 
 from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, QScrollArea,QApplication,
-                             QHBoxLayout, QVBoxLayout, QMainWindow)
+                             QHBoxLayout, QVBoxLayout, QMainWindow, QGroupBox)
 from PyQt5.QtCore import Qt, QSize
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtGui import QTextCursor
@@ -103,12 +103,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         
         # initialize tool tip for each form field based on the description text for the corresponding schema property
         self.add_tooltip()
+        self.add_priority_highlight()
+
         # check for emptyp tooltip content whenever form changes and replace empty tooltip with original tooltip content
         # (only relevant for fields with in situ validation - i.e. string must conform to a pattern - as pyqtschema will replace the 
         # tooltip content with some error content, then replace the content with empty string once the error is cleared - this check will
         # restore the original tooltip content - for efficiency, may want to only run this when a widget that can have validation 
         # errors changes - #TODO)
         self.form.widget.on_changed.connect(self.check_tooltip)
+        #self.form.widget.on_changed.connect(self.check_priority_highlight)
 
         # create 'add dsc data pkg directory' button
         self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
@@ -194,21 +197,86 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         return
         
+    def add_priority_highlight(self):
 
+        print(self.form.widget.layout())
+
+        self.formLabelWidgetList = []
+        self.formLabelWidgetTextList = []
+        self.formLabelWidgetTypeList = []
+        
+        l = self.form.widget.layout() # get form widget layout (it's a qgridlayout)
+        
+        wList = (l.itemAt(i).widget() for i in range(l.count())) # get a list of the widgets in the layout
+        for idx, w in enumerate(wList): # collect all the qlabel widgets in the layout (for array widgets you have to collect the title instead)
+            #print(w.text)
+            print("widget: %s  - %s" %(w.objectName(), type(w)))
+            
+            if isinstance(w, QLabel):
+                print("label: %s" %(w.text()))
+                self.formLabelWidgetList.append(w)
+                self.formLabelWidgetTextList.append(w.text())
+                self.formLabelWidgetTypeList.append("label")
+            
+            if isinstance(w, QGroupBox):
+                print("gbtitle: %s" %(w.title()))
+                self.formLabelWidgetList.append(w)
+                self.formLabelWidgetTextList.append(w.title())
+                self.formLabelWidgetTypeList.append("groupbox")
+                
+        for key, value in self.form.widget.widgets.items():
+            fColor = None
+            name = key
+            widget = value
+            
+            titleContent = self.schema["properties"][name]["title"] 
+            priorityContent = self.schema["properties"][name]["priority"]
+            
+            if titleContent in self.formLabelWidgetTextList:
+                labelWidgetIdx = self.formLabelWidgetTextList.index(titleContent)
+                labelWidget = self.formLabelWidgetList[labelWidgetIdx]
+                labelWidgetType = self.formLabelWidgetTypeList[labelWidgetIdx]
+
+           
+                if "all" in priorityContent:
+                    if "high" in priorityContent:
+                        fColor = "green"
+                
+                else:
+                    fColor = "gray"
+
+                if fColor: 
+                    if (labelWidgetType == "label"):
+                        labelWidget.setText('<font color = ' + fColor + '>' + labelWidget.text() + '</font>')
+                    if (labelWidgetType == "groupbox"):
+                        #labelWidget.setTitle('<font color = ' + fColor + '>' + labelWidget.title() + '</font>')
+                        labelWidget.setStyleSheet('QGroupBox  {color: ' + fColor + ';}')
+
+
+
+            
+    
     def add_tooltip(self):
         
         self.toolTipContentList = []
         self.formWidgetNameList =  []
         self.formWidgetList = []
 
+        
         for key, value in self.form.widget.widgets.items():
             name = key
             print(name)
             widget = value
             print(widget)
             print(type(widget))
+            #print(widget.items())
 
             toolTipContent = self.schema["properties"][name]["description"] 
+            #if self.schema["properties"][name]["priority"] == "all, high":
+            #    p = widget.palette()
+            #    p.setColor(widget.backgroundRole(), Qt.red)
+            #    widget.setPalette(p)
+
             print(toolTipContent)
             widget.setToolTip(toolTipContent)
             self.toolTipContentList.append(toolTipContent)

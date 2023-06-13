@@ -47,7 +47,7 @@ form_schema_resource_tracker = {
             "priority": "all, high"
         },
         "exp.belongs.to": {
-            "title": "Experiment Belong To",
+            "title": "Experiment Belongs To",
             "description": "if the file pertains specifically to one of the study experiments, list here; if the file pertains to more than one experiment, or to all experiments/the study as a whole, leave this blank; use experiment ID as assigned/formatted in your Experiment Tracker file here; prefix is 'exp-' followed by a number starting with 1 for the first experiment, and iterating by 1 for each successive experiment (i.e. exp-1, exp-2, etc.)",
             "type": "string",
             "pattern": "^exp-+-*[0-9]*[1-9][0-9]*$",

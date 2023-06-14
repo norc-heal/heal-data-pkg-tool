@@ -24,7 +24,7 @@ form_schema_resource_tracker = {
             "description": "resource id; auto-assigned", 
             "type": "string",
             "pattern": "^resource-+-*[0-9]*[1-9][0-9]*$",
-            "priority": "all, high"
+            "priority": "all, high, auto"
         },
         "path": {
             "title": "Resource File Path",
@@ -64,44 +64,44 @@ form_schema_resource_tracker = {
             "type": "string",
             "priority": "all, low"
         },
-        "description.row": {
-            "title": "Resource Row Description",
-            "description": "for tabular data resource, row description; e.g. one row represents one subject at one timepoint",
-            "type": "string",
-            "priority": "tabular data"
-        },
         "description.file.name.convention": {
             "title": "Resource File Name Convention",
             "description": "for multi-file resource containing multiple files of the same type, provide the naming convention of files (e.g. subject-xx-protocol-xxx-day-xxxxxxxx)",
             "type": "string",
-            "priority": "multiple like resource"
+            "priority": "multiple like resource, high"
         },
         "description.file": {
             "title": "Resource File Description",
             "description": "for multi-file resource containing multiple files of the same type, component file description",
             "type": "string",
-            "priority": "multiple like resource"
+            "priority": "multiple like resource, high, auto"
+        },
+        "description.row": {
+            "title": "Resource Row Description",
+            "description": "for tabular data resource, row description; e.g. one row represents one subject at one timepoint",
+            "type": "string",
+            "priority": "tabular data, high"
         },
         "category.sub.metadata": {
             "title" : "Metadata Resource - Sub-Category",
             "description": "",
             "type": "string",
-            "enum": ["","data-dictionary","protocol","id-map","analysis plan","results-tracker","experiment-tracker"],
-            "priority": "metadata"
+            "enum": ["","heal-formatted-data-dictionary","other-formatted-data-dictionary","protocol","id-map","analysis-plan","heal-formatted-results-tracker","heal-formatted-experiment-tracker"],
+            "priority": "metadata, high"
         },
         "category.sub.data": {
             "title" : "Data Resource - Sub-Category",
             "description": "",
             "type": "string",
             "enum": ["","raw","processed-intermediate","processed-final"],
-            "priority": "data"
+            "priority": "data, high"
         },
         "category.sub.results": {
             "title" : "Results Resource - Sub-Category",
             "description": "",
             "type": "string",
             "enum": ["","figure","text","draft publication","publication"],
-            "priority": "results"
+            "priority": "results, high"
         },
         "assoc.file.dd": {
             "title": "Associated Data Dictionary",
@@ -112,7 +112,7 @@ form_schema_resource_tracker = {
                 "type": "string",
                 "format": "path"
             },
-            "priority": "tabular data"
+            "priority": "tabular data, high"
         },
         "assoc.file.protocol": {
             "title": "Associated Protocol",
@@ -123,7 +123,7 @@ form_schema_resource_tracker = {
                 "type": "string",
                 "format": "path"
             },
-            "priority": "data"
+            "priority": "data, high"
         },
         #"assoc.file.id.map": {
         #    "title": "Data Resource - Associated ID Map",
@@ -160,7 +160,7 @@ form_schema_resource_tracker = {
             "description": "If the resource file is currently being held as temporary-private access level and will transition to either restricted-access or public access level at some point, please provide an anticipated date at which this transition will occur - Best guesses are appreciated, however you will NOT be held to this date and may update this date at any time.",
             "type": "string",
             "pattern": "(((19|20)([2468][048]|[13579][26]|0[48])|2000)[/-]02[/-]29|((19|20)[0-9]{2}[/-](0[4678]|1[02])[/-](0[1-9]|[12][0-9]|30)|(19|20)[0-9]{2}[/-](0[1359]|11)[/-](0[1-9]|[12][0-9]|3[01])|(19|20)[0-9]{2}[/-]02[/-](0[1-9]|1[0-9]|2[0-8])))",
-            "priority": "temporary private"
+            "priority": "temporary private, high"
         },
         #"format": {
         #    "title": "Format",

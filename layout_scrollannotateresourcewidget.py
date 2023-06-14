@@ -41,6 +41,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.saveFolderPath = None
         self.saveFilePath = None
         self.priorityContentList = None
+
         ################################## Create component widgets - form, save button, status message box
         # Create the form widget 
         #builder = WidgetBuilder()
@@ -181,6 +182,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         return
         
     def initial_hide(self):
+        # not in use
         
         self.labelAddMultiResource.hide()
         self.lstbox_view.hide()
@@ -206,8 +208,6 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if not priorityContent.startswith("all, "):
                 widget.hide()
                     
-            
-
     
     def add_priority_highlight_and_hide(self):
 
@@ -330,34 +330,42 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         
         self.saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')
         
-        # get new resource ID for new resource file - get the max id num used for existing resource files and add 1; if no resource files yet, set id num to 1
+        if self.saveFolderPath:
+
+            # get new resource ID for new resource file - get the max id num used for existing resource files and add 1; if no resource files yet, set id num to 1
         
-        resFileList = [filename for filename in os.listdir(self.saveFolderPath) if filename.startswith("resource-trk-resource-")]
-        print(resFileList)
+            resFileList = [filename for filename in os.listdir(self.saveFolderPath) if filename.startswith("resource-trk-resource-")]
+            print(resFileList)
 
-        if resFileList: # if the list is not empty
-            resFileStemList = [Path(filename).stem for filename in resFileList]
-            print(resFileStemList)
-            resIdNumList = [int(filename.rsplit('-',1)[1]) for filename in resFileStemList]
-            print(resIdNumList)
-            resIdNum = max(resIdNumList) + 1
-            print(max(resIdNumList),resIdNum)
+            if resFileList: # if the list is not empty
+                resFileStemList = [Path(filename).stem for filename in resFileList]
+                print(resFileStemList)
+                resIdNumList = [int(filename.rsplit('-',1)[1]) for filename in resFileStemList]
+                print(resIdNumList)
+                resIdNum = max(resIdNumList) + 1
+                print(max(resIdNumList),resIdNum)
+            else:
+                resIdNum = 1
+
+            self.resIdNum = resIdNum
+            self.resource_id = 'resource-'+ str(self.resIdNum)
+            self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
+            self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
+
+            messageText = "Based on other resources already saved in your DSC Package directory, your new resource will be saved with the unique ID: " + self.resource_id + "\n" + "Resource ID has been added to the resource form."
+            messageText = messageText + "\n"  + "Your new resource file will be saved in your DSC Package directory as: " + self.saveFilePath + "\n\n"
+            self.userMessageBox.append(messageText)
+            #self.userMessageBox.moveCursor(QTextCursor.End)
+
+            self.form.widget.state = {
+                "resource.id": self.resource_id
+            }
+
         else:
-            resIdNum = 1
-
-        self.resIdNum = resIdNum
-        self.resource_id = 'resource-'+ str(self.resIdNum)
-        self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
-        self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
-
-        self.messageText = self.messageText + "Based on other resources already saved in your DSC Package directory, your new resource will be saved with the unique ID: " + self.resource_id + "\n" + "Resource ID has been added to the resource form."
-        self.messageText = self.messageText + "\n"  + "Your new resource file will be saved in your DSC Package directory as: " + self.saveFilePath + "\n\n"
-        self.userMessageBox.setText(self.messageText)
-        #self.userMessageBox.moveCursor(QTextCursor.End)
-
-        self.form.widget.state = {
-            "resource.id": self.resource_id
-        }
+            messageText = "Please select your DSC Package Directory to proceed."
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return
         
     def get_items_list(self):
         #item = QListWidgetItem(self.lstbox_view.currentItem())

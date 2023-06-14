@@ -40,6 +40,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         
         self.saveFolderPath = None
         self.saveFilePath = None
+        self.priorityContentList = None
         ################################## Create component widgets - form, save button, status message box
         # Create the form widget 
         #builder = WidgetBuilder()
@@ -79,40 +80,6 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         }
 
       
-        #print(self.form.widget.widgets, type(self.form.widget.widgets))
-        #for i in self.form.widget.widgets:
-        #    print(i)
-        #   #print(type(i))
-        
-        #self.toolTipContentList = []
-        
-        #for key, value in self.form.widget.widgets.items():
-        #    name = key
-        #    print(name)
-        #    widget = value
-        #    print(widget)
-        #    print(type(widget))
-
-        #    toolTipContent = schema["properties"][name]["description"] 
-        #    print(toolTipContent)
-        #    widget.setToolTip(toolTipContent)
-            #self.toolTipContentList.append(toolTipContent)
-            #print(self.form.widget.widgets.itemAt(i).widget())
-            #widget.setToolTip("" if error is None else error.message)  # TODO
-            #widget.setToolTip("hello")  # TODO
-        
-        # initialize tool tip for each form field based on the description text for the corresponding schema property
-        self.add_tooltip()
-        self.add_priority_highlight()
-
-        # check for emptyp tooltip content whenever form changes and replace empty tooltip with original tooltip content
-        # (only relevant for fields with in situ validation - i.e. string must conform to a pattern - as pyqtschema will replace the 
-        # tooltip content with some error content, then replace the content with empty string once the error is cleared - this check will
-        # restore the original tooltip content - for efficiency, may want to only run this when a widget that can have validation 
-        # errors changes - #TODO)
-        self.form.widget.on_changed.connect(self.check_tooltip)
-        #self.form.widget.on_changed.connect(self.check_priority_highlight)
-
         # create 'add dsc data pkg directory' button
         self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
         self.buttonAddDir.clicked.connect(self.add_dir)
@@ -151,22 +118,32 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.labelAddMultiResource.setWordWrap(True)
         self.labelApplyNameConvention.setWordWrap(True)
         
-        self.labelAddMultiResource.hide()
-        self.labelApplyNameConvention.hide()
-
         # create button to apply naming convention for multiple like resources
         self.buttonApplyNameConvention = QtWidgets.QPushButton(text="Apply Name Convention",parent=self)
         self.buttonApplyNameConvention.clicked.connect(self.apply_name_convention)
-        self.buttonApplyNameConvention.hide()
-        
-                
+                        
         # create drag and drop window for multiple like file addition
         self.lstbox_view = ListboxWidget(self)
         self.lwModel = self.lstbox_view.model()
         self.items = []
         self.lwModel.rowsInserted.connect(self.get_items_list)
         self.lwModel.rowsRemoved.connect(self.get_items_list)
-        self.lstbox_view.hide()
+       
+        ################################## Apply some initializing and maintenance functions
+
+        # initialize tool tip for each form field based on the description text for the corresponding schema property
+        self.add_tooltip()
+        self.add_priority_highlight_and_hide()
+        #self.add_priority_highlight()
+        #self.initial_hide()
+
+        # check for emptyp tooltip content whenever form changes and replace empty tooltip with original tooltip content
+        # (only relevant for fields with in situ validation - i.e. string must conform to a pattern - as pyqtschema will replace the 
+        # tooltip content with some error content, then replace the content with empty string once the error is cleared - this check will
+        # restore the original tooltip content - for efficiency, may want to only run this when a widget that can have validation 
+        # errors changes - #TODO)
+        self.form.widget.on_changed.connect(self.check_tooltip)
+        #self.form.widget.on_changed.connect(self.check_priority_highlight)
         
         ################################## Finished creating component widgets
         #self.mfilehbox.addWidget(self.buttonAddMultiResource)
@@ -203,7 +180,41 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         return
         
-    def add_priority_highlight(self):
+    def initial_hide(self):
+        
+        self.labelAddMultiResource.hide()
+        self.lstbox_view.hide()
+        self.labelApplyNameConvention.hide()
+        self.buttonApplyNameConvention.hide()
+        
+        newList = None
+
+        if not self.priorityContentList:
+            newList = True
+            self.priorityContentList = []  
+
+        for key, value in self.form.widget.widgets.items():
+            name = key
+            widget = value
+            
+            titleContent = self.schema["properties"][name]["title"] 
+            priorityContent = self.schema["properties"][name]["priority"]
+            
+            if newList:
+                self.priorityContentList.append(priorityContent)
+            
+            if not priorityContent.startswith("all, "):
+                widget.hide()
+                    
+            
+
+    
+    def add_priority_highlight_and_hide(self):
+
+        self.labelAddMultiResource.hide()
+        self.lstbox_view.hide()
+        self.labelApplyNameConvention.hide()
+        self.buttonApplyNameConvention.hide()
 
         print(self.form.widget.layout())
 
@@ -229,7 +240,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.formLabelWidgetList.append(w)
                 self.formLabelWidgetTextList.append(w.title())
                 self.formLabelWidgetTypeList.append("groupbox")
-                
+
+        newList = None
+
+        if not self.priorityContentList:
+            newList = True
+            self.priorityContentList = []  
+
         for key, value in self.form.widget.widgets.items():
             fColor = None
             name = key
@@ -238,25 +255,30 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             titleContent = self.schema["properties"][name]["title"] 
             priorityContent = self.schema["properties"][name]["priority"]
             
+            if newList:
+                self.priorityContentList.append(priorityContent)
+            
             if titleContent in self.formLabelWidgetTextList:
                 labelWidgetIdx = self.formLabelWidgetTextList.index(titleContent)
                 labelWidget = self.formLabelWidgetList[labelWidgetIdx]
                 labelWidgetType = self.formLabelWidgetTypeList[labelWidgetIdx]
 
            
-                if "all" in priorityContent:
-                    if "high" in priorityContent:
-                        fColor = "green"
+                if ", high" in priorityContent:
+                    fColor = "green"
+                    if ", auto" in priorityContent:
+                        fColor = "blue"
                 
-                else:
-                    fColor = "gray"
-
                 if fColor: 
                     if (labelWidgetType == "label"):
                         labelWidget.setText('<font color = ' + fColor + '>' + labelWidget.text() + '</font>')
                     if (labelWidgetType == "groupbox"):
                         #labelWidget.setTitle('<font color = ' + fColor + '>' + labelWidget.title() + '</font>')
                         labelWidget.setStyleSheet('QGroupBox  {color: ' + fColor + ';}')
+
+                if not priorityContent.startswith("all, "):
+                    labelWidget.hide()
+                    widget.hide()
 
 
     def add_tooltip(self):
@@ -345,12 +367,52 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.items = [lw.item(x).text() for x in range(lw.count())]
         print(self.items)  
         #print(type(self.items)) 
+        print(len(self.items))
 
         self.form.widget.state = {
             "path": self.items[0]
         } 
 
-        #if len(self.items) > 1:
+        if len(self.items) > 1:
+            print("hello")
+            indices = [i for i, x in enumerate(self.priorityContentList) if x == "multiple like resource"]
+            print(indices)
+            for i in indices:
+                labelW = self.formLabelWidgetList[i]
+                print(labelW)
+                labelWType = self.formLabelWidgetTypeList[i]
+                print(labelWType)
+                labelWText = self.formLabelWidgetTextList[i]
+                print(labelWText)
+
+                fColor = "green"
+
+                if (labelWType == "label"):
+                    #labelW.setText('')
+                    labelW.setText('<font color = ' + fColor + '>' + labelW.text() + '</font>')
+                    print("hi1")
+                if (labelWType == "groupbox"):
+                    #labelW.setTitle('')
+                    #labelW.setStyleSheet('')
+                    #labelW.setTitle(labelWText)
+                    labelW.setStyleSheet('QGroupBox  {color: ' + fColor + ';}')
+                    print("hi2")
+
+    def conditional_priority_highlight(self, priorityText, fontColor):
+        
+        indices = [i for i, x in enumerate(self.priorityContentList) if x == priorityText]
+
+        for i in indices:
+            labelW = self.formLabelWidgetList[i]
+            labelWType = self.formLabelWidgetTypeList[i]
+            labelWText = self.formLabelWidgetTextList[i]
+
+            fColor = fontColor
+
+            if (labelWType == "label"):
+                labelW.setText('<font color = ' + fColor + '>' + labelW.text() + '</font>')
+            if (labelWType == "groupbox"):
+                labelW.setStyleSheet('QGroupBox  {color: ' + fColor + ';}')
 
 
     def add_multi_resource(self):

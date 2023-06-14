@@ -371,8 +371,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #item = QListWidgetItem(self.lstbox_view.currentItem())
         #print(item.text())
         lw = self.lstbox_view
+        
+        oldLength = None
+        if self.items:
+            oldLength = len(self.items)
 
         self.items = [lw.item(x).text() for x in range(lw.count())]
+        newLength = len(self.items)
         print(self.items)  
         #print(type(self.items)) 
         print(len(self.items))
@@ -382,8 +387,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         } 
 
         if len(self.items) > 1:
-            print("hello")
-            indices = [i for i, x in enumerate(self.priorityContentList) if x == "multiple like resource"]
+            print("show")
+            indices = [i for i, x in enumerate(self.priorityContentList) if "multiple like resource" in x]
             print(indices)
             for i in indices:
                 labelW = self.formLabelWidgetList[i]
@@ -392,19 +397,43 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 print(labelWType)
                 labelWText = self.formLabelWidgetTextList[i]
                 print(labelWText)
+                fieldW = self.formWidgetList[i]
+                print(fieldW)
+                fieldWName = self.formWidgetNameList[i]
+                print(fieldWName)
 
-                fColor = "green"
+                labelW.show()
+                fieldW.show()
 
-                if (labelWType == "label"):
-                    #labelW.setText('')
-                    labelW.setText('<font color = ' + fColor + '>' + labelW.text() + '</font>')
-                    print("hi1")
-                if (labelWType == "groupbox"):
-                    #labelW.setTitle('')
-                    #labelW.setStyleSheet('')
-                    #labelW.setTitle(labelWText)
-                    labelW.setStyleSheet('QGroupBox  {color: ' + fColor + ';}')
-                    print("hi2")
+            self.labelApplyNameConvention.show()
+            self.buttonApplyNameConvention.show()
+
+        if oldLength:
+            if ((oldLength > 1) and (newLength <= 1)):
+                print("hide")
+                indices = [i for i, x in enumerate(self.priorityContentList) if "multiple like resource" in x]
+                print(indices)
+                for i in indices:
+                    labelW = self.formLabelWidgetList[i]
+                    print(labelW)
+                    labelWType = self.formLabelWidgetTypeList[i]
+                    print(labelWType)
+                    labelWText = self.formLabelWidgetTextList[i]
+                    print(labelWText)
+                    fieldW = self.formWidgetList[i]
+                    print(fieldW)
+                    fieldWName = self.formWidgetNameList[i]
+                    print(fieldWName)
+
+                    labelW.hide()
+                    fieldW.hide()
+                    # should also probably delete the contents of these folders?
+
+                self.labelApplyNameConvention.hide()
+                self.buttonApplyNameConvention.hide()
+                
+
+                
 
     def conditional_priority_highlight(self, priorityText, fontColor):
         

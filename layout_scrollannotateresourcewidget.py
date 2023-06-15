@@ -144,6 +144,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # restore the original tooltip content - for efficiency, may want to only run this when a widget that can have validation 
         # errors changes - #TODO)
         self.form.widget.on_changed.connect(self.check_tooltip)
+        self.formWidgetList[self.formWidgetNameList.index("category")].on_changed.connect(self.conditional_fields)
+        self.formWidgetList[self.formWidgetNameList.index("access")].on_changed.connect(self.conditional_fields)
         #self.form.widget.on_changed.connect(self.check_priority_highlight)
         
         ################################## Finished creating component widgets
@@ -181,33 +183,34 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         return
         
-    def initial_hide(self):
-        # not in use
+                      
+    def add_tooltip(self):
         
-        self.labelAddMultiResource.hide()
-        self.lstbox_view.hide()
-        self.labelApplyNameConvention.hide()
-        self.buttonApplyNameConvention.hide()
+        self.toolTipContentList = []
+        self.formWidgetNameList =  []
+        self.formWidgetList = []
+
         
-        newList = None
-
-        if not self.priorityContentList:
-            newList = True
-            self.priorityContentList = []  
-
         for key, value in self.form.widget.widgets.items():
             name = key
+            print(name)
             widget = value
+            print(widget)
+            print(type(widget))
+            #print(widget.items())
+
+            toolTipContent = self.schema["properties"][name]["description"] 
+            #if self.schema["properties"][name]["priority"] == "all, high":
+            #    p = widget.palette()
+            #    p.setColor(widget.backgroundRole(), Qt.red)
+            #    widget.setPalette(p)
+
+            print(toolTipContent)
+            widget.setToolTip(toolTipContent)
+            self.toolTipContentList.append(toolTipContent)
             
-            titleContent = self.schema["properties"][name]["title"] 
-            priorityContent = self.schema["properties"][name]["priority"]
-            
-            if newList:
-                self.priorityContentList.append(priorityContent)
-            
-            if not priorityContent.startswith("all, "):
-                widget.hide()
-                    
+            self.formWidgetNameList.append(name)
+            self.formWidgetList.append(widget)
     
     def add_priority_highlight_and_hide(self):
 
@@ -280,36 +283,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     labelWidget.hide()
                     widget.hide()
 
-
-    def add_tooltip(self):
-        
-        self.toolTipContentList = []
-        self.formWidgetNameList =  []
-        self.formWidgetList = []
-
-        
-        for key, value in self.form.widget.widgets.items():
-            name = key
-            print(name)
-            widget = value
-            print(widget)
-            print(type(widget))
-            #print(widget.items())
-
-            toolTipContent = self.schema["properties"][name]["description"] 
-            #if self.schema["properties"][name]["priority"] == "all, high":
-            #    p = widget.palette()
-            #    p.setColor(widget.backgroundRole(), Qt.red)
-            #    widget.setPalette(p)
-
-            print(toolTipContent)
-            widget.setToolTip(toolTipContent)
-            self.toolTipContentList.append(toolTipContent)
-            
-            self.formWidgetNameList.append(name)
-            self.formWidgetList.append(widget)
-            
-
+   
     def check_tooltip(self):
         i = 0
         for key, value in self.form.widget.widgets.items():
@@ -325,6 +299,81 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 widget.setToolTip(self.toolTipContentList[i]) # if empty then set it to the tooltip content from schema description that was stored on initialization
 
             i+=1 # increment
+
+    def toggle_widgets(self, keyText, desiredToggleState):
+
+        indices = [i for i, x in enumerate(self.priorityContentList) if keyText in x.split(", ")]
+        print(indices)
+        for i in indices:
+            labelW = self.formLabelWidgetList[i]
+            print(labelW)
+            labelWType = self.formLabelWidgetTypeList[i]
+            print(labelWType)
+            labelWText = self.formLabelWidgetTextList[i]
+            print(labelWText)
+            fieldW = self.formWidgetList[i]
+            print(fieldW)
+            fieldWName = self.formWidgetNameList[i]
+            print(fieldWName)
+
+            if desiredToggleState == "show":
+                labelW.show()
+                fieldW.show()
+            
+            if desiredToggleState == "hide":
+                labelW.hide()
+                fieldW.hide()
+    
+    def conditional_fields(self, changedFieldName):
+
+        #if changedFieldName == "category":
+
+        # this is an inefficient way to make sure previously unhidden fields get hidden again if user changes the category
+        # should really save the last chosen state and be selective about re-hiding the ones that were revealed due to the
+        # previous selection
+
+        ################### hide fields that were revealed due to previous selection 
+
+        if self.form.widget.state["category"] != "tabular-data":
+            self.toggle_widgets(keyText = "data", desiredToggleState = "hide")
+            self.toggle_widgets(keyText = "tabular data", desiredToggleState = "hide")
+           
+        if self.form.widget.state["category"] != "non-tabular-data":
+            self.toggle_widgets(keyText = "data", desiredToggleState = "hide")
+           
+        if self.form.widget.state["category"] != "metadata":
+            self.toggle_widgets(keyText = "metadata", desiredToggleState = "hide")
+
+        if self.form.widget.state["category"] != "single-result":
+            self.toggle_widgets(keyText = "results", desiredToggleState = "hide")
+
+        ################### show field appropriate to current selection
+            
+        if self.form.widget.state["category"] == "tabular-data":
+            self.toggle_widgets(keyText = "data", desiredToggleState = "show")
+            self.toggle_widgets(keyText = "tabular data", desiredToggleState = "show")
+           
+        if self.form.widget.state["category"] == "non-tabular-data":
+            self.toggle_widgets(keyText = "data", desiredToggleState = "show")
+           
+        if self.form.widget.state["category"] == "metadata":
+            self.toggle_widgets(keyText = "metadata", desiredToggleState = "show")
+
+        if self.form.widget.state["category"] == "single-result":
+            self.toggle_widgets(keyText = "results", desiredToggleState = "show")
+
+        #if changedFieldName == "access":
+
+        if "temporary-private" in self.form.widget.state["access"]:
+            self.toggle_widgets(keyText = "temporary private", desiredToggleState = "show")
+        else:
+            self.toggle_widgets(keyText = "temporary private", desiredToggleState = "hide") 
+                
+            
+
+
+        
+
 
     def add_dir(self):
         

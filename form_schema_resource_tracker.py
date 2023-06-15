@@ -43,7 +43,7 @@ form_schema_resource_tracker = {
             "title" : "Resource Category",
             "description": "options are multi-result (a file that includes more than one result in the form of a figure, text, etc.), single result, data, metadata, code",
             "type": "string",
-            "enum": ["","multi-result","single result","tabular data","non-tabular data","metadata","code"],
+            "enum": ["","multi-result","single-result","tabular-data","non-tabular-data","metadata","code"],
             "priority": "all, high"
         },
         "exp.belongs.to": {
@@ -100,7 +100,7 @@ form_schema_resource_tracker = {
             "title" : "Results Resource - Sub-Category",
             "description": "",
             "type": "string",
-            "enum": ["","figure","text","draft publication","publication"],
+            "enum": ["","figure","text","draft-publication","publication"],
             "priority": "results, high"
         },
         "assoc.file.dd": {
@@ -136,7 +136,7 @@ form_schema_resource_tracker = {
         #    }
         #},
         "assoc.file.depends.on": {
-            "title": "Other Associated Files/Dependencies",
+            "title": "Associated Files/Dependencies",
             "description": "if the current resource file has dependencies/if other files are necessary to make this file (e.g. raw data file necessary to  make processed data file) list them here; only one layer deep; can be data, code, protocol (?); if already listed under assoc.file.dd, assoc.file.protocol, or assoc.file.id.map no need to repeat here. Alternatively, can use this field as a catch-all instead of using those other more specific assoc.file fields.",
             "type": "array",
             "items": {
@@ -144,6 +144,16 @@ form_schema_resource_tracker = {
                 "format": "path"
             },
             "priority": "all, high"
+        },
+        "assoc.file.multi.like.file": {
+            "title": "Multiple 'like' File Resource - Files",
+            "description": "if the current resource file is annotating a resource that is one of multiple 'like' files, this field will list all files that are part of the resources.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "path"
+            },
+            "priority": "multiple like resource, high, auto"
         },
         "access": {
             "title" : "Access",

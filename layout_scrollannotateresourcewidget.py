@@ -401,6 +401,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(messageText)
             #self.userMessageBox.moveCursor(QTextCursor.End)
 
+            # if there's not a resource tracker template already in the directory they added
+            # let them proceed but provide an informative warning
+            if not os.path.isfile(os.path.join(self.saveFolderPath,"heal-csv-resource-tracker.csv")):
+                messageText = "Warning: It looks like there is no HEAL formatted resource tracker in the directory you selected. Are you sure you selected a directory that is a DSC package directory? If you have not already created a DSC package directory, you can do so now by navigating to the DSC Package tab in the application, and clicking on the Create sub-tab. This will create a directory called \n'dsc-pkg\n' which will have a HEAL formatted resource tracker file inside. Once you've done that please return here and add this directory before proceeding to annotate your resource files."
+                errorFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+
             self.form.widget.state = {
                 "resource.id": self.resource_id
             }

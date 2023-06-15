@@ -427,7 +427,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         print(len(self.items))
 
         self.form.widget.state = {
-            "path": self.items[0]
+            "path": self.items[0],
+            "assoc.file.multi.like.file": self.items
         } 
 
         if len(self.items) > 1:

@@ -71,7 +71,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.form = self.builder.create_form(self.ui_schema)
         
         #self.form = builder.create_form(schema, ui_schema)
-        self.form.widget.state = {
+        self.formDefaultState = {
             "resource.id": "resource-1",
             "exp.belongs.to": "exp-999",
             "access.date": "2099-01-01"
@@ -80,6 +80,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             #"sky_colour": "#8f5902"
         }
 
+        self.form.widget.state = self.formDefaultState
       
         # create 'add dsc data pkg directory' button
         self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
@@ -368,6 +369,10 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.toggle_widgets(keyText = "temporary private", desiredToggleState = "show")
         else:
             self.toggle_widgets(keyText = "temporary private", desiredToggleState = "hide") 
+
+            self.form.widget.state = {
+                "access.date": self.formDefaultState["access.date"]
+            } 
                 
    
     def add_dir(self):

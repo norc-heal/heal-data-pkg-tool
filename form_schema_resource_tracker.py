@@ -153,7 +153,7 @@ form_schema_resource_tracker = {
                 "type": "string",
                 "format": "path"
             },
-            "priority": "multiple like resource, high, auto"
+            "priority": "multiple like resource, high, auto, permanent hide"
         },
         "access": {
             "title" : "Access",

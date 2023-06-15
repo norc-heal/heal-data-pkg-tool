@@ -369,12 +369,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         else:
             self.toggle_widgets(keyText = "temporary private", desiredToggleState = "hide") 
                 
-            
-
-
-        
-
-
+   
     def add_dir(self):
         
         self.saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')
@@ -437,7 +432,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         if len(self.items) > 1:
             print("show")
-            indices = [i for i, x in enumerate(self.priorityContentList) if "multiple like resource" in x]
+            indices = [i for i, x in enumerate(self.priorityContentList) if ("multiple like resource" in x) and ("permanent hide" not in x)]
             print(indices)
             for i in indices:
                 labelW = self.formLabelWidgetList[i]
@@ -485,6 +480,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 
 
     def conditional_priority_highlight(self, priorityText, fontColor):
+
+        # not in use? confirm and delete
         
         indices = [i for i, x in enumerate(self.priorityContentList) if x == priorityText]
 

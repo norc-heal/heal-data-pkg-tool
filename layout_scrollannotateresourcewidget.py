@@ -43,41 +43,18 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.priorityContentList = None
 
         ################################## Create component widgets - form, save button, status message box
-        # Create the form widget 
-        #builder = WidgetBuilder()
-
+        
+        # create the form widget 
         self.schema = form_schema_resource_tracker
         self.ui_schema = {}
-        #ui_schema = {
-        #    "path": {
-        #        "ui:widget": "filepath"
-        #    }
-        #    ,
-        #    "assoc.file.dd": {
-        #        "ui:widget": "filepath"
-        #    },
-        #    "assoc.file.protocol": {
-        #        "ui:widget": "filepath"
-        #    },
-        #    "assoc.file.id.map": {
-        #        "ui:widget": "filepath"
-        #    },
-        #    "assoc.file.id.map": {
-        #        "ui:widget": "filepath"
-        #    }
-        #}
-
+        
         self.builder = WidgetBuilder(self.schema)
         self.form = self.builder.create_form(self.ui_schema)
         
-        #self.form = builder.create_form(schema, ui_schema)
         self.formDefaultState = {
             "resource.id": "resource-1",
             "exp.belongs.to": "exp-999",
             "access.date": "2099-01-01"
-            #"schema_path": "some_file.py",
-            #"integerRangeSteps": 60,
-            #"sky_colour": "#8f5902"
         }
 
         self.form.widget.state = deepcopy(self.formDefaultState)
@@ -410,15 +387,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
 
-            messageText = "Based on other resources already saved in your DSC Package directory, your new resource will be saved with the unique ID: " + self.resource_id + "\n" + "Resource ID has been added to the resource form."
-            messageText = messageText + "\n"  + "Your new resource file will be saved in your DSC Package directory as: " + self.saveFilePath + "\n\n"
+            messageText = "<br>Based on other resources already saved in your DSC Package directory, your new resource will be saved with the unique ID: " + self.resource_id + "<br>Resource ID has been added to the resource form."
+            messageText = messageText + "<br>Your new resource file will be saved in your DSC Package directory as: " + self.saveFilePath + "<br><br>"
             self.userMessageBox.append(messageText)
             #self.userMessageBox.moveCursor(QTextCursor.End)
 
             # if there's not a resource tracker template already in the directory they added
             # let them proceed but provide an informative warning
             if not os.path.isfile(os.path.join(self.saveFolderPath,"heal-csv-resource-tracker.csv")):
-                messageText = "Warning: It looks like there is no HEAL formatted resource tracker in the directory you selected. Are you sure you selected a directory that is a DSC package directory? If you have not already created a DSC package directory, you can do so now by navigating to the DSC Package tab in the application, and clicking on the Create sub-tab. This will create a directory called \n'dsc-pkg\n' which will have a HEAL formatted resource tracker file inside. Once you've done that please return here and add this directory before proceeding to annotate your resource files."
+                messageText = "<br>Warning: It looks like there is no HEAL formatted resource tracker in the directory you selected. Are you sure you selected a directory that is a DSC package directory? If you have not already created a DSC package directory, you can do so now by navigating to the DSC Package tab in the application, and clicking on the Create sub-tab. This will create a directory called \n'dsc-pkg\n' which will have a HEAL formatted resource tracker file inside. Once you've done that please return here and add this directory before proceeding to annotate your resource files."
                 errorFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(errorFormat.format(messageText))
 
@@ -427,7 +404,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             }
 
         else:
-            messageText = "Please select your DSC Package Directory to proceed."
+            messageText = "<br>Please select your DSC Package Directory to proceed."
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
@@ -545,6 +522,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             # {} not found in the original string
             nameConventionExplanatoryList = '' # apply your error handling
             print('you have either not specified a naming convention or have not specified it correctly. please do not include the file extension (e.g. csv, docx, xlsx, etc.) in the naming convention, and specify as: e.g. subject_{subject ID number}_day_{date in YYYY/MM/DD}')
+            messageText = "<br>You have either not specified a naming convention or have not specified it correctly. please do not include the file extension (e.g. csv, docx, xlsx, etc.) in the naming convention, and specify as: e.g. subject_{subject ID number}_day_{date in YYYY/MM/DD}"
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
             return
 
         # get just file stems from full path, this also removes file extensions
@@ -563,7 +543,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         
         # check that a dsc data package dir has been added - this is the save folder
         if not self.saveFolderPath:
-            messageText = "You must add a DSC Data Package Directory before saving your resource file. Please add a DSC Data Package Directory and then try saving again." 
+            messageText = "<br>You must add a DSC Data Package Directory before saving your resource file. Please add a DSC Data Package Directory and then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
@@ -571,7 +551,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # check that file path and at least a minimal description has been added to the form 
         # if not exit with informative error
         if not ((self.form.widget.state["path"]) and (self.form.widget.state["description"])):
-            messageText = "You must add a resource file path and at least a minimal description of your resource to your resource file form before saving your resource file. Please add a resource file path either by browsing to the file path using the Resource File Path field in the form, or by dragging and dropping the file path for your resource file (or multiple file paths if you are annotating multiple 'like' resources at once) in the drag and drop box above the form, and add at least a minimal description of your resource (or set of 'like' resources) in the Resource Description field in the form. Then try saving again." 
+            messageText = "<br>You must add a resource file path and at least a minimal description of your resource to your resource file form before saving your resource file. Please add a resource file path either by browsing to the file path using the Resource File Path field in the form, or by dragging and dropping the file path for your resource file (or multiple file paths if you are annotating multiple 'like' resources at once) in the drag and drop box above the form, and add at least a minimal description of your resource (or set of 'like' resources) in the Resource Description field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
@@ -655,7 +635,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 
             if failResIdList:
                 #print("something went wrong - check the resource id in your form - do you already have a resource file saved for a resource with this resource id? if not, did you add multiple like resource files? resource ids will be autogenerated for all of the resource files you added - IDs will be generated by adding 1 to the resource id in your form for each file in turn - do you already have a resource file saved for a resource with one of the resource ids that may have been autogenerated based on this approach? the safest thing to do is to check the resource files you have saved in your dsc package folder, find the highest resource id number for which you have created/saved a resource file, and enter your resource id in the form as having an id number one higher than the max resource id number you identified - then try saving again - if you add your dsc package directory using the push button at the top of the form window, a resource id will be autogenerated for you using this approach automatically.")
-                messageText = "WARNING: Your resource(s) were not written to file because something went wrong - Check the Resource ID in your form - Do you already have a resource file saved for a resource with this resource id? if not, did you add multiple like resource files? resource ids will be autogenerated for all of the resource files you added - IDs will be generated by adding 1 to the resource id in your form for each file in turn - do you already have a resource file saved for a resource with one of the resource ids that may have been autogenerated based on this approach? the safest thing to do is to check the resource files you have saved in your dsc package folder, find the highest resource id number for which you have created/saved a resource file, and enter your resource id in the form as having an id number one higher than the max resource id number you identified - then try saving again - if you add your dsc package directory using the push button at the top of the form window, a resource id will be autogenerated for you using this approach automatically." + "\n\n"
+                messageText = "<br>WARNING: Your resource(s) were not written to file because something went wrong - Check the Resource ID in your form - Do you already have a resource file saved for a resource with this resource id? if not, did you add multiple like resource files? resource ids will be autogenerated for all of the resource files you added - IDs will be generated by adding 1 to the resource id in your form for each file in turn - do you already have a resource file saved for a resource with one of the resource ids that may have been autogenerated based on this approach? the safest thing to do is to check the resource files you have saved in your dsc package folder, find the highest resource id number for which you have created/saved a resource file, and enter your resource id in the form as having an id number one higher than the max resource id number you identified - then try saving again - if you add your dsc package directory using the push button at the top of the form window, a resource id will be autogenerated for you using this approach automatically."
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return
@@ -684,23 +664,34 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     myString2 = self.saveFilePathList[0]
 
                 #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
-                messageText = "Your resource " + myString1 + " successfully written at: " + myString2 + "\n\n" + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file." + "\n\n"
+                messageText = "<br>Your resource " + myString1 + " successfully written at: " + myString2 + "<br><br>You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
                 saveFormat = '<span style="color:green;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
+                self.userMessageBox.moveCursor(QTextCursor.End)
 
                 if self.form.widget.state["category"] == "tabular-data":
                     if not self.form.widget.state["assoc.file.dd"]:
 
-                        messageText = "WARNING: You annotated a tabular data resource and did not include a data dictionary for this tabular data resource. If you don't already have a data dictionary, please visit the Data Dictionary tab to create a data dictionary for this resource. You can easily and automatically create a data dictionary using only your tabular data file. Once you have a data dictionary, you can come back here and edit this form to add your data dictionary and save again." + "\n\n"
+                        messageText = "<br>WARNING: You annotated a tabular data resource and did not include a data dictionary for this tabular data resource. If you don't already have a data dictionary, please visit the Data Dictionary tab to create a data dictionary for this resource. You can easily and automatically create a data dictionary using only your tabular data file. Once you have a data dictionary, you can come back here and edit this form to add your data dictionary and save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed." + "\n\n"
                         saveFormat = '<span style="color:red;">{}</span>'
                         self.userMessageBox.append(saveFormat.format(messageText))
+                        self.userMessageBox.moveCursor(QTextCursor.End)
 
                 if "temporary-private" in self.form.widget.state["access"]:
-                    if any(map(lambda v: v in self.form.widget.state["access"], ["public","restricted-access"])):
+                    if not any(map(lambda v: v in self.form.widget.state["access"], ["public","restricted-access"])):
 
-                        messageText = "WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'public\n' or to \n'restricted-access\n' once the temporary-private status expires. Please return to the form to indicate what the final access level of this resource will be. Once you have done so, you can save again." + "\n\n"
+                        messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'public\n' or to \n'restricted-access\n' once the temporary-private status expires. Please return to the form to indicate what the final access level of this resource will be. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
                         saveFormat = '<span style="color:red;">{}</span>'
                         self.userMessageBox.append(saveFormat.format(messageText))
+                        self.userMessageBox.moveCursor(QTextCursor.End)
+
+                    if self.form.widget.state["access.date"] == self.formDefaultState["access.date"]:
+
+                        messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'public\n' or to \n'restricted-access\n'. Please return to the form to indicate the date at which temporary-provate access level will expire. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
+                        saveFormat = '<span style="color:red;">{}</span>'
+                        self.userMessageBox.append(saveFormat.format(messageText))
+                        self.userMessageBox.moveCursor(QTextCursor.End)
+
 
 
                 #saveFormat = '<span style="color:green;">{}</span>'
@@ -742,13 +733,20 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #self.form.widget.state = deepcopy(clearState)
         print(self.form.widget.state)
 
-        messageText = "Your form was successfully cleared and you can start annotating a new resource" + "\n\n"
+        if self.items:
+            self.lstbox_view.clear()
+            self.get_items_list()
+
+
+        messageText = "<br>Your form was successfully cleared and you can start annotating a new resource"
         saveFormat = '<span style="color:green;">{}</span>'
         self.userMessageBox.append(saveFormat.format(messageText))
+        self.userMessageBox.moveCursor(QTextCursor.End)
 
-        messageText = "NOTE: The Resource ID in your form has been re-set to the default value of \n'resource-1\n'. If you know which resource IDs you've already used, you can change the Resource ID in the cleared form manually by adding 1 to the max Resource ID you've already used. To generate a unique Resource ID automatically, click the Add DSC Package Directory button above the form - this will re-add your DSC Package Directory, search that directory for Resource IDs already used, generate a unique Resource ID by adding 1 to the max Resource ID already in use, and add that Resource ID value to the form for you." + "\n\n"
+        messageText = "<br>NOTE: The Resource ID in your form has been re-set to the default value of \n'resource-1\n'. If you know which resource IDs you've already used, you can change the Resource ID in the cleared form manually by adding 1 to the max Resource ID you've already used. To generate a unique Resource ID automatically, click the Add DSC Package Directory button above the form - this will re-add your DSC Package Directory, search that directory for Resource IDs already used, generate a unique Resource ID by adding 1 to the max Resource ID already in use, and add that Resource ID value to the form for you."
         saveFormat = '<span style="color:blue;">{}</span>'
-        self.userMessageBox.append(saveFormat.format(messageText))            
+        self.userMessageBox.append(saveFormat.format(messageText)) 
+        self.userMessageBox.moveCursor(QTextCursor.End)           
 
              
 

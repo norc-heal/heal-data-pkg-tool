@@ -14,6 +14,10 @@
 # if temporary-private is selected in access field, check that access.date has been changed from the default date and is a 'reasonable' date (e.g. within 5 years of current date?)
 # maybe create an accessory file for each resource file with data on all of these checks so that we can programmatically bring to attention all resources that need additional attention (e.g. all tabular data files still missing data dictionaries)
 
+from copy import deepcopy
+import json
+
+
 form_schema_resource_tracker = {
     "type": "object",
     "description": "HEAL DSC Core Metadata piece to track and provide basic information about resource(s)/file(s) that support/are produced by/result from experiments you perform/will perform as part of your HEAL study.Objective is to list at least all files that will be submitted to a data repository in order to describe what each file is, how they relate to each other/how to use them, and how they relate to results/publications shared by the study group. Files may include results files (e.g. publications or draft publications/pieces of publications), processed and raw data files, protocol and analytic plan files, data dictionaries for tabular data files, other metadata as appropriate to data/field type, etc.",
@@ -21,91 +25,91 @@ form_schema_resource_tracker = {
     "properties": {
         "resource.id": {
             "title": "Resource ID",
-            "description": "resource id; auto-assigned", 
+            "description": "Unique ID assigned to each resource file; If using the DSC Packaging application to annotate your resource(s), these IDs will be auto-assigned when you use the Add DSC Package button above the form to add your DSC Package Directory. Auto-assignment of IDs occurs by searching the directory for any resource annotation files already saved, identifying the resource ID with the highest resource ID number, and adding 1 to that number to get the resource ID number and unique resource ID for the current resource.", 
             "type": "string",
             "pattern": "^resource-+-*[0-9]*[1-9][0-9]*$",
             "priority": "all, high, auto"
         },
         "path": {
             "title": "Resource File Path",
-            "description": "this will be auto-inferred as the full file path to resource",
+            "description": "The full file path to your resource file. If you are using the DSC Packaging application and would like to use a single form to annotate multiple 'like' files, click the 'Add Multiple like Files' button above the form and drag and drop all of the like files you want to annotate together in that box. The file path for the first of the file paths you dropped in the box will be added to this field.",
             "type": "string",
             "format": "path",
             "priority": "all, high"
         },
         "description": {
             "title": "Resource Description",
-            "description": "description of resource",
+            "description": "A description of your resource. For resources that consist of multiple 'like' files, provide a description of the multi-file resource here and use the Resource File Description field to provide any description specific to each/any one specific file in the set.",
             "type": "string",
             "priority": "all, high"
         },
         "category": {
             "title" : "Resource Category",
-            "description": "options are multi-result (a file that includes more than one result in the form of a figure, text, etc.), single result, data, metadata, code",
+            "description": "Broad category your resource falls into; Generally, these categories are: results, data, metadata, code. However, the actual category options parse the categories just a bit finer (e.g. options for data resources include either 'tabular-data' or 'non-tabular-data').",
             "type": "string",
             "enum": ["","multi-result","single-result","tabular-data","non-tabular-data","metadata","code"],
             "priority": "all, high"
         },
         "exp.belongs.to": {
             "title": "Experiment Belongs To",
-            "description": "if the file pertains specifically to one of the study experiments, list here; if the file pertains to more than one experiment, or to all experiments/the study as a whole, leave this blank; use experiment ID as assigned/formatted in your Experiment Tracker file here; prefix is 'exp-' followed by a number starting with 1 for the first experiment, and iterating by 1 for each successive experiment (i.e. exp-1, exp-2, etc.)",
+            "description": "If the file pertains specifically to one of the study experiments, list the experiment ID for that experiment here; If the file pertains to more than one experiment, or to all experiments/the study as a whole, leave this blank; Use the experiment ID as assigned/formatted in your Experiment Tracker file (prefix is 'exp-' followed by a number starting with 1 for the first experiment, and iterating by 1 for each successive experiment - i.e. exp-1, exp-2, etc.)",
             "type": "string",
             "pattern": "^exp-+-*[0-9]*[1-9][0-9]*$",
             "priority": "all, low"
         },
         #"name": {
         #    "title" : "Resource Name",
-        #    "description": "this will be auto-inferred as the file name part of the file path",
+        #    "description": "This will be auto-inferred as the file name part of the file path (stem)",
         #    "type": "string"
         #},
         "title": {
             "title": "Resource Title",
-            "description": "human-readable title/name of resource",
+            "description": "Human-readable title/name of resource",
             "type": "string",
             "priority": "all, low"
         },
         "description.file.name.convention": {
             "title": "Resource File Name Convention",
-            "description": "for multi-file resource containing multiple files of the same type, provide the naming convention of files (e.g. subject-xx-protocol-xxx-day-xxxxxxxx)",
+            "description": "For multi-file resource containing multiple files of the same type (multiple 'like' files), provide the naming convention of the files (e.g. for a file set: [subject-01-protocol-A-day-2020-06-05.csv, subject-02-protocol-A-day-2020-06-05.csv, subject-02-protocol-B-day-2020-12-05.csv], you would specify the naming convention as: subject-{subject ID}-protocol-{protocol ID}-day-{date of measurment in YYYY-MM-DD}). If you are using the DSC Packaging application, you can use the Apply Name Convention button above the form to validate your name convention format and use a valid file name convention to generate a minimal 'Resource File Description' that is a minimal description specific to each file in the multi-file resource set.",
             "type": "string",
             "priority": "multiple like resource, high"
         },
         "description.file": {
             "title": "Resource File Description",
-            "description": "for multi-file resource containing multiple files of the same type, component file description",
+            "description": "For a multi-file resource containing multiple files of the same type (multiple 'like' files), a description specific to the specific current file that is a component of that multi-file set.",
             "type": "string",
             "priority": "multiple like resource, high, auto"
         },
         "description.row": {
             "title": "Resource Row Description",
-            "description": "for tabular data resource, row description; e.g. one row represents one subject at one timepoint",
+            "description": "For a tabular data resource, a description of what one row in the tabular data resource represents; e.g. one row represents one subject at one timepoint",
             "type": "string",
             "priority": "tabular data, high"
         },
         "category.sub.metadata": {
             "title" : "Metadata Resource - Sub-Category",
-            "description": "",
+            "description": "Sub-category for a metadata resource",
             "type": "string",
             "enum": ["","heal-formatted-data-dictionary","other-formatted-data-dictionary","protocol","id-map","analysis-plan","heal-formatted-results-tracker","heal-formatted-experiment-tracker"],
             "priority": "metadata, high"
         },
         "category.sub.data": {
             "title" : "Data Resource - Sub-Category",
-            "description": "",
+            "description": "Sub-category for a data resource",
             "type": "string",
             "enum": ["","raw","processed-intermediate","processed-final"],
             "priority": "data, high"
         },
         "category.sub.results": {
             "title" : "Results Resource - Sub-Category",
-            "description": "",
+            "description": "Sub-category for a results resource",
             "type": "string",
             "enum": ["","figure","text","draft-publication","publication"],
             "priority": "results, high"
         },
         "assoc.file.dd": {
             "title": "Associated Data Dictionary",
-            "description": "generally relevant only for tabular data file resources; reference/file path to associated data dictionary file(s) - preferably in heal csv data dictionary format",
+            "description": "For a tabular data file resources, a reference/file path to associated data dictionary file(s) - preferably in heal csv data dictionary format",
             #"type": "string"
             "type": "array",
             "items": {
@@ -116,7 +120,7 @@ form_schema_resource_tracker = {
         },
         "assoc.file.protocol": {
             "title": "Associated Protocol",
-            "description": "generally relevant only for data file resources; reference/file path to associated protocol file(s)",
+            "description": "For a data file resource, a reference/file path to associated protocol file(s)",
             #"type": "string"
             "type": "array",
             "items": {
@@ -137,11 +141,29 @@ form_schema_resource_tracker = {
         #},
         "assoc.file.depends.on": {
             "title": "Associated Files/Dependencies",
-            "description": "if the current resource file has dependencies/if other files are necessary to make this file (e.g. raw data file necessary to  make processed data file) list them here; only one layer deep; can be data, code, protocol (?); if already listed under assoc.file.dd, assoc.file.protocol, or assoc.file.id.map no need to repeat here. Alternatively, can use this field as a catch-all instead of using those other more specific assoc.file fields.",
+            "description": "For all resource files, if the current resource file has dependencies/if other files are necessary to make this file (e.g. raw data file necessary to make processed data file), or to interpret/understand this file (e.g. protocol, analysis plan, etc.), list them here; if documenting resources wholistically (i.e. documenting all resources related to a study), only list dependencies one layer deep; if documenting resources minimally (i.e. only documenting resources that will be publicly shared), list dependencies liberally; dependencies can be data, code, protocol, etc.; if already listed under assoc.file.dd, assoc.file.protocol, or assoc.file.id.map no need to repeat here.",
             "type": "array",
             "items": {
                 "type": "string",
                 "format": "path"
+            },
+            "priority": "all, high"
+        },
+        "assoc.file.result.depends.on": {
+            "title": "Result-tracker - Associated Files/Dependencies",
+            "description": "if the current resource file is a heal formatted result tracker (this tracks the single results in a multi-result file, like a publication), use this field to list each result in the tracker along with its corresponding dependencies (i.e. files the result depends on, or are necessary to make/reach/interpret the result); if documenting resources wholistically (i.e. documenting all resources related to a study), only list dependencies one layer deep; if documenting resources minimally (i.e. only documenting resources that will be publicly shared), list dependencies liberally; dependencies can be data, code, protocol, etc.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "result-id": {
+                        "type": "string"
+                    },
+                    "result.id.depends.on": {
+                        "type": "array",
+                        "format": "path"
+                    }
+                }
             },
             "priority": "all, high"
         },
@@ -157,7 +179,7 @@ form_schema_resource_tracker = {
         },
         "access": {
             "title" : "Access",
-            "description": "What is the current/final access level anticipated for this resource? Options are permanent-private (current and final access level is private), temporary-private (current access level is private but final access level will be either restricted-access or public), restricted-access (either current or final access level will allow request of data with barriers/restrictions to access), public (either current or final access level will allow largely unrestricted request of/access to data); Many investigators will designate data as currently temporary-private, with a final access level of either restricted-access or public, in this case choose both temporary-private and either restricted-access or public, then add the date at which you expect to transition from temporary-private to either restricted-access or public in the Access Date field below; private means members of the public cannot request access; restricted access means they can request access but there is gate-keeping",
+            "description": "What is the current/final access level anticipated for this resource? Options are permanent-private (current and final access level is private), temporary-private (current access level is private but final access level will be either restricted-access or public), restricted-access (current, final, or current AND final access level will allow request of data with barriers/restrictions to access), public (current, final, or current AND final access level will allow largely unrestricted request of/access to data); Many investigators will designate data as currently temporary-private, with a final access level of either restricted-access or public: In this case choose both temporary-private AND either 1) restricted-access or 2) public, then add the date at which you expect to transition from temporary-private to either restricted-access or public in the Access Date field below; Private means members of the public cannot request access; Restricted access means they can request access but there is gate-keeping; Public access means they can often access the data without requesting access, and with minimal barriers to access.",
             "type": "array",
             "items":{
                 "type": "string",
@@ -179,7 +201,7 @@ form_schema_resource_tracker = {
         #},
         "format.software": {
             "title": "Software used to produce/read the resource file",
-            "description": "if the format is proprietary and requires specific software to open/interpret, provide the software name and version; e.g. Origin 11.0, CorelDraw 5.6",
+            "description": "If the file format of the resource file is proprietary and requires specific software to open/interpret, provide the software name and version used by the study group to produce/work with the file; e.g. Origin 11.0, CorelDraw 5.6",
             "type": "string",
             "priority": "all, low"
         }
@@ -236,3 +258,19 @@ form_schema_resource_tracker = {
         #}
     }
 }
+
+subProps = ["resource.id","path"]
+keys = list(form_schema_resource_tracker["properties"].keys())
+print(keys)
+keys_to_remove = [x for x in keys if x not in subProps]
+print(keys_to_remove)
+
+newSchema = deepcopy(form_schema_resource_tracker)
+
+for k in keys_to_remove:
+    newSchema["properties"].pop(k)
+
+print(newSchema)
+
+
+

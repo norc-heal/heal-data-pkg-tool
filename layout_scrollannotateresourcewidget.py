@@ -325,15 +325,19 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if self.form.widget.state["category"] != "tabular-data":
             self.toggle_widgets(keyText = "data", desiredToggleState = "hide")
             self.toggle_widgets(keyText = "tabular data", desiredToggleState = "hide")
+            # delete contents of conditional fields if any added
            
         if self.form.widget.state["category"] != "non-tabular-data":
             self.toggle_widgets(keyText = "data", desiredToggleState = "hide")
+            # delete contents of conditional fields if any added
            
         if self.form.widget.state["category"] != "metadata":
             self.toggle_widgets(keyText = "metadata", desiredToggleState = "hide")
+            # delete contents of conditional fields if any added
 
-        if self.form.widget.state["category"] != "single-result":
+        if self.form.widget.state["category"] not in ["single-result","multi-result"]:
             self.toggle_widgets(keyText = "results", desiredToggleState = "hide")
+            # delete contents of conditional fields if any added
 
         ################### show field appropriate to current selection
             
@@ -347,7 +351,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if self.form.widget.state["category"] == "metadata":
             self.toggle_widgets(keyText = "metadata", desiredToggleState = "show")
 
-        if self.form.widget.state["category"] == "single-result":
+        if self.form.widget.state["category"] in ["single-result","multi-result"]:
             self.toggle_widgets(keyText = "results", desiredToggleState = "show")
 
         #if changedFieldName == "access":
@@ -425,9 +429,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #print(type(self.items)) 
         print(len(self.items))
 
+        if self.items:
+            updatePath = self.items[0]
+            updateAssocFileMultiLike = self.items
+        else:
+            updatePath = ""
+            updateAssocFileMultiLike = []
+
         self.form.widget.state = {
-            "path": self.items[0],
-            "assoc.file.multi.like.file": self.items
+            "path": updatePath,
+            "assoc.file.multi.like.file": updateAssocFileMultiLike
         } 
 
         if len(self.items) > 1:
@@ -552,7 +563,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # check that file path and at least a minimal description has been added to the form 
         # if not exit with informative error
         if not ((self.form.widget.state["path"]) and (self.form.widget.state["description"])):
-            messageText = "<br>You must add a resource file path and at least a minimal description of your resource to your resource file form before saving your resource file. Please add a resource file path either by browsing to the file path using the Resource File Path field in the form, or by dragging and dropping the file path for your resource file (or multiple file paths if you are annotating multiple 'like' resources at once) in the drag and drop box above the form, and add at least a minimal description of your resource (or set of 'like' resources) in the Resource Description field in the form. Then try saving again." 
+            messageText = "<br>You must add a resource file path and at least a minimal description of your resource to your resource file form before saving your resource file. Please add a resource file path either by browsing to the file path using the Resource File Path field in the form, or by dragging and dropping the file path for your resource file (or multiple file paths if you are annotating multiple 'like' resources at once) in the drag and drop box above the form (open this drag and drop box by clicking on the Add Multiple 'like' Resources button above the form), and add at least a minimal description of your resource (or set of 'like' resources) in the Resource Description field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
@@ -618,6 +629,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         successSaveFilePathList = []
         failResIdList = []
         failSaveFilePathList = []
+        resourceList = []
 
         for idx, p in enumerate(self.saveFilePathList):
         
@@ -633,72 +645,73 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 successSaveFilePathList.append(p)
                 successResIdList.append(self.resource_id_list[idx])
 
+        # if any of the potential resource id/resource id annotation files already exist - exit with informative message about checking/updating resource id        
+        if failResIdList:
+            #print("something went wrong - check the resource id in your form - do you already have a resource file saved for a resource with this resource id? if not, did you add multiple like resource files? resource ids will be autogenerated for all of the resource files you added - IDs will be generated by adding 1 to the resource id in your form for each file in turn - do you already have a resource file saved for a resource with one of the resource ids that may have been autogenerated based on this approach? the safest thing to do is to check the resource files you have saved in your dsc package folder, find the highest resource id number for which you have created/saved a resource file, and enter your resource id in the form as having an id number one higher than the max resource id number you identified - then try saving again - if you add your dsc package directory using the push button at the top of the form window, a resource id will be autogenerated for you using this approach automatically.")
+            messageText = "<br>WARNING: Your resource(s) were not written to file because something went wrong - Check the Resource ID in your form - Do you already have a resource file saved for a resource with this resource id? if not, did you add multiple like resource files? resource ids will be autogenerated for all of the resource files you added - IDs will be generated by adding 1 to the resource id in your form for each file in turn - do you already have a resource file saved for a resource with one of the resource ids that may have been autogenerated based on this approach? the safest thing to do is to check the resource files you have saved in your dsc package folder, find the highest resource id number for which you have created/saved a resource file, and enter your resource id in the form as having an id number one higher than the max resource id number you identified - then try saving again - if you add your dsc package directory using the push button at the top of the form window, a resource id will be autogenerated for you using this approach automatically."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        else:
+            #print(self.form.widget.state)
+            #resource = self.form.widget.state
+
                 
-            if failResIdList:
-                #print("something went wrong - check the resource id in your form - do you already have a resource file saved for a resource with this resource id? if not, did you add multiple like resource files? resource ids will be autogenerated for all of the resource files you added - IDs will be generated by adding 1 to the resource id in your form for each file in turn - do you already have a resource file saved for a resource with one of the resource ids that may have been autogenerated based on this approach? the safest thing to do is to check the resource files you have saved in your dsc package folder, find the highest resource id number for which you have created/saved a resource file, and enter your resource id in the form as having an id number one higher than the max resource id number you identified - then try saving again - if you add your dsc package directory using the push button at the top of the form window, a resource id will be autogenerated for you using this approach automatically.")
-                messageText = "<br>WARNING: Your resource(s) were not written to file because something went wrong - Check the Resource ID in your form - Do you already have a resource file saved for a resource with this resource id? if not, did you add multiple like resource files? resource ids will be autogenerated for all of the resource files you added - IDs will be generated by adding 1 to the resource id in your form for each file in turn - do you already have a resource file saved for a resource with one of the resource ids that may have been autogenerated based on this approach? the safest thing to do is to check the resource files you have saved in your dsc package folder, find the highest resource id number for which you have created/saved a resource file, and enter your resource id in the form as having an id number one higher than the max resource id number you identified - then try saving again - if you add your dsc package directory using the push button at the top of the form window, a resource id will be autogenerated for you using this approach automatically."
-                saveFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
-                return
-            else:
-                print(self.form.widget.state)
+            for idx, p in enumerate(self.saveFilePathList):
+                    
                 resource = self.form.widget.state
-
-                
-                for idx, p in enumerate(self.saveFilePathList):
+                currentResource = deepcopy(resource)
                     
-                    currentResource = deepcopy(resource)
-                    
-                    currentResource["resource.id"] = self.resource_id_list[idx]
-                    currentResource["path"] = self.items[idx]
-                    currentResource["description.file"] = self.itemsDescriptionList[idx]
+                currentResource["resource.id"] = self.resource_id_list[idx]
+                currentResource["path"] = self.items[idx]
+                currentResource["description.file"] = self.itemsDescriptionList[idx]
 
-                    f=open(p,'w')
-                    print(dumps(currentResource, indent=4), file=f)
-                    f.close()
+                f=open(p,'w')
+                print(dumps(currentResource, indent=4), file=f)
+                f.close()
                 
-                if len(self.saveFilePathList) > 1:
-                    myString1 = "files were"
-                    myString2 = ', '.join(self.saveFilePathList)
-                else: 
-                    myString1 = "file was"
-                    myString2 = self.saveFilePathList[0]
+            if len(self.saveFilePathList) > 1:
+                myString1 = "files were"
+                myString2 = ', '.join(self.saveFilePathList)
+            else: 
+                myString1 = "file was"
+                myString2 = self.saveFilePathList[0]
 
-                #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
-                messageText = "<br>Your resource " + myString1 + " successfully written at: " + myString2 + "<br><br>You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
-                saveFormat = '<span style="color:green;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
-                self.userMessageBox.moveCursor(QTextCursor.End)
+            #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
+            messageText = "<br>Your resource " + myString1 + " successfully written at: " + myString2 + "<br><br>You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
+            saveFormat = '<span style="color:green;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            self.userMessageBox.moveCursor(QTextCursor.End)
 
-                if self.form.widget.state["category"] == "tabular-data":
-                    if not self.form.widget.state["assoc.file.dd"]:
+            if self.form.widget.state["category"] == "tabular-data":
+                if not self.form.widget.state["assoc.file.dd"]:
 
-                        messageText = "<br>WARNING: You annotated a tabular data resource and did not include a data dictionary for this tabular data resource. If you don't already have a data dictionary, please visit the Data Dictionary tab to create a data dictionary for this resource. You can easily and automatically create a data dictionary using only your tabular data file. Once you have a data dictionary, you can come back here and edit this form to add your data dictionary and save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed." + "\n\n"
-                        saveFormat = '<span style="color:red;">{}</span>'
-                        self.userMessageBox.append(saveFormat.format(messageText))
-                        self.userMessageBox.moveCursor(QTextCursor.End)
+                    messageText = "<br>WARNING: You annotated a tabular data resource and did not include a data dictionary for this tabular data resource. If you don't already have a data dictionary, please visit the Data Dictionary tab to create a data dictionary for this resource. You can easily and automatically create a data dictionary using only your tabular data file. Once you have a data dictionary, you can come back here and edit this form to add your data dictionary and save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed." + "\n\n"
+                    saveFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(saveFormat.format(messageText))
+                    self.userMessageBox.moveCursor(QTextCursor.End)
 
-                if "temporary-private" in self.form.widget.state["access"]:
-                    if not any(map(lambda v: v in self.form.widget.state["access"], ["public","restricted-access"])):
+            if "temporary-private" in self.form.widget.state["access"]:
+                if not any(map(lambda v: v in self.form.widget.state["access"], ["public","restricted-access"])):
 
-                        messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'public\n' or to \n'restricted-access\n' once the temporary-private status expires. Please return to the form to indicate what the final access level of this resource will be. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
-                        saveFormat = '<span style="color:red;">{}</span>'
-                        self.userMessageBox.append(saveFormat.format(messageText))
-                        self.userMessageBox.moveCursor(QTextCursor.End)
+                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'public\n' or to \n'restricted-access\n' once the temporary-private status expires. Please return to the form to indicate what the final access level of this resource will be by adding another value to the Access field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
+                    saveFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(saveFormat.format(messageText))
+                    self.userMessageBox.moveCursor(QTextCursor.End)
 
-                    if self.form.widget.state["access.date"] == self.formDefaultState["access.date"]:
+                if self.form.widget.state["access.date"] == self.formDefaultState["access.date"]:
 
-                        messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'public\n' or to \n'restricted-access\n'. Please return to the form to indicate the date at which temporary-provate access level will expire. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
-                        saveFormat = '<span style="color:red;">{}</span>'
-                        self.userMessageBox.append(saveFormat.format(messageText))
-                        self.userMessageBox.moveCursor(QTextCursor.End)
+                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'public\n' or to \n'restricted-access\n'. Please return to the form to indicate the date at which temporary-provate access level will expire in the Access Date field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
+                    saveFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(saveFormat.format(messageText))
+                    self.userMessageBox.moveCursor(QTextCursor.End)
 
 
 
-                #saveFormat = '<span style="color:green;">{}</span>'
-                #self.userMessageBox.append(saveFormat.format(messageText))
-                #self.userMessageBox.setText(self.messageText)
-                self.userMessageBox.moveCursor(QTextCursor.End)
+            #saveFormat = '<span style="color:green;">{}</span>'
+            #self.userMessageBox.append(saveFormat.format(messageText))
+            #self.userMessageBox.setText(self.messageText)
+            self.userMessageBox.moveCursor(QTextCursor.End)
 
     def clear_form(self):
 
@@ -734,9 +747,12 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #self.form.widget.state = deepcopy(clearState)
         print(self.form.widget.state)
 
-        if self.items:
+        if self.lstbox_view.count() > 0:
             self.lstbox_view.clear()
             self.get_items_list()
+        else:
+            if self.items:
+                self.items = []
 
 
         messageText = "<br>Your form was successfully cleared and you can start annotating a new resource"

@@ -13,6 +13,59 @@ from jsonschema import validate
 import re
 import itertools
 
+from healdata_utils.schemas import healjsonschema, healcsvschema
+from schema_resource_tracker import schema_resource_tracker
+from schema_experiment_tracker import schema_experiment_tracker
+
+
+
+
+def heal_metadata_json_schema_properties(metadataType):
+
+    print(metadataType)
+
+    if metadataType == "data-dictionary":
+        props = healjsonschema["properties"]["data_dictionary"]["items"]["properties"]
+        
+
+    if metadataType == "resource-tracker":
+        props = schema_resource_tracker["properties"]
+        
+
+    if metadataType == "experiment-tracker":
+        props = schema_experiment_tracker["properties"]
+        
+
+    if metadataType not in ["data-dictionary","resource-tracker","experiment-tracker"]:
+        print("metadata type not supported; metadataType must be one of data-dictionary, resource-tracker, experiment-tracker")
+        return
+    
+    return props
+
+
+def empty_df_from_json_schema_properties(jsonSchemaProperties):
+    all_fields = []
+
+    for key, value in jsonSchemaProperties.items():
+        p_fullname_list = []
+        print(key)
+        try:
+            p_block = jsonSchemaProperties[key]["properties"]
+            p_list = list(p_block.keys())
+            p_fullname_list = [key + "." + p for p in p_list]
+            print(p_fullname_list)
+        except KeyError:
+            pass
+
+        if p_fullname_list:
+            all_fields.extend(p_fullname_list)
+        else:
+            all_fields.append(key)
+
+    print(all_fields)
+    df = pd.DataFrame(columns = all_fields)    
+    return df
+
 
 
 
@@ -97,63 +150,71 @@ def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path
     #    dsc_pkg_resource_dir_path = './resources/'
 
     pkg_path = os.path.join(pkg_parent_dir_path,pkg_dir_name)
-    pkg_resources_path = os.path.join(pkg_path,"resources") # create a subdir in the pkg dir for schema and template resources
+    #pkg_resources_path = os.path.join(pkg_path,"resources") # create a subdir in the pkg dir for schema and template resources
 
     
     # create the new package directory    
     try:
         os.makedirs(pkg_path, exist_ok = False)
         print("Directory '%s' created successfully" %pkg_dir_name)
-        os.mkdir(pkg_resources_path) # make the subdir for resources
+        #os.mkdir(pkg_resources_path) # make the subdir for resources
     except OSError as error:
         print("Directory '%s' can not be created - check to see if the directory already exists")
+        return
 
     
     # add template starter files to new package directory
-    source_folder = dsc_pkg_resource_dir_path
+    #source_folder = dsc_pkg_resource_dir_path
     
 
     # fetch all files
-    results_schemas = []
-    results_templates = []
-    results_resources = []
-    results_use = []
+    #results_schemas = []
+    #results_templates = []
+    #results_resources = []
+    #results_use = []
 
-    results_schemas += [each for each in os.listdir(source_folder) if each.endswith('schema.csv')]
-    print(results_schemas) 
-    results_templates += [each for each in os.listdir(source_folder) if each.endswith('template.csv')]
-    print(results_templates) 
-    results_resources = results_schemas + results_templates
-    print(results_resources)
+    #results_schemas += [each for each in os.listdir(source_folder) if each.endswith('schema.csv')]
+    #print(results_schemas) 
+    #results_templates += [each for each in os.listdir(source_folder) if each.endswith('template.csv')]
+    #print(results_templates) 
+    #results_resources = results_schemas + results_templates
+    #print(results_resources)
     
-    results_use += [each for each in os.listdir(source_folder) if each.endswith('tracker.csv')]
-    print(results_use)
+    #results_use += [each for each in os.listdir(source_folder) if each.endswith('tracker.csv')]
+    #print(results_use)
 
-    destination_folder = pkg_resources_path
+    #destination_folder = pkg_resources_path
     #for file_name in os.listdir(source_folder):
-    for file_name in results_resources:
-        # construct full file path
-        #source = source_folder + file_name
-        #destination = destination_folder + file_name
-        source = os.path.join(source_folder,file_name)
-        destination = os.path.join(destination_folder,file_name)
-        # copy only files
-        if os.path.isfile(source):
-            shutil.copy(source, destination)
-            print('copied', file_name)
+    #for file_name in results_resources:
+    #    # construct full file path
+    #    #source = source_folder + file_name
+    #    #destination = destination_folder + file_name
+    #    source = os.path.join(source_folder,file_name)
+    #    destination = os.path.join(destination_folder,file_name)
+    #    # copy only files
+    #    if os.path.isfile(source):
+    #        shutil.copy(source, destination)
+    #        print('copied', file_name)
 
     destination_folder = pkg_path
     #for file_name in os.listdir(source_folder):
-    for file_name in results_use:
-        # construct full file path
-        #source = source_folder + file_name
-        #destination = destination_folder + file_name
-        source = os.path.join(source_folder,file_name)
-        destination = os.path.join(destination_folder,file_name)
-        # copy only files
-        if os.path.isfile(source):
-            shutil.copy(source, destination)
-            print('copied', file_name)
+    #for file_name in results_use:
+    #    # construct full file path
+    #    #source = source_folder + file_name
+    #    #destination = destination_folder + file_name
+    #    source = os.path.join(source_folder,file_name)
+    #    destination = os.path.join(destination_folder,file_name)
+    #    # copy only files
+    #    if os.path.isfile(source):
+    #        shutil.copy(source, destination)
+    #        print('copied', file_name)
+
+    for metadataType in ["experiment-tracker", "resource-tracker"]:
+        props = heal_metadata_json_schema_properties(metadataType=metadataType)
+        df = empty_df_from_json_schema_properties(jsonSchemaProperties=props)
+
+        fName = "heal-csv-" + metadataType + ".csv"
+        pd.to_csv(df, os.path.join(pkg_path, fName), index = False) 
 
     return pkg_path
 

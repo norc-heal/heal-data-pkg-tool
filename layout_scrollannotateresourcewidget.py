@@ -133,6 +133,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.form.widget.on_changed.connect(self.check_tooltip)
         self.formWidgetList[self.formWidgetNameList.index("category")].on_changed.connect(self.conditional_fields)
         self.formWidgetList[self.formWidgetNameList.index("access")].on_changed.connect(self.conditional_fields)
+        self.formWidgetList[self.formWidgetNameList.index("description.file.name.convention")].on_changed.connect(self.conditional_highlight_apply_convention)
         #self.form.widget.on_changed.connect(self.check_priority_highlight)
         
         ################################## Finished creating component widgets
@@ -365,7 +366,21 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 "access.date": self.formDefaultState["access.date"]
             } 
                 
-   
+    def conditional_highlight_apply_convention(self):
+
+        if self.form.widget.state["description.file.name.convention"]:
+            self.buttonApplyNameConvention.setStyleSheet("background-color : rgba(0,125,0,50)")
+        else:
+            self.buttonApplyNameConvention.setStyleSheet("")
+            
+            self.form.widget.state = {
+                "description.file": ""
+            }
+
+            self.itemsDescriptionList = []
+
+
+
     def add_dir(self):
         
         self.saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')
@@ -530,14 +545,22 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         try:
             #found = re.search('{(.+?)}', self.nameConvention).group(1)
             nameConventionExplanatoryList = re.findall('{(.+?)}', self.nameConvention)
+            print(nameConventionExplanatoryList)
         except AttributeError:
             # {} not found in the original string
-            nameConventionExplanatoryList = '' # apply your error handling
+            #nameConventionExplanatoryList = '' # apply your error handling
             print('you have either not specified a naming convention or have not specified it correctly. please do not include the file extension (e.g. csv, docx, xlsx, etc.) in the naming convention, and specify as: e.g. subject_{subject ID number}_day_{date in YYYY/MM/DD}')
             messageText = "<br>You have either not specified a naming convention or have not specified it correctly. please do not include the file extension (e.g. csv, docx, xlsx, etc.) in the naming convention, and specify as: e.g. subject_{subject ID number}_day_{date in YYYY/MM/DD}"
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
+
+        if not nameConventionExplanatoryList:
+            messageText = "<br>You have either not specified a naming convention or have not specified it correctly. please do not include the file extension (e.g. csv, docx, xlsx, etc.) in the naming convention, and specify as: e.g. subject_{subject ID number}_day_{date in YYYY/MM/DD}"
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return
+
 
         # get just file stems from full path, this also removes file extensions
         if self.items:

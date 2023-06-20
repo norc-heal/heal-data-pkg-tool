@@ -291,17 +291,17 @@ schema_resource_tracker = {
 subProps = formSubProps
 
 allKeys = list(schema_resource_tracker["properties"].keys())
-print(allKeys)
+#print(allKeys)
 
 keysToRemove = [x for x in allKeys if x not in subProps]
-print(keysToRemove)
+#print(keysToRemove)
 
 form_schema_resource_tracker = deepcopy(schema_resource_tracker)
 
 for k in keysToRemove:
     form_schema_resource_tracker["properties"].pop(k)
 
-print(form_schema_resource_tracker)
+#print(form_schema_resource_tracker)
 
 
 

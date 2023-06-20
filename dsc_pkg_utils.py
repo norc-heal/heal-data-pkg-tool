@@ -214,7 +214,7 @@ def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path
         df = empty_df_from_json_schema_properties(jsonSchemaProperties=props)
 
         fName = "heal-csv-" + metadataType + ".csv"
-        pd.to_csv(df, os.path.join(pkg_path, fName), index = False) 
+        df.to_csv(os.path.join(pkg_path, fName), index = False) 
 
     return pkg_path
 

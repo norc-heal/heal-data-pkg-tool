@@ -272,7 +272,10 @@ def get_multi_like_file_descriptions(nameConvention,fileStemList):
                 nameOnlyOneExplanatory = True
             else:
                 print("Naming convention explanatory values are not separated by a delimiter in your file name convention. Please add delimiters between file naming convention explanatory values in your filenames. Snake case as a delimiter is not currently supported but will be soon.")
-                return
+                messageText = "Naming convention explanatory values are not separated by a delimiter in your file name convention. Please add delimiters between file naming convention explanatory values in your filenames. Snake case as a delimiter is not currently supported but will be soon."
+                #errorFormat = '<span style="color:red;">{}</span>'
+                #self.userMessageBox.append(errorFormat.format(messageText))
+                return messageText
 
         if not nameOnlyOneExplanatory:
             noDelim = 0
@@ -289,14 +292,22 @@ def get_multi_like_file_descriptions(nameConvention,fileStemList):
                         if afterVal in nameConventionExplanatoryList:
                             noDelim += 1
                             print(l," and ",afterVal," naming convention explanatory values are not separated by a delimiter in your file name convention. Please add delimiters between file naming convention explanatory values in your filenames. Snake case as a delimiter is not currently supported but will be soon.")
-
+                            messageText = l," and ",afterVal," naming convention explanatory values are not separated by a delimiter in your file name convention. Please add delimiters between file naming convention explanatory values in your filenames. Snake case as a delimiter is not currently supported but will be soon."
+                            #errorFormat = '<span style="color:red;">{}</span>'
+                            #self.userMessageBox.append(errorFormat.format(messageText))
                     if beforeVal:
                         if beforeVal in nameConventionExplanatoryList:
                             noDelim += 1
                             print(beforeVal," and ",l," naming convention explanatory values are not separated by a delimiter in your file name convention. Please add delimiters between file naming convention explanatory values in your filenames. Snake case as a delimiter is not currently supported but will be soon.")
-  
+                            messageText = beforeVal," and ",l," naming convention explanatory values are not separated by a delimiter in your file name convention. Please add delimiters between file naming convention explanatory values in your filenames. Snake case as a delimiter is not currently supported but will be soon."
+                            #errorFormat = '<span style="color:red;">{}</span>'
+                            #self.userMessageBox.append(errorFormat.format(messageText))
+
             if noDelim > 0:
                 print("Naming convention explanatory values are not separated by a delimiter in your file name convention. Please add delimiters between file naming convention explanatory values in your filenames. Snake case as a delimiter is not currently supported but will be soon.")
+                messageText = "Naming convention explanatory values are not separated by a delimiter in your file name convention. Please add delimiters between file naming convention explanatory values in your filenames. Snake case as a delimiter is not currently supported but will be soon."
+                #errorFormat = '<span style="color:red;">{}</span>'
+                #self.userMessageBox.append(errorFormat.format(messageText))
                 return
 
 
@@ -326,7 +337,10 @@ def get_multi_like_file_descriptions(nameConvention,fileStemList):
                                 afterValSplit = i.split(afterVal)
                         
                             else:
-                                print("the file named ", i, " does not conform to the specified naming convention. It does not contain the string ",afterVal," as specified by the applied naming convention.")
+                                #print("the file named ", i, " does not conform to the specified naming convention. It does not contain the string ",afterVal," as specified by the applied naming convention.")
+                                messageText = "the file named ", i, " does not conform to the specified naming convention. It does not contain the string ",afterVal," as specified by the applied naming convention."
+                                #errorFormat = '<span style="color:red;">{}</span>'
+                                #self.userMessageBox.append(errorFormat.format(messageText))
                                 continue
 
                         if beforeVal:
@@ -334,11 +348,17 @@ def get_multi_like_file_descriptions(nameConvention,fileStemList):
                                 beforeValSplit = i.split(beforeVal)
                         
                             else:
-                                print("the file named ", i, " does not conform to the specified naming convention. It does not contain the string ",beforeVal," as specified by the applied naming convention.")
+                                #print("the file named ", i, " does not conform to the specified naming convention. It does not contain the string ",beforeVal," as specified by the applied naming convention.")
+                                messageText = "the file named ", i, " does not conform to the specified naming convention. It does not contain the string ",beforeVal," as specified by the applied naming convention."
+                                #errorFormat = '<span style="color:red;">{}</span>'
+                                #self.userMessageBox.append(errorFormat.format(messageText))
                                 continue
 
                         if ((not afterValSplit) and (not beforeValSplit)):
-                            print("the file named ", i, " does not conform to the specified naming convention. It does not contain string(s) specified by the applied naming convention. Exiting check of this file.")
+                            #print("the file named ", i, " does not conform to the specified naming convention. It does not contain string(s) specified by the applied naming convention. Exiting check of this file.")
+                            messageText = "the file named ", i, " does not conform to the specified naming convention. It does not contain string(s) specified by the applied naming convention. Exiting check of this file."
+                            #errorFormat = '<span style="color:red;">{}</span>'
+                            #self.userMessageBox.append(errorFormat.format(messageText))
                             break
 
                         if ((afterValSplit) and (not beforeValSplit)):

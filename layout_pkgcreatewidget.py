@@ -57,6 +57,6 @@ class PkgCreateWindow(QtWidgets.QMainWindow):
         pkgPath = dsc_pkg_utils.new_pkg(pkg_parent_dir_path=parentFolderPath)
 
         messageText = 'Created new HEAL DSC data package at: ' + pkgPath
-        self.userMessageBox.setText(messageText)
+        self.userMessageBox.append(messageText)
 
     

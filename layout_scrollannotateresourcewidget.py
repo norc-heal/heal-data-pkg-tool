@@ -172,7 +172,23 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         return
         
-                      
+    def scrollScrollArea (self, topOrBottom, minVal=None, maxVal=None):
+        # Additional params 'minVal' and 'maxVal' are declared because
+        # rangeChanged signal sends them, but we set it to optional
+        # because we may need to call it separately (if you need).
+
+        if topOrBottom == "bottom":
+    
+            self.scroll.verticalScrollBar().setValue(
+                self.scroll.verticalScrollBar().maximum()
+            )
+
+        if topOrBottom == "top":
+    
+            self.scroll.verticalScrollBar().setValue(
+                self.scroll.verticalScrollBar().minimum()
+            )
+
     def add_tooltip(self):
         
         self.toolTipContentList = []
@@ -568,11 +584,41 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         else:
             self.fileStemList = [Path(self.form.widget.state["path"]).stem]
         
-        self.itemsDescriptionList = get_multi_like_file_descriptions(self.nameConvention, self.fileStemList)
+        self.itemsDescriptionList = []
+        self.itemsDescriptionMessagesOut = []
 
-        self.form.widget.state = {
-            "description.file": self.itemsDescriptionList[0]
-        } 
+        self.itemsDescriptionList, itemsDescriptionMessagesOut = get_multi_like_file_descriptions(self.nameConvention, self.fileStemList)
+
+        if self.itemsDescriptionList:
+            print(self.itemsDescriptionList)
+            
+            if all(self.itemsDescriptionList):
+                self.form.widget.state = {
+                    "description.file": self.itemsDescriptionList[0]
+                } 
+
+                applyConvention = "successful"
+                textColor = "green"
+            else: 
+                applyConvention = "unsuccessful. Examine any errors the attempt produced (red text below), ensure that you are following the required conventions for specifying your naming convention, and come back and try again"
+                textColor = "red"
+            
+            messageText = "<br>Your attempt to apply a name convention for your set of 'like' resource files was " + applyConvention + "."  
+            textColorFormat = '<span style="color:' + textColor + ';">{}</span>'
+            self.userMessageBox.append(textColorFormat.format(messageText))
+            self.scrollScrollArea(topOrBottom = "top")
+
+        if itemsDescriptionMessagesOut:
+            print(itemsDescriptionMessagesOut)
+            
+            itemsDescriptionMessagesOut = [''.join(list(m)) for m in itemsDescriptionMessagesOut]
+            print(itemsDescriptionMessagesOut)
+
+            messageText = "<br> Your attempt to apply a name convention for your set of 'like' resource files produced the following errors: <br>" + '\n'.join(itemsDescriptionMessagesOut)  
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            self.scrollScrollArea(topOrBottom = "top")
+
     
     def save_resource(self):
         

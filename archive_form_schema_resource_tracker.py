@@ -17,30 +17,8 @@
 from copy import deepcopy
 import json
 
-formSubProps = \
-    ["resource.id", 
-    "path", 
-    "description", 
-    "category", 
-    "exp.belongs.to", 
-    "title", 
-    "description.file.name.convention", 
-    "description.file",
-    "description.row",
-    "category.sub.metadata",
-    "category.sub.data",
-    "category.sub.results",
-    "assoc.file.dd",
-    "assoc.file.protocol",
-    "assoc.file.depends.on",
-    #"assoc.file.result.depends.on",
-    "assoc.file.multi.like.file",
-    "access",
-    "access.date",
-    "format.software"]
 
-
-schema_resource_tracker = {
+form_schema_resource_tracker = {
     "type": "object",
     "description": "HEAL DSC Core Metadata piece to track and provide basic information about resource(s)/file(s) that support/are produced by/result from experiments you perform/will perform as part of your HEAL study.Objective is to list at least all files that will be submitted to a data repository in order to describe what each file is, how they relate to each other/how to use them, and how they relate to results/publications shared by the study group. Files may include results files (e.g. publications or draft publications/pieces of publications), processed and raw data files, protocol and analytic plan files, data dictionaries for tabular data files, other metadata as appropriate to data/field type, etc.",
     "title": "HEAL Resource Tracker",
@@ -79,12 +57,11 @@ schema_resource_tracker = {
             "pattern": "^exp-+-*[0-9]*[1-9][0-9]*$",
             "priority": "all, low"
         },
-        "name": {
-            "title" : "Resource Name",
-            "description": "File path stem; Auto-inferred from file path",
-            "type": "string",
-            "priority": "frictionless, auto"
-        },
+        #"name": {
+        #    "title" : "Resource Name",
+        #    "description": "This will be auto-inferred as the file name part of the file path (stem)",
+        #    "type": "string"
+        #},
         "title": {
             "title": "Resource Title",
             "description": "Human-readable title/name of resource",
@@ -133,6 +110,7 @@ schema_resource_tracker = {
         "assoc.file.dd": {
             "title": "Associated Data Dictionary",
             "description": "For a tabular data file resources, a reference/file path to associated data dictionary file(s) - preferably in heal csv data dictionary format",
+            #"type": "string"
             "type": "array",
             "items": {
                 "type": "string",
@@ -143,6 +121,7 @@ schema_resource_tracker = {
         "assoc.file.protocol": {
             "title": "Associated Protocol",
             "description": "For a data file resource, a reference/file path to associated protocol file(s)",
+            #"type": "string"
             "type": "array",
             "items": {
                 "type": "string",
@@ -215,18 +194,18 @@ schema_resource_tracker = {
             "pattern": "(((19|20)([2468][048]|[13579][26]|0[48])|2000)[/-]02[/-]29|((19|20)[0-9]{2}[/-](0[4678]|1[02])[/-](0[1-9]|[12][0-9]|30)|(19|20)[0-9]{2}[/-](0[1359]|11)[/-](0[1-9]|[12][0-9]|3[01])|(19|20)[0-9]{2}[/-]02[/-](0[1-9]|1[0-9]|2[0-8])))",
             "priority": "temporary private, high"
         },
-        "format": {
-            "title": "Format",
-            "description": "auto inferred; e.g. csv",
-            "type": "string",
-            "priority": "frictionless, auto"
-        },
+        #"format": {
+        #    "title": "Format",
+        #    "description": "auto inferred; e.g. csv",
+        #    "type": "string"
+        #},
         "format.software": {
             "title": "Software used to produce/read the resource file",
             "description": "If the file format of the resource file is proprietary and requires specific software to open/interpret, provide the software name and version used by the study group to produce/work with the file; e.g. Origin 11.0, CorelDraw 5.6",
             "type": "string",
             "priority": "all, low"
-        },
+        }
+        #,
         #"format.open.type": {
         #    "title": "Format Open Type",
         #    "description": "If the format is proprietary but can be opened/converted to open source format using open source tools, provide the open source format to which the file can be converted (e.g. csv)",
@@ -237,71 +216,61 @@ schema_resource_tracker = {
         #    "description": "If the format is proprietary but can be opened/converted to open source format using open source tools, provide the open source tools required and the protocol for converting the file to an open source format (open in excel, specify space delimited, 3 line header)",
         #    "type": "string"
         #},
-        "profile": {
-            "title": "Profile",
-            "description": "auto inferred; e.g. tabular-data-resource",
-            "type": "string",
-            "priority": "frictionless, auto"
-        },
-        "mediatype": {
-            "title": "Media Type",
-            "description": "auto inferred; e.g. text/csv",
-            "type": "string",
-            "priority": "frictionless, auto"
-        },
-        "encoding": {
-            "title": "Encoding",
-            "description": "auto inferred; e.g. utf-8",
-            "type": "string",
-            "priority": "frictionless, auto"
-        },
-        "schema": {
-            "title": "Schema",
-            "description": "auto inferred; for tabular resource, schema of fields contained in tabular resource; might replace this with ref to either heal csv dd or heal json dd",
-            "type": "string",
-            "priority": "frictionless, auto"
-        },
-        "resource.create.date.time": {
-            "title": "Resource creation datetime",
-            "description": "Date time of resource creation; auto-inferred",
-            "type": "string",
-            "priority": "resource tracker, auto"
-        },
-        "resource.mod.date.time": {
-            "title": "Resource modification datetime",
-            "description": "Date time at which the resource was last modified; auto-inferred",
-            "type": "string",
-            "priority": "resource tracker, auto"
-        },
-        "restrk.create.date.time": {
-            "title": "Resource tracker entry creation datetime",
-            "description": "Date time at which the resource tracker file for the resource was created; auto-inferred",
-            "type": "string",
-            "priority": "resource tracker, auto"
-        },
-        "restrk.mod.date.time": {
-            "title": "Resource tracker entry modification datetime",
-            "description": "Date time at which the resource tracker file for the resource was last modified; auto-inferred",
-            "type": "string",
-            "priority": "resource tracker, auto"
-        }
+        #"profile": {
+        #    "title": "Profile",
+        #    "description": "auto inferred; e.g. tabular-data-resource",
+        #    "type": "string"
+        #},
+        #"mediatype": {
+        #    "title": "Media Type",
+        #    "description": "auto inferred; e.g. text/csv",
+        #    "type": "string"
+        #},
+        #"encoding": {
+        #    "title": "Encoding",
+        #    "description": "auto inferred; e.g. utf-8",
+        #    "type": "string"
+        #},
+        #"schema": {
+        #    "title": "Schema",
+        #    "description": "auto inferred; for tabular resource, schema of fields contained in tabular resource; might replace this with ref to either heal csv dd or heal json dd",
+        #    "type": "string"
+        #},
+        #"resource.create.date.time": {
+        #    "title": "Resource creation datetime",
+        #    "description": "Date time of resource creation; auto-inferred",
+        #    "type": "string"
+        #},
+        #"resource.mod.date.time": {
+        #    "title": "Resource modification datetime",
+        #    "description": "Date time at which the resource was last modified; auto-inferred",
+        #    "type": "string"
+        #},
+        #"restrk.create.date.time": {
+        #    "title": "Resource tracker entry creation datetime",
+        #    "description": "Date time at which the resource tracker file for the resource was created; auto-inferred",
+        #    "type": "string"
+        #},
+        #"restrk.mod.date.time": {
+        #    "title": "Resource tracker entry modification datetime",
+        #    "description": "Date time at which the resource tracker file for the resource was last modified; auto-inferred",
+        #    "type": "string"
+        #}
     }
 }
 
-subProps = formSubProps
+subProps = ["resource.id","path"]
+keys = list(form_schema_resource_tracker["properties"].keys())
+print(keys)
+keys_to_remove = [x for x in keys if x not in subProps]
+print(keys_to_remove)
 
-allKeys = list(schema_resource_tracker["properties"].keys())
-#print(allKeys)
+newSchema = deepcopy(form_schema_resource_tracker)
 
-keysToRemove = [x for x in allKeys if x not in subProps]
-#print(keysToRemove)
+for k in keys_to_remove:
+    newSchema["properties"].pop(k)
 
-form_schema_resource_tracker = deepcopy(schema_resource_tracker)
-
-for k in keysToRemove:
-    form_schema_resource_tracker["properties"].pop(k)
-
-#print(form_schema_resource_tracker)
+print(newSchema)
 
 
 

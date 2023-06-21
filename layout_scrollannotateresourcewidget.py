@@ -114,7 +114,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.lstbox_view = ListboxWidget(self)
         self.lwModel = self.lstbox_view.model()
         self.items = []
-        self.lwModel.rowsInserted.connect(self.get_items_list)
+        self.programmaticListUpdate = False
+        self.lwModel.rowsInserted.connect(self.get_items_list, self.programmaticListUpdate)
         self.lwModel.rowsRemoved.connect(self.get_items_list)
        
         ################################## Apply some initializing and maintenance functions
@@ -448,13 +449,38 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
     def get_items_list(self):
         #item = QListWidgetItem(self.lstbox_view.currentItem())
         #print(item.text())
+        if self.programmaticListUpdate:
+            self.programmaticListUpdate = False
+            return
+
         lw = self.lstbox_view
         
         oldLength = None
         if self.items:
             oldLength = len(self.items)
+            oldItems = self.items
 
         self.items = [lw.item(x).text() for x in range(lw.count())]
+        print(self.items)
+
+        refactorItems = []
+        for i in self.items:
+            print(i)
+            if os.path.isdir(i):
+                #self.programmaticListUpdate = True
+                myFiles = [os.path.join(i,f) for f in os.listdir(i) if os.path.isfile(os.path.join(i,f))]
+                print(myFiles)
+                refactorItems.extend(myFiles)
+            else:
+                refactorItems.append(i)
+
+        if self.items != refactorItems:
+            self.programmaticListUpdate = True
+
+            self.items = refactorItems
+            self.lstbox_view.clear()
+            self.lstbox_view.addItems(self.items)
+
         newLength = len(self.items)
         print(self.items)  
         #print(type(self.items)) 
@@ -472,6 +498,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             "assoc.file.multi.like.file": updateAssocFileMultiLike
         } 
 
+        
         if len(self.items) > 1:
             print("show")
             indices = [i for i, x in enumerate(self.priorityContentList) if ("multiple like resource" in x) and ("permanent hide" not in x)]
@@ -577,13 +604,36 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
+        # check if specified name convention includes directory structure (if so should provide full path, including file extension when specifying file name convention)
+        s = rf"{self.nameConvention}"
+        s1 = s.split('/')
+        s2 = s.split('\\')
+        print("forward slash split: ", s1, "back slash split: ", s2)
 
-        # get just file stems from full path, this also removes file extensions
-        if self.items:
-            self.fileStemList = [Path(p).stem for p in self.items]
+        if ((s1) or (s2)):
+            keepFullPath = True
+            messageText = "<br> Because the file name convention you entered contains either forward or back slashes, the file name convention you entered will be applied to the full path of each file in the set of multiple 'like' resources you added to the file drop box. When directory structure is used as part of the file naming convention, please specify the name convention including the full path and the file extension in the file name convention string you provide in the form."  
+            self.userMessageBox.append(messageText)
+            self.scrollScrollArea(topOrBottom = "top")
         else:
-            self.fileStemList = [Path(self.form.widget.state["path"]).stem]
-        
+            messageText = "<br> Because the file name convention you entered does not contain either forward or back slashes, the file name convention you entered will be applied to the stem of the full path of each file in the set of multiple 'like' resources you added to the file drop box. When directory structure is NOT used as part of the file naming convention, please specify the name convention including just the filename excluding the file extension in the file name convention string you provide in the form."  
+            self.userMessageBox.append(messageText)
+            self.scrollScrollArea(topOrBottom = "top")
+            keepFullPath = False
+
+        if not keepFullPath:
+            # get just file stems from full path, this also removes file extensions
+            if self.items:
+                self.fileStemList = [Path(p).stem for p in self.items]
+            else:
+                self.fileStemList = [Path(self.form.widget.state["path"]).stem]
+        else:
+            if self.items:
+                self.fileStemList = [p for p in self.items]
+            else:
+                self.fileStemList = [self.form.widget.state["path"]]
+            
+
         self.itemsDescriptionList = []
         self.itemsDescriptionMessagesOut = []
 
@@ -597,7 +647,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     "description.file": self.itemsDescriptionList[0]
                 } 
 
-                applyConvention = "successful"
+                applyConvention = "successful. Please see the Resource File Description field in the form below to see the file description assigned to the first file in your set of multiple 'like' resource files"
                 textColor = "green"
             else: 
                 applyConvention = "unsuccessful. Examine any errors the attempt produced (red text below), ensure that you are following the required conventions for specifying your naming convention, and come back and try again"

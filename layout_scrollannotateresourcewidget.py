@@ -115,8 +115,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.lwModel = self.lstbox_view.model()
         self.items = []
         self.programmaticListUpdate = False
-        self.lwModel.rowsInserted.connect(self.get_items_list, self.programmaticListUpdate)
+        self.lwModel.rowsInserted.connect(self.get_items_list)
         self.lwModel.rowsRemoved.connect(self.get_items_list)
+
+        # create drag and drop window for multiple file dependencies addition
+        self.lstbox_view2 = ListboxWidget(self)
+        self.lwModel2 = self.lstbox_view2.model()
+        self.items2 = []
+        self.programmaticListUpdate2 = False
+        self.lwModel2.rowsInserted.connect(self.get_items_list2)
+        self.lwModel2.rowsRemoved.connect(self.get_items_list2)
        
         ################################## Apply some initializing and maintenance functions
 

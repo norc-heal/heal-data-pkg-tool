@@ -118,13 +118,24 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.lwModel.rowsInserted.connect(self.get_items_list)
         self.lwModel.rowsRemoved.connect(self.get_items_list)
 
+        # create button to add multiple file dependencies addition
+        self.buttonAddMultiDepend = QtWidgets.QPushButton(text="Add Multiple Resource Dependencies",parent=self)
+        self.buttonAddMultiDepend.clicked.connect(self.add_multi_depend)
+        self.labelAddMultiDepend = QtWidgets.QLabel(text="To add multiple file dependencies for your resource, <b>drag and drop file paths right here</b>. If your resource has one or just a few dependencies, you can drag and drop them here or browse to each dependency (one dependency at a time) using the Associated Files/Dependencies field in the form below.",parent=self)
+        
+        self.labelAddMultiDepend.setSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+
+        self.labelAddMultiDepend.setWordWrap(True)
+
         # create drag and drop window for multiple file dependencies addition
         self.lstbox_view2 = ListboxWidget(self)
         self.lwModel2 = self.lstbox_view2.model()
         self.items2 = []
         self.programmaticListUpdate2 = False
-        self.lwModel2.rowsInserted.connect(self.get_items_list2)
-        self.lwModel2.rowsRemoved.connect(self.get_items_list2)
+        #self.lwModel2.rowsInserted.connect(self.get_items_list2)
+        #self.lwModel2.rowsRemoved.connect(self.get_items_list2)
        
         ################################## Apply some initializing and maintenance functions
 
@@ -161,6 +172,10 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.vbox.addWidget(self.lstbox_view)
         self.vbox.addWidget(self.labelApplyNameConvention)
         self.vbox.addWidget(self.buttonApplyNameConvention)
+
+        self.vbox.addWidget(self.buttonAddMultiDepend)
+        self.vbox.addWidget(self.labelAddMultiDepend)
+        self.vbox.addWidget(self.lstbox_view2)
 
         self.vbox.addWidget(self.form)
         
@@ -232,6 +247,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.lstbox_view.hide()
         self.labelApplyNameConvention.hide()
         self.buttonApplyNameConvention.hide()
+        self.labelAddMultiDepend.hide()
+        self.lstbox_view2.hide()
 
         print(self.form.widget.layout())
 
@@ -583,6 +600,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         else:
             self.lstbox_view.hide()
             self.labelAddMultiResource.hide()
+
+    def add_multi_depend(self):
+
+        if ((self.lstbox_view2.isHidden()) and (self.labelAddMultiDepend.isHidden())):
+            self.lstbox_view2.show()
+            self.labelAddMultiDepend.show()
+        else:
+            self.lstbox_view2.hide()
+            self.labelAddMultiDepend.hide()
 
     def apply_name_convention(self):
         # have to do this after add_tooltip because these items are defined in that function - may want to change that at some point

@@ -232,7 +232,7 @@ def new_results_trk():
     fName = "heal-csv-" + metadataType + "-(multi-result file to which this result tracker applies).csv"
     #df.to_csv(os.path.join(pkg_path, fName), index = False) 
 
-    return [df, fName]
+    return df, fName
 
 
 def qt_object_properties(qt_object: object) -> dict:

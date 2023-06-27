@@ -12,7 +12,8 @@ from PyQt5.QtWidgets import (
 
 #from layout_vlmdcreatewidget import VLMDCreateWindow
 #from layout_exptrkaddwidget import ExpTrkAddWindow
-from layout_resourcetrkaddwidget import ResourceTrkAddWindow
+from layout_resultstrkaddwidget import ResultsTrkAddWindow
+from layout_resultstrkcreatewidget import ResultsTrkCreateWindow
 from layout_infotextwidget import InfoTextWindow
 from layout_csvpushtoloadwidget import CSVPushToLoadWindow
 
@@ -31,8 +32,10 @@ class ResultsTrkTabsWindow(QWidget):
         # Create the tab widget with two tabs
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(self.infoText), "Info")
+        tabs.addTab(ResultsTrkCreateWindow(), "Create Result Tracker")
+        tabs.addTab(ResultsTrkAddWindow(), "Add Results")
         tabs.addTab(CSVPushToLoadWindow(), "View/Edit Tracker")
-        #tabs.addTab(ResourceTrkAddWindow(), "Add Results")
+        
         
                 
         layout.addWidget(tabs)

@@ -24,7 +24,7 @@ import requests # requests already installed as a healdata_utils dependency, no 
 import pipe
 
 import dsc_pkg_utils # local module, no pip install needed
-from layout_scrollannotateresourcewidget import ScrollAnnotateResourceWindow
+from layout_scrollannotateresultwidget import ScrollAnnotateResultWindow
 
 import jsonschema
 from jsonschema import validate
@@ -65,7 +65,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
     
     def annotate_result(self,checked):
         if self.w is None:
-            self.w = ScrollAnnotateResourceWindow()
+            self.w = ScrollAnnotateResultWindow()
             self.w.show()
 
         else:

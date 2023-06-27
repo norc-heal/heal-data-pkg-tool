@@ -375,7 +375,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
 
         if self.form.widget.state["category"] == "multi-result":
-            messageText = "<br>You have indicated your resource is a multi-result resource. Please ensure that you add a result tracker for this multi-result resource in the Associated Files/Dependencies field in the form below. A result tracker is a HEAL formatted file to track all results in a multi-result file, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted result tracker, you can easily create one by visiting the Result Tracker tab of the DSC Packaging Desktop application. You can leave this form open, visit the Result Tracker tab to create and save your HEAL formatted result tracker, and then return to this form to add the result tracker you created."
+            messageText = "<br>You have indicated your resource is a multi-result resource. Please ensure that you add a result tracker for this multi-result resource in the Associated Result Tracker field in the form below. A result tracker is a HEAL formatted file to track all results in a multi-result file, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted result tracker, you can easily create one by visiting the Result Tracker tab of the DSC Packaging Desktop application. You can leave this form open, visit the Result Tracker tab to create and save your HEAL formatted result tracker, and then return to this form to add the result tracker you created."
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 
@@ -394,12 +394,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 "assoc.file.dd": []
             } 
             
-            
-           
         if self.form.widget.state["category"] != "non-tabular-data":
             self.toggle_widgets(keyText = "data", desiredToggleState = "hide")
             
-           
         if self.form.widget.state["category"] not in ["tabular-data","non-tabular-data"]:
             # delete contents of conditional fields if any added
             self.form.widget.state = {
@@ -421,6 +418,12 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     "category.sub.results": ""
                 } 
 
+        if self.form.widget.state["category"] != "multi-result":
+            self.toggle_widgets(keyText = "multi-result", desiredToggleState = "hide")
+            self.form.widget.state = {
+                    "assoc.file.result.tracker": []
+                } 
+
         ################### show field appropriate to current selection
             
         if self.form.widget.state["category"] == "tabular-data":
@@ -435,6 +438,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         if self.form.widget.state["category"] in ["single-result","multi-result"]:
             self.toggle_widgets(keyText = "results", desiredToggleState = "show")
+
+        if self.form.widget.state["category"] == "multi-result":
+            self.toggle_widgets(keyText = "multi-result", desiredToggleState = "show")
 
         #if changedFieldName == "access":
 

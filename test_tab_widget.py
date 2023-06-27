@@ -45,6 +45,7 @@ from layout_pkgtabswidget import PkgTabsWindow
 from layout_vlmdtabswidget import VLMDTabsWindow
 from layout_exptrktabswidget import ExpTrkTabsWindow
 from layout_resourcetrktabswidget import ResourceTrkTabsWindow
+from layout_resultstrktabswidget import ResultsTrkTabsWindow
 #from layout_vlmdcreatewidget import VLMDCreateWindow
 from layout_csveditwidget import CSVEditWindow
 
@@ -73,6 +74,7 @@ class MainWindow(QMainWindow):
         tabs.addTab(ExpTrkTabsWindow(), "Experiment Tracker")
         tabs.addTab(ResourceTrkTabsWindow(), "Resource Tracker")
         tabs.addTab(VLMDTabsWindow(), "Data Dictionary")
+        tabs.addTab(ResultsTrkTabsWindow(), "Results Tracker")
         
         #for n, color in enumerate(["red", "green", "blue", "yellow"]):
         #    tabs.addTab(Color(color), color)

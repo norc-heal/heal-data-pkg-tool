@@ -32,6 +32,7 @@ formSubProps = \
     "category.sub.results",
     "assoc.file.dd",
     "assoc.file.protocol",
+    "assoc.file.result.tracker",
     "assoc.file.depends.on",
     #"assoc.file.result.depends.on",
     "assoc.file.multi.like.file",
@@ -150,6 +151,16 @@ schema_resource_tracker = {
             },
             "priority": "data, high"
         },
+        "assoc.file.result.tracker": {
+            "title": "Associated Result Tracker",
+            "description": "For a multi-result file resource, a reference/file path to associated HEAL result tracker file - HEAL result tracker is a file that tracks each result in a multi-result file (e.g. a publication, poster, etc.), along with the data and other supporting files that underly/support each result. If you are using the DSC Packaging Desktop Application, you can head to the Result Tracker tab of the application to create a HEAL formatted result tracker for your multi-result resource file(s).",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "path"
+            },
+            "priority": "multi-result, high"
+        },
         #"assoc.file.id.map": {
         #    "title": "Data Resource - Associated ID Map",
         #    "description": "generally relevant only for tabular data file resources; reference/file path to associated ID map file(s); e.g. if each row in a tabular data file represents a unique study subject at a unique study timepoint and the study subject is denoted by an ID in the data file, there may be an associated ID map that maps the subject ID to demographic variables relevant to each subject.",
@@ -198,6 +209,16 @@ schema_resource_tracker = {
             },
             "priority": "multiple like resource, high, auto, permanent hide"
         },
+        #"assoc.file.multi.depend": {
+        #    "title": "Multiple Resource Dependencies",
+        #    "description": "if the current resource file has many dependencies, it is not convenient to enter them by browsing for each dependency file one by one using the Associated Files/Dependencies form field; Instead, use the drag and drop file box at the top of the form that is revealed by clicking the Add Multiple Resource Dependencies button at the top of the form; adding dependency files in that box will populate this field with the list of all dependency files added in the box.",
+        #    "type": "array",
+        #    "items": {
+        #        "type": "string",
+        #        "format": "path"
+        #    },
+        #    "priority": "multiple dependencies, high, auto, permanent hide"
+        #},
         "access": {
             "title" : "Access",
             "description": "What is the current/final access level anticipated for this resource? Options are permanent-private (current and final access level is private), temporary-private (current access level is private but final access level will be either restricted-access or public), restricted-access (current, final, or current AND final access level will allow request of data with barriers/restrictions to access), public (current, final, or current AND final access level will allow largely unrestricted request of/access to data); Many investigators will designate data as currently temporary-private, with a final access level of either restricted-access or public: In this case choose both temporary-private AND either 1) restricted-access or 2) public, then add the date at which you expect to transition from temporary-private to either restricted-access or public in the Access Date field below; Private means members of the public cannot request access; Restricted access means they can request access but there is gate-keeping; Public access means they can often access the data without requesting access, and with minimal barriers to access.",

@@ -16,6 +16,7 @@ import itertools
 from healdata_utils.schemas import healjsonschema, healcsvschema
 from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
+from schema_results_tracker import schema_results_tracker
 
 
 
@@ -34,10 +35,13 @@ def heal_metadata_json_schema_properties(metadataType):
 
     if metadataType == "experiment-tracker":
         props = schema_experiment_tracker["properties"]
+
+    if metadataType == "results-tracker":
+        props = schema_results_tracker["properties"]
         
 
-    if metadataType not in ["data-dictionary","resource-tracker","experiment-tracker"]:
-        print("metadata type not supported; metadataType must be one of data-dictionary, resource-tracker, experiment-tracker")
+    if metadataType not in ["data-dictionary","resource-tracker","experiment-tracker","results-tracker"]:
+        print("metadata type not supported; metadataType must be one of data-dictionary, resource-tracker, experiment-tracker, results-tracker")
         return
     
     return props
@@ -217,6 +221,19 @@ def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path
         df.to_csv(os.path.join(pkg_path, fName), index = False) 
 
     return pkg_path
+
+def new_results_trk():
+    
+    metadataType = "results-tracker"
+
+    props = heal_metadata_json_schema_properties(metadataType=metadataType)
+    df = empty_df_from_json_schema_properties(jsonSchemaProperties=props)
+
+    fName = "heal-csv-" + metadataType + "-(multi-result file to which this result tracker applies).csv"
+    #df.to_csv(os.path.join(pkg_path, fName), index = False) 
+
+    return [df, fName]
+
 
 def qt_object_properties(qt_object: object) -> dict:
     """

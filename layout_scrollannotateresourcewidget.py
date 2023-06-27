@@ -1013,6 +1013,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if self.items:
                 self.items = []
 
+        if self.lstbox_view2.count() > 0:
+            self.lstbox_view2.clear()
+            self.get_items_list2()
+        else:
+            if self.items2:
+                self.items2 = []
+
 
         messageText = "<br>Your form was successfully cleared and you can start annotating a new resource"
         saveFormat = '<span style="color:green;">{}</span>'

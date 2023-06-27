@@ -26,15 +26,28 @@ schema_results_tracker = {
             "enum": ["","figure","text"],
             "priority": "all, high"
         },
-        "figure.number": {
-            "title" : "Result - Figure Number",
-            "description": "If the result is a figure result, provide the number of the figure as it appears in the corresponding multi-result file; Examples include '1' if the result is in figure 1, or '1a' if the result is in figure 1A.",
-            "type": "string",
+        "assoc.multi.result.file": {
+            "title": "Associated Multi-Result File",
+            "description": "The multi-result file(s) in which this result has been shared.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "path"
+            },
             "priority": "all, high"
         },
-        "assoc.file.result.depends.on": {
+        "figure.number": {
+            "title" : "Figure Number",
+            "description": "If the result is a figure result, provide the number of the figure as it appears in the corresponding multi-result file; Examples include '1' if the result is in figure 1, or '1a' if the result is in figure 1A. If the result is included in more than one multi-result file, use the Associated Multi-Result File(s) field above to specify all multi-result files in which the result appears, and add the figure number at which the result appears in each of those files in this field, using the same order (e.g. file-1, file-2; figure-number-in-file-1, figure-number-in-file-2).",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "priority": "figure, high"
+        },
+        "assoc.file.depends.on": {
             "title": "Associated Files/Dependencies",
-            "description": "Data and/or non-data supporting files the result depends upon (e.g. data, analysis plan/code, etc.). If documenting resources wholistically (i.e. documenting all resources related to a study), only list dependencies one layer deep; if documenting resources minimally (i.e. only documenting resources that will be publicly shared), list dependencies liberally; dependencies can be data, code, protocol, etc.",
+            "description": "Data and/or non-data supporting files the result depends upon (e.g. data, analysis plan/code, etc.). If you are using the DSC Packaging App and have many result dependencies to add, you can use the Add Multiple Result Dependencies button above the form to reveal an interface where you can drag and drop many files at once. If documenting resources wholistically (i.e. documenting all resources related to a study), only list dependencies one layer deep; if documenting resources minimally (i.e. only documenting resources that will be publicly shared), list dependencies liberally; dependencies can be data, code, protocol, etc.",
             "type": "array",
             "items": {
                 "type": "string",

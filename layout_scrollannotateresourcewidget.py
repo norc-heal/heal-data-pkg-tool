@@ -367,28 +367,59 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         #if changedFieldName == "category":
 
+        # reminder to add dd if tabular data; reminder to add result tracker if multi-result 
+
+        if self.form.widget.state["category"] == "tabular-data":
+            messageText = "<br>You have indicated your resource is a tabular data resource. Please ensure that you add a data dictionary for this tabular data resource in the Associated Data Dictionary field in the form below. A HEAL formatted data dictionary is highly preferred. If you don't already have a HEAL formatted data dictionary, you can easily create one directly from your tabular data file by visiting the Data Dictionary tab of the DSC Packaging Desktop application. You can leave this form open, visit the Data Dictionary tab to create and save your HEAL formatted data dictionary, and then return to this form to add the data dictionary you created."
+            errorFormat = '<span style="color:blue;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+
+        if self.form.widget.state["category"] == "multi-result":
+            messageText = "<br>You have indicated your resource is a multi-result resource. Please ensure that you add a result tracker for this multi-result resource in the Associated Files/Dependencies field in the form below. A result tracker is a HEAL formatted file to track all results in a multi-result file, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted result tracker, you can easily create one by visiting the Result Tracker tab of the DSC Packaging Desktop application. You can leave this form open, visit the Result Tracker tab to create and save your HEAL formatted result tracker, and then return to this form to add the result tracker you created."
+            errorFormat = '<span style="color:blue;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+
         # this is an inefficient way to make sure previously unhidden fields get hidden again if user changes the category
         # should really save the last chosen state and be selective about re-hiding the ones that were revealed due to the
         # previous selection
 
-        ################### hide fields that were revealed due to previous selection 
+        ################### hide fields that were revealed due to previous selection
 
         if self.form.widget.state["category"] != "tabular-data":
             self.toggle_widgets(keyText = "data", desiredToggleState = "hide")
             self.toggle_widgets(keyText = "tabular data", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
+            self.form.widget.state = {
+                "description.row": "",
+                "assoc.file.dd": []
+            } 
+            
+            
            
         if self.form.widget.state["category"] != "non-tabular-data":
             self.toggle_widgets(keyText = "data", desiredToggleState = "hide")
-            # delete contents of conditional fields if any added
+            
            
+        if self.form.widget.state["category"] not in ["tabular-data","non-tabular-data"]:
+            # delete contents of conditional fields if any added
+            self.form.widget.state = {
+                    "category.sub.data": "",
+                    "assoc.file.protocol": []
+                } 
+        
         if self.form.widget.state["category"] != "metadata":
             self.toggle_widgets(keyText = "metadata", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
+            self.form.widget.state = {
+                    "category.sub.metadata": ""
+                } 
 
         if self.form.widget.state["category"] not in ["single-result","multi-result"]:
             self.toggle_widgets(keyText = "results", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
+            self.form.widget.state = {
+                    "category.sub.results": ""
+                } 
 
         ################### show field appropriate to current selection
             

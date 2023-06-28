@@ -31,8 +31,8 @@ class VLMDTabsWindow(QWidget):
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(infoText=self.infoText), "Info")
         tabs.addTab(VLMDCreateWindow(), "Create")
-        tabs.addTab(CSVPushToLoadWindow(), "View/Edit")
         tabs.addTab(VLMDValidateWindow(), "Validate")
+        tabs.addTab(CSVPushToLoadWindow(), "View/Edit")
         layout.addWidget(tabs)
 
     

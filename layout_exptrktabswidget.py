@@ -30,8 +30,9 @@ class ExpTrkTabsWindow(QWidget):
         # Create the tab widget with two tabs
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(self.infoText), "Info")
-        tabs.addTab(CSVPushToLoadWindow(), "View/Edit Tracker")
         tabs.addTab(ExpTrkAddWindow(), "Add Experiment")
+        tabs.addTab(CSVPushToLoadWindow(), "View/Edit Tracker")
+        
                 
         layout.addWidget(tabs)
 

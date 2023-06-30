@@ -138,7 +138,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     printErrAll = '\n\n'.join(printErrListAll)
                 
                     #messageText = "The following resource file is NOT valid and will not be added to your Resource Tracker file: " + ifileName + "\n\n\n" + "Validation errors are as follows: " + "\n\n\n" + ', '.join(out["errors"]) + "\n\n\n" + "Exiting \"Add Resource\" function now."
-                    messageText = "The following result file is NOT valid and will not be added to your Resource Tracker file: " + filename + "\n\n\n" + "Validation errors are as follows: " + "\n\n\n" + printErrAll + "\n\n\n"
+                    messageText = "The following result file is NOT valid and will not be added to your Results Tracker file: " + filename + "\n\n\n" + "Validation errors are as follows: " + "\n\n\n" + printErrAll + "\n\n\n"
                     
                     self.userMessageBox.append(messageText)
                     #return
@@ -170,7 +170,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     print("collect_df rows: ", collect_df.shape[0])
         else: 
             print("you have not selected any files; returning")
-            messageText = "<br>You have not selected any result files to add to the result tracker. Please select at least one result file to add."
+            messageText = "<br>You have not selected any result files to add to the results tracker. Please select at least one result file to add."
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
@@ -178,7 +178,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         # once you've looped through all selected files, if none are valid, print an informative message for the user listing
         # which files did not pass validation and exit
         if not validFiles:
-            messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(invalidFiles) + "\n\n\n" + "cannot be added to a Resource Tracker file because they did not pass validation. Please review the validation errors for the file(s) printed above." + "Exiting \"Add Result\" function now." 
+            messageText = "The contents of the Result file(s): " + "\n\n\n" + ', '.join(invalidFiles) + "\n\n\n" + "cannot be added to a Results Tracker file because they did not pass validation. Please review the validation errors for the file(s) printed above." + "Exiting \"Add Result\" function now." 
             self.userMessageBox.append(messageText)
             return
 
@@ -188,20 +188,20 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
 
         # get result tracker path
         #parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your Data Package Directory - Your Resource Tracker File lives here!')
-        resultTrackerPath, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Tracker File to which you would like to add the Input Result Txt Data file(s)",
-               (QtCore.QDir.homePath()), "Text (*.txt)")
+        resultsTrackerPath, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Results Tracker File to which you would like to add the Input Result Txt Data file(s)",
+               (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
                
         
         # if result tracker file selected, append the pd data object from the experiment file as a new row in the experiment tracker file
         # if doesn't exist, print error/info message and exit
-        if resultTrackerPath:
+        if resultsTrackerPath:
 
-            resultTrackerPathStem = Path(resultTrackerPath).stem
+            resultsTrackerPathStem = Path(resultsTrackerPath).stem
 
-            if resultTrackerPathStem.startswith('heal-csv-result-tracker'):
+            if resultsTrackerPathStem.startswith('heal-csv-results-tracker'):
 
             
-                output_path = resultTrackerPath
+                output_path = resultsTrackerPath
                 all_df = pd.read_csv(output_path)
                 #all_df = pd.concat([all_df, df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
                 all_df = pd.concat([all_df, collect_df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
@@ -222,21 +222,21 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 #df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
 
                 if invalidFiles:
-                    messageText = "The contents of the Result file(s): <br><br>" + ', '.join(invalidFiles) + "<br><br>cannot be added to a Result Tracker file because they did not pass validation. Please review the validation errors printed above." 
+                    messageText = "The contents of the Result file(s): <br><br>" + ', '.join(invalidFiles) + "<br><br>cannot be added to a Results Tracker file because they did not pass validation. Please review the validation errors printed above." 
                     errorFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(errorFormat.format(messageText))
             
-                messageText = "The contents of the Result file(s): <br><br>" + ', '.join(validFiles) + "<br><br>were added as a result(s) to the Result Tracker file: <br><br>" + output_path
+                messageText = "The contents of the Result file(s): <br><br>" + ', '.join(validFiles) + "<br><br>were added as a result(s) to the Results Tracker file: <br><br>" + output_path
                 errorFormat = '<span style="color:green;">{}</span>'
                 self.userMessageBox.append(errorFormat.format(messageText))
         
             else:
-                messageText = "The file you selected does not appear to be a valid HEAL formatted result tracker file. Please select a valid HEAL formatted result tracker file to which to add your results. If you have not yest created a result tracker file, use the \"Create Result Tracker\" button on the \"Add Results\" sub-tab of the \"Result Tracker\" tab to create a result tracker, then save it as \"heal-csv-resource-tracker-(name of multi-result file to which this result tracker applies)\". You can then come back here and try adding your result file(s) again! <br><br>Exiting \"Add Result\" function now."
+                messageText = "The file you selected does not appear to be a valid HEAL formatted results tracker file. Please select a valid HEAL formatted results tracker file to which to add your results. If you have not yet created a results tracker file, use the \"Create Results Tracker\" button on the \"Add Results\" sub-tab of the \"Results Tracker\" tab to create a results tracker, then save it as \"heal-csv-results-tracker-(name of multi-result file to which this results tracker applies)\". You can then come back here and try adding your result file(s) again! <br><br>Exiting \"Add Result\" function now."
                 errorFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(errorFormat.format(messageText))
                 return
         else:
-            messageText = "You have not selected a result tracker file. Please select a result tracker file to which to add your results. If you have not yest created a result tracker file, use the \"Create Result Tracker\" button on the \"Add Results\" sub-tab of the \"Result Tracker\" tab to create a result tracker, then save it as \"heal-csv-resource-tracker-(name of multi-result file to which this result tracker applies)\". You can then come back here and try adding your result file(s) again! <br><br>Exiting \"Add Result\" function now."
+            messageText = "You have not selected a results tracker file. Please select a results tracker file to which to add your results. If you have not yet created a results tracker file, use the \"Create Results Tracker\" button on the \"Add Results\" sub-tab of the \"Results Tracker\" tab to create a results tracker, then save it as \"heal-csv-results-tracker-(name of multi-result file to which this results tracker applies)\". You can then come back here and try adding your result file(s) again! <br><br>Exiting \"Add Result\" function now."
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return

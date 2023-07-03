@@ -341,6 +341,8 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
 
                     collect_df = pd.concat([collect_df,df], axis=0) # add this files data to the dataframe that will collect data across all valid data files
                     print("collect_df rows: ", collect_df.shape[0])
+
+                    
         else: 
             print("you have not selected any files; returning")
             messageText = "<br>You have not selected any result files to add to the results tracker. Please select at least one result file to add."
@@ -355,6 +357,8 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(messageText)
             return
 
+        
+        
         # you should now have collected one row of data from each valid data file and collected it into collect_df dataframe
         # now get location of dsc pkg dir, check if appropriate results trackers already exist, if not create them, then add
         # results to appropriate results trackers
@@ -367,30 +371,42 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
             return
         else:
+
+            # add dummies for whether or not each result is associated with any of the unique multiresult files listed in any of the results files
+            # this will allow filtering to the df that should be written to each result tracker file (each result tracker file is named after a specific unique multi result file)
+            # if a result tracker does not yet exist in the dsc pkg dir for each unique multiresult file listed across all result files, this fx will create the appropriate results tracker file
+            collect_df_cols = list(collect_df.columns)
+            print("collect_df_cols: ", collect_df_cols)
+
+            myDummies = collect_df["assoc.multi.result.file"].str.join('|').str.get_dummies()
+            print(list(myDummies.columns))
+
+            collect_df = pd.concat([collect_df, myDummies], axis = 1)
+
             # get a list of any results trackers that already exist in dsc pkg dir
             resultsTrkFileList = [filename for filename in os.listdir(dscDirPath) if filename.startswith("heal-csv-results-tracker")]
             print(resultsTrkFileList)
 
-            if resultsTrkFileList: # if the list is not empty
-                resultsTrkFileStemList = [Path(filename).stem for filename in resultsTrkFileList]
-                print(resultsTrkFileStemList)
-                
-            else:
-                resultsTrkFileStemList = []
+            #if resultsTrkFileList: # if the list is not empty
+            #    resultsTrkFileStemList = [Path(filename).stem for filename in resultsTrkFileList]
+            #    print(resultsTrkFileStemList)
+            #    
+            #else:
+            #    resultsTrkFileStemList = []
 
             multiResultFileList = collect_df["assoc.multi.result.file"].explode().unique().tolist()
-            print(multiResultFileList)
-            multiResultFileStemList = [Path(filename).stem for filename in multiResultFileStemList]
+            print("multi result file list: ",multiResultFileList)
+            multiResultFileStemList = [Path(filename).stem for filename in multiResultFileList]
             print(multiResultFileStemList)
-            finalResultsTrkFileStemList = ["heal-csv-results-tracker-"+ filename for filename in multiResultFileStemList]
+            finalResultsTrkFileStemList = ["heal-csv-results-tracker-"+ filename + ".csv" for filename in multiResultFileStemList]
+            finalResultsTrkFileList = [os.path.join(dscDirPath,filename) for filename in finalResultsTrkFileStemList]
 
-            trkExist = [filename for filename in finalResultsTrkFileStemList if filename in resultsTrkFileStemList]
-            print(trkExist)
-            trkExist = [os.path.join(dscDirPath,filename) for filename in trkExist]
-            print(trkExist)
+            if resultsTrkFileList:
+                trkExist = [filename for filename in finalResultsTrkFileList if filename in resultsTrkFileList]
+                print(trkExist)
+                #trkExist = [os.path.join(dscDirPath,filename) for filename in trkExist]
+                #print(trkExist)
 
-            if trkExist:
-                
                 for t in trkExist:
                     messageText = "Required results tracker already exists - new added results will be appended: <br>" + t
                     #errorFormat = '<span style="color:red;">{}</span>'
@@ -400,10 +416,10 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 trkExist = []
 
 
-            trkCreate = [filename for filename in finalResultsTrkFileStemList if filename not in resultsTrkFileStemList]
+            trkCreate = [filename for filename in finalResultsTrkFileList if filename not in resultsTrkFileList]
             print(trkCreate)
-            trkCreate = [os.path.join(dscDirPath,filename) for filename in trkCreate]
-            print(trkCreate)
+            #trkCreate = [os.path.join(dscDirPath,filename) for filename in trkCreate]
+            #print(trkCreate)
 
             if trkCreate:
                 df, _ = dsc_pkg_utils.new_results_trk()
@@ -418,26 +434,19 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             else: 
                 trkCreate = []
 
-            trkAll = trkExist + trkCreate
-            
-
-
-            
-               
-        
-        # if result tracker file selected, append the pd data object from the experiment file as a new row in the experiment tracker file
-        # if doesn't exist, print error/info message and exit
-        if resultsTrackerPath:
-
-            resultsTrackerPathStem = Path(resultsTrackerPath).stem
-
-            if resultsTrackerPathStem.startswith('heal-csv-results-tracker'):
-
-            
-                output_path = resultsTrackerPath
+            for m, t in zip(multiResultFileList, finalResultsTrkFileList):
+                print(m,"; ",t)
+                print_df = collect_df[collect_df[m] == 1]
+                print(print_df.shape)
+                print(print_df.columns)
+                print_df = print_df[collect_df_cols]
+                print(print_df.shape)
+                print(print_df.columns)
+                
+                output_path = t
                 all_df = pd.read_csv(output_path)
                 #all_df = pd.concat([all_df, df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
-                all_df = pd.concat([all_df, collect_df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
+                all_df = pd.concat([all_df, print_df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
             
                 all_df.sort_values(by = ["result.id.num"], inplace=True)
                 # drop any exact duplicate rows
@@ -454,26 +463,16 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 all_df.to_csv(output_path, mode='w', header=True, index=False)
                 #df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
 
-                if invalidFiles:
-                    messageText = "The contents of the Result file(s): <br><br>" + ', '.join(invalidFiles) + "<br><br>cannot be added to a Results Tracker file because they did not pass validation. Please review the validation errors printed above." 
-                    errorFormat = '<span style="color:red;">{}</span>'
-                    self.userMessageBox.append(errorFormat.format(messageText))
-            
-                messageText = "The contents of the Result file(s): <br><br>" + ', '.join(validFiles) + "<br><br>were added as a result(s) to the Results Tracker file: <br><br>" + output_path
-                errorFormat = '<span style="color:green;">{}</span>'
-                self.userMessageBox.append(errorFormat.format(messageText))
-        
-            else:
-                messageText = "The file you selected does not appear to be a valid HEAL formatted results tracker file. Please select a valid HEAL formatted results tracker file to which to add your results. If you have not yet created a results tracker file, use the \"Create Results Tracker\" button on the \"Add Results\" sub-tab of the \"Results Tracker\" tab to create a results tracker, then save it as \"heal-csv-results-tracker-(name of multi-result file to which this results tracker applies)\". You can then come back here and try adding your result file(s) again! <br><br>Exiting \"Add Result\" function now."
+            if invalidFiles:
+                messageText = "The contents of the Result file(s): <br><br>" + ', '.join(invalidFiles) + "<br><br>cannot be added to a Results Tracker file because they did not pass validation. Please review the validation errors printed above." 
                 errorFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(errorFormat.format(messageText))
-                return
-        else:
-            messageText = "You have not selected a results tracker file. Please select a results tracker file to which to add your results. If you have not yet created a results tracker file, use the \"Create Results Tracker\" button on the \"Add Results\" sub-tab of the \"Results Tracker\" tab to create a results tracker, then save it as \"heal-csv-results-tracker-(name of multi-result file to which this results tracker applies)\". You can then come back here and try adding your result file(s) again! <br><br>Exiting \"Add Result\" function now."
-            errorFormat = '<span style="color:red;">{}</span>'
+            
+            messageText = "The contents of the Result file(s): <br><br>" + ', '.join(validFiles) + "<br><br>were added as a result(s) to the Results Tracker file: <br><br>" + output_path
+            errorFormat = '<span style="color:green;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
-            return
         
+           
 
 
 if __name__ == "__main__":

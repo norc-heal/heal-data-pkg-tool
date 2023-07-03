@@ -386,6 +386,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             # get a list of any results trackers that already exist in dsc pkg dir
             resultsTrkFileList = [filename for filename in os.listdir(dscDirPath) if filename.startswith("heal-csv-results-tracker")]
             print(resultsTrkFileList)
+            resultsTrkFileList = [os.path.join(dscDirPath,filename) for filename in resultsTrkFileList]
 
             #if resultsTrkFileList: # if the list is not empty
             #    resultsTrkFileStemList = [Path(filename).stem for filename in resultsTrkFileList]
@@ -400,6 +401,8 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             print(multiResultFileStemList)
             finalResultsTrkFileStemList = ["heal-csv-results-tracker-"+ filename + ".csv" for filename in multiResultFileStemList]
             finalResultsTrkFileList = [os.path.join(dscDirPath,filename) for filename in finalResultsTrkFileStemList]
+            print("result tracker file list: ", resultsTrkFileList)
+            print("final result tracker file list: ", finalResultsTrkFileList)
 
             if resultsTrkFileList:
                 trkExist = [filename for filename in finalResultsTrkFileList if filename in resultsTrkFileList]

@@ -34,7 +34,7 @@ formSubProps = \
     "assoc.file.protocol",
     "assoc.file.result.tracker",
     "assoc.file.depends.on",
-    #"assoc.file.result.depends.on",
+    "assoc.file.result.depends.on",
     "assoc.file.multi.like.file",
     "access",
     "access.date",
@@ -179,7 +179,7 @@ schema_resource_tracker = {
                 "type": "string",
                 "format": "path"
             },
-            "priority": "all, high"
+            "priority": "all, high, not results-tracker"
         },
         "assoc.file.result.depends.on": {
             "title": "Result-tracker - Associated Files/Dependencies",
@@ -188,16 +188,16 @@ schema_resource_tracker = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "result-id": {
+                    "result.id": {
                         "type": "string"
                     },
                     "result.id.depends.on": {
                         "type": "array",
-                        "format": "path"
+                        #"format": "path"
                     }
                 }
             },
-            "priority": "all, high"
+            "priority": "only results-tracker, permanent hide "
         },
         "assoc.file.multi.like.file": {
             "title": "Multiple 'like' File Resource - Files",

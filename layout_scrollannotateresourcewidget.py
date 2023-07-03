@@ -161,6 +161,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.formWidgetList[self.formWidgetNameList.index("category")].on_changed.connect(self.conditional_fields)
         self.formWidgetList[self.formWidgetNameList.index("access")].on_changed.connect(self.conditional_fields)
         self.formWidgetList[self.formWidgetNameList.index("description.file.name.convention")].on_changed.connect(self.conditional_highlight_apply_convention)
+        self.formWidgetList[self.formWidgetNameList.index("category.sub.metadata")].on_changed.connect(self.conditional_fields)
+        self.formWidgetList[self.formWidgetNameList.index("path")].on_changed.connect(self.conditional_fields)
+        
         #self.form.widget.on_changed.connect(self.check_priority_highlight)
         
         ################################## Finished creating component widgets
@@ -379,6 +382,84 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 
+        if self.form.widget.state["category"] == "metadata":
+            if self.form.widget.state["category.sub.metadata"] == "heal-formatted-results-tracker":
+                messageText = "<br>You have indicated your resource is a HEAL formatted Results Tracker. The Associated Files/Dependencies field in this form has been hidden from view because this field cannot be used to add file dependencies for a Results Tracker file. If your Result Tracker is correctly formatted, and you have provided file dependencies for each result listed in the results tracker, file dependencies will be pulled in directly from the Results Tracker."
+                errorFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+
+                if not self.form.widget.state["path"]:
+                    messageText = "<br>Please use the Resource File Path field in the form to browse to your Results Tracker file."
+                    errorFormat = '<span style="color:blue;">{}</span>'
+                    self.userMessageBox.append(errorFormat.format(messageText))
+
+                if self.form.widget.state["path"]:
+                    pathStem = Path(self.form.widget.state["path"]).stem
+                    if not pathStem.startswith("heal-csv-results-tracker"):
+                        messageText = "<br>The resource file path you have added to the Resource File Path field in the form does not appear to be a HEAL formatted results tracker, or the tracker has been re-named. Please ensure that you have added a HEAL formatted Results Tracker to the Resource File Path field in the form, and that the Results tracker name follows the naming convention: heal-csv-results-tracker-(name of multi-result file with which the results tracker is associated)."
+                        errorFormat = '<span style="color:red;">{}</span>'
+                        self.userMessageBox.append(errorFormat.format(messageText))
+                    else: 
+                        # formally validate the results tracker here?
+                        
+                        messageText = "<br>The resource file path you have added to the Resource File Path field in the form appears to be a HEAL formatted results tracker. Attempting to extract file dependencies for each result in the results tracker now."
+                        errorFormat = '<span style="color:green;">{}</span>'
+                        self.userMessageBox.append(errorFormat.format(messageText))
+                       
+                        resultsTrk = pd.read_csv(self.form.widget.state["path"])
+                        resultIds = resultsTrk["result.id"].tolist()
+
+                        if resultIds:
+                            resultIdDependencies = resultsTrk["assoc.file.depends.on"].tolist()
+
+                            
+                            
+                            popFormField = [{"result.id": rId, "result.id.depends.on": rIdD.strip("][").split(", ")} for rId,rIdD in zip(resultIds,resultIdDependencies)]
+                            print("popFormField: ", popFormField)
+
+                            messageText = "<br>Extracted file dependencies for each result in the results tracker are as follows:<br><br>"
+                            #errorFormat = '<span style="color:green;">{}</span>'
+                            #self.userMessageBox.append(errorFormat.format(messageText))
+                            self.userMessageBox.append(messageText)
+
+                            emptyDependencies = []
+                            formatDependencies = []
+                            for i, list_item in enumerate(popFormField):
+                                self.userMessageBox.append(f"{i + 1}. ")
+                                for j, key in enumerate(list_item.keys()):
+                                    self.userMessageBox.append(f"{key}:{list_item[key]}{'' if j == len(list_item) - 1 else ', '}")
+                                    if key == "result.id":
+                                        resultId = list_item[key]
+                                    if key == "result.id.depends.on":
+                                        if not list_item[key]:
+                                            emptyDependencies.append(resultId)
+                                            print("emptyDependencies: ",emptyDependencies)
+                                            formatDependencies.append([])
+                                        else:
+                                            formatDependencies.append([item.replace("'", '') for item in list_item[key]])
+                                            
+                                self.userMessageBox.append("")
+
+                            self.popFormField = [{"result.id": rId, "result.id.depends.on": rIdD} for rId,rIdD in zip(resultIds,formatDependencies)]
+                            print("popFormField_format: ", self.popFormField)
+
+                            if emptyDependencies:
+                                messageText = "<br>The following result IDs listed in the Results Tracker did not have any file dependencies listed:<br>" + ", ".join(emptyDependencies) + "<br><br>Please review your results tracker and add file dependencies for each result as appropriate, then come back and re-add the results tracker as a resource.<br><br>"
+                                errorFormat = '<span style="color:red;">{}</span>'
+                                self.userMessageBox.append(errorFormat.format(messageText))
+
+                            #self.form.widget.state = {
+                            #    "assoc.file.result.depends.on": popFormField
+                            #}
+                        
+                        else: 
+                            messageText = "<br>There do not appear to be any results listed in the Results Tracker. Please add at least one result to your Results Tracker by navigating to the Add Results sub-tab of the Results Tracker tab. If you have already annotated your result(s), use the Add result or Auto-add result button to add your result files to your Result Tracker. If you need to annotate your result(s), start by clicking the Annotate Result button, fill out the brief form that appears to annotate your result(s), use the Add or Auto-add Result button(s) to add your result file(s) to your Results Tracker, then come back here to re-add your Results Tracker as a resource.<br>"
+                            errorFormat = '<span style="color:red;">{}</span>'
+                            self.userMessageBox.append(errorFormat.format(messageText))
+                        
+
+
+
         # this is an inefficient way to make sure previously unhidden fields get hidden again if user changes the category
         # should really save the last chosen state and be selective about re-hiding the ones that were revealed due to the
         # previous selection
@@ -424,6 +505,18 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     "assoc.file.result.tracker": []
                 } 
 
+        if self.form.widget.state["category"] == "metadata":
+            if self.form.widget.state["category.sub.metadata"] != "heal-formatted-results-tracker":
+                self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
+                # clear assoc.file.result.depends.on field (not sure the format for this, is it a list of lists?)
+
+        if self.form.widget.state["category"] != "metadata":
+            #if self.form.widget.state["category.sub.metadata"] == "heal-formatted-results-tracker":
+                self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
+                self.form.widget.state = {
+                    "category.sub.metadata": ""
+                } 
+
         ################### show field appropriate to current selection
             
         if self.form.widget.state["category"] == "tabular-data":
@@ -441,6 +534,10 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         if self.form.widget.state["category"] == "multi-result":
             self.toggle_widgets(keyText = "multi-result", desiredToggleState = "show")
+
+        if self.form.widget.state["category"] == "metadata":
+            if self.form.widget.state["category.sub.metadata"] == "heal-formatted-results-tracker":
+                self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "hide")
 
         #if changedFieldName == "access":
 

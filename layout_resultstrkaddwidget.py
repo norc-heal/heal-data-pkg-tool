@@ -442,6 +442,9 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 print_df = print_df[collect_df_cols]
                 print(print_df.shape)
                 print(print_df.columns)
+
+                writeResultsList = print_df["result.id"].tolist()
+                writeResultsFileList = ["result-trk-" + r for r in writeResultsList]
                 
                 output_path = t
                 all_df = pd.read_csv(output_path)
@@ -463,14 +466,16 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 all_df.to_csv(output_path, mode='w', header=True, index=False)
                 #df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
 
+                messageText = "The contents of the Result file(s): <br><br>" + ', '.join(writeResultsFileList) + "<br><br>were added as a result(s) to the Results Tracker file: <br><br>" + output_path + "<br><br>"
+                errorFormat = '<span style="color:green;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+
             if invalidFiles:
                 messageText = "The contents of the Result file(s): <br><br>" + ', '.join(invalidFiles) + "<br><br>cannot be added to a Results Tracker file because they did not pass validation. Please review the validation errors printed above." 
                 errorFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(errorFormat.format(messageText))
             
-            messageText = "The contents of the Result file(s): <br><br>" + ', '.join(validFiles) + "<br><br>were added as a result(s) to the Results Tracker file: <br><br>" + output_path
-            errorFormat = '<span style="color:green;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
+            
         
            
 

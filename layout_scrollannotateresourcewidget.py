@@ -1021,9 +1021,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             #print(self.form.widget.state)
             resource = deepcopy(self.form.widget.state)
 
+            resourceDepend = resource["assoc.file.dd"] + resource["assoc.file.protocol"] + resource["assoc.file.depends.on"]
+            
             if self.popFormField:
                 resource["assoc.file.result.depends.on"] = self.popFormField
-                
+
+                for item in resource["assoc.file.result.depends.on"]:
+                    resourceDepend.extend(item["result.id.depends.on"])
+
+ 
             for idx, p in enumerate(self.saveFilePathList):
                     
                 #resource = self.form.widget.state
@@ -1048,6 +1054,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             messageText = "<br>Your resource " + myString1 + " successfully written at: " + myString2 + "<br><br>You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
             saveFormat = '<span style="color:green;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
+
+            messageText = "<br>NOTE: You added the following files as associated with or dependencies for your resource(s) - <b>If you are annotating wholistically</b>, please ensure that you annotate each of these files and add each of them as their own resource to the resource tracker. <b>If you are annotating minimally</b>, do the same, but only for the files that you will share in a public repository: <br><br>" + "<br>".join(resourceDepend) + "<br><br>"
+            saveFormat = '<span style="color:blue;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+
             self.userMessageBox.moveCursor(QTextCursor.End)
 
             if self.form.widget.state["category"] == "tabular-data":

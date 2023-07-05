@@ -151,6 +151,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.add_priority_highlight_and_hide()
         #self.add_priority_highlight()
         #self.initial_hide()
+        self.popFormField = []
 
         # check for emptyp tooltip content whenever form changes and replace empty tooltip with original tooltip content
         # (only relevant for fields with in situ validation - i.e. string must conform to a pattern - as pyqtschema will replace the 
@@ -401,7 +402,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                         self.userMessageBox.append(errorFormat.format(messageText))
                     else: 
                         # formally validate the results tracker here?
-                        
+                        self.popFormField = []
+
                         messageText = "<br>The resource file path you have added to the Resource File Path field in the form appears to be a HEAL formatted results tracker. Attempting to extract file dependencies for each result in the results tracker now."
                         errorFormat = '<span style="color:green;">{}</span>'
                         self.userMessageBox.append(errorFormat.format(messageText))
@@ -509,6 +511,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if self.form.widget.state["category.sub.metadata"] != "heal-formatted-results-tracker":
                 self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
                 # clear assoc.file.result.depends.on field (not sure the format for this, is it a list of lists?)
+                self.popFormField = []
 
         if self.form.widget.state["category"] != "metadata":
             #if self.form.widget.state["category.sub.metadata"] == "heal-formatted-results-tracker":
@@ -516,6 +519,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.form.widget.state = {
                     "category.sub.metadata": ""
                 } 
+                self.popFormField = []
 
         ################### show field appropriate to current selection
             
@@ -543,6 +547,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         if "temporary-private" in self.form.widget.state["access"]:
             self.toggle_widgets(keyText = "temporary private", desiredToggleState = "show")
+            
+            messageText = "<br>You have indicated your resource will be temporarily held as private. Please 1) use the Access field to indicate the access level at which you'll set this resource once the temporary private access setting expires (either public access, or restricted access), and 2) use the Access Data field to indicate the date at which the temporary private access level is expected to expire (You will not be held to this date - Estimated dates are appreciated)."
+            errorFormat = '<span style="color:blue;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+
         else:
             self.toggle_widgets(keyText = "temporary private", desiredToggleState = "hide") 
 
@@ -909,7 +918,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
     
     def save_resource(self):
         
-        # check that a dsc data package dir has been added - this is the save folder
+        # check that a dsc data package dir has been added - this is the save folder - if not exit with informative error
         if not self.saveFolderPath:
             messageText = "<br>You must add a DSC Data Package Directory before saving your resource file. Please add a DSC Data Package Directory and then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
@@ -1010,18 +1019,20 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             return
         else:
             #print(self.form.widget.state)
-            #resource = self.form.widget.state
+            resource = deepcopy(self.form.widget.state)
 
+            if self.popFormField:
+                resource["assoc.file.result.depends.on"] = self.popFormField
                 
             for idx, p in enumerate(self.saveFilePathList):
                     
-                resource = self.form.widget.state
+                #resource = self.form.widget.state
                 currentResource = deepcopy(resource)
                     
                 currentResource["resource.id"] = self.resource_id_list[idx]
                 currentResource["path"] = self.items[idx]
                 currentResource["description.file"] = self.itemsDescriptionList[idx]
-
+                
                 f=open(p,'w')
                 print(dumps(currentResource, indent=4), file=f)
                 f.close()
@@ -1070,6 +1081,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.moveCursor(QTextCursor.End)
 
     def clear_form(self):
+
+        self.popFormField = []
 
         clearState = deepcopy(self.form.widget.state)
         #clearState = currentState.fromkeys(currentState, None)

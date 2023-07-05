@@ -548,7 +548,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if "temporary-private" in self.form.widget.state["access"]:
             self.toggle_widgets(keyText = "temporary private", desiredToggleState = "show")
             
-            messageText = "<br>You have indicated your resource will be temporarily held as private. Please 1) use the Access field to indicate the access level at which you'll set this resource once the temporary private access setting expires (either public access, or restricted access), and 2) use the Access Data field to indicate the date at which the temporary private access level is expected to expire (You will not be held to this date - Estimated dates are appreciated)."
+            messageText = "<br>You have indicated your resource will be temporarily held as private. Please 1) use the Access field to indicate the access level at which you'll set this resource once the temporary private access setting expires (either public access, or restricted access), and 2) use the Access Date field to indicate the date at which the temporary private access level is expected to expire (You will not be held to this date - Estimated dates are appreciated)."
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 

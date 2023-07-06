@@ -153,6 +153,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #self.add_priority_highlight()
         #self.initial_hide()
         self.popFormField = []
+        self.editSingle = False
 
         # check for emptyp tooltip content whenever form changes and replace empty tooltip with original tooltip content
         # (only relevant for fields with in situ validation - i.e. string must conform to a pattern - as pyqtschema will replace the 
@@ -983,7 +984,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.items = [self.form.widget.state["path"]]
             self.itemsDescriptionList = [self.form.widget.state["description.file"]]
                 
-                    
+        if self.editSingle:
+            self.resource_id_list = [self.resource_id]
+            self.resourceFileNameList = [self.resourceFileName]
+            self.saveFilePathList = [self.saveFilePath]
+            self.items = [self.form.widget.state["path"]]
+            self.itemsDescriptionList = [self.form.widget.state["description.file"]]            
+        
         #messageText = ""
 
         successResIdList = []
@@ -1080,6 +1087,12 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
+            if self.editSingle:
+                self.editSingle = False
+                messageText = "<br><b>WARNING: Exiting edit mode.</b> If you need to continue editing this single resource file that is part of a larger multi \'like\' file resource, or if you need to edit another existing resource file, please close out of this form and start again by using the Edit Existing Resource button on the Add Resource Sub-tab of the Resource Tracker Tab. You can clear this form using the Clear Form button above the form to use this form to continue annotating new resource files."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+
 
 
             #saveFormat = '<span style="color:green;">{}</span>'
@@ -1137,6 +1150,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if self.items2:
                 self.items2 = []
 
+        if self.editSingle:
+            self.editSingle = False
+            messageText = "<br><b>WARNING: Exiting edit mode.</b> If you need to continue editing this single resource file that is part of a larger multi \'like\' file resource, or if you need to edit another existing resource file, please close out of this form and start again by using the Edit Existing Resource button on the Add Resource Sub-tab of the Resource Tracker Tab. You can clear this form using the Clear Form button above the form to use this form to continue annotating new resource files."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
 
         messageText = "<br>Your form was successfully cleared and you can start annotating a new resource"
         saveFormat = '<span style="color:green;">{}</span>'
@@ -1160,6 +1178,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText)) 
         else: 
+            #self.editMode = True
+                     
             self.saveFilePath = ifileName
             print("saveFilePath: ", self.saveFilePath)
             self.saveFolderPath = Path(ifileName).parent
@@ -1167,14 +1187,98 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             
             with open(ifileName, 'r') as stream:
                 data = load(stream)
-            
+
             self.resource_id = data["resource.id"]
+            self.resIdNum = int(self.resource_id.split("-")[1])
+            self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
+            #self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
+
+            # make sure an archive folder exists, if not create it
+            if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
+                os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+
+            # move the resource annotation file user opened for editing to archive folder
+            os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.resourceFileName))
+            messageText = "<br>Your original resource annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.resourceFileName) + "<br><br>"
+            saveFormat = '<span style="color:blue;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
 
             if data["assoc.file.result.depends.on"]:
                 self.popFormField = data.pop("assoc.file.result.depends.on")
-                 
-            self.form.widget.state = data
             
+            self.form.widget.state = data
+
+            if data["assoc.file.multi.like.file"]: 
+                self.lstbox_view.addItems(data["assoc.file.multi.like.file"])
+                self.add_multi_resource()
+                self.take_inputs()
+
+            if len(data["assoc.file.depends.on"]) > 2: 
+                self.lstbox_view2.addItems(data["assoc.file.depends.on"])
+                self.add_multi_depend()
+
+    def take_inputs(self):
+
+        editOptions =["<b>Single file</b> within multi \'like\' file resource", "<b>All files</b> within multi \'like\' file resource"]
+        editOption, done = QtWidgets.QInputDialog.getItem(
+          self, 'Edit Mode', 'You have selected a resource file that was originally annotated as part of a multi \'like\' file resource. Would you like to edit the annotation for just this one single resource file, or would you like to use this form to edit the annotation for all resource files that are part of the multi \'like\' file resource?', editOptions)
+
+        if done:
+            if str(editOption).startswith("Single"):
+                self.editSingle = True
+                messageText = "Edits you make in this form will be applied <b>only to this single resource file</b>. All other resource files within the larger multi \'like\' file resource of which this resource file is a part will remain unaltered."
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+            else:
+                messageText = "Edits you make in this form will be applied <b>to all resource files</b> within the larger multi \'like\' file resource of which this resource file is a part."
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText)) 
+                
+                # if the user used the drag and drop to add multiple files, get a list of resource ids num, resource id, resource file name, and resource file save path for each file added
+        
+                self.resIdNumList = [self.resIdNum]
+                self.resource_id_list = []
+                self.resourceFileNameList = []
+                self.saveFilePathList = []
+        
+                # assign a resource id to every resource file path added, construct a save file path for each resource
+                if self.items:
+                    print("self.items: ", self.items)
+                    if len(self.items) > 1:
+                
+                
+                        resCounter = 1
+                        for i in self.items[1:]:
+                    
+                            self.resIdNumList.append(self.resIdNum + resCounter)
+                            print(self.resIdNumList)
+                            resCounter += 1
+
+                        self.resource_id_list = ["resource-" + str(l) for l in self.resIdNumList]
+                        print(self.resource_id_list)
+                        self.resourceFileNameList = ["resource-trk-" + l + ".txt" for l in self.resource_id_list]
+                        print(self.resourceFileNameList)
+                        self.saveFilePathList = [os.path.join(self.saveFolderPath,l) for l in self.resourceFileNameList]
+                        print(self.saveFilePathList)
+                        self.archiveFilePathList = [os.path.join(self.saveFolderPath,"archive",l) for l in self.resourceFileNameList]
+                        print(self.saveFilePathList)
+
+                        # already archived the first file so remove from list
+                        self.saveFilePathList.pop(0)
+                        self.archiveFilePathList.pop(0) # already archived the first file so remove from list
+
+                        for p, archiveP in zip(self.saveFilePathList,self.archiveFilePathList):
+                            # move the resource annotation file user opened for editing to archive folder
+                            print(p, "; ", archiveP)
+                            os.rename(p, archiveP)
+                            messageText = "<br>Your original resource annotation file has been archived at:<br>" + archiveP + "<br>"
+                            saveFormat = '<span style="color:blue;">{}</span>'
+                            self.userMessageBox.append(saveFormat.format(messageText))
+
+
+
+
+
                   
 
         

@@ -1024,7 +1024,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             #print(self.form.widget.state)
             resource = deepcopy(self.form.widget.state)
 
-            resourceDepend = resource["assoc.file.dd"] + resource["assoc.file.protocol"] + resource["assoc.file.depends.on"]
+            resourceDepend = resource["assoc.file.dd"] + resource["assoc.file.protocol"] + resource["assoc.file.result.tracker"] + resource["assoc.file.depends.on"]
             
             if self.popFormField:
                 resource["assoc.file.result.depends.on"] = self.popFormField

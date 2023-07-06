@@ -1,6 +1,6 @@
 import sys
 import os
-from json import dumps, loads
+from json import dumps, loads, load
 
 from qtpy import QtWidgets
 
@@ -16,7 +16,7 @@ import pandas as pd
 from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, QScrollArea,QApplication,
                              QHBoxLayout, QVBoxLayout, QMainWindow, QGroupBox)
 from PyQt5.QtCore import Qt, QSize
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtGui import QTextCursor
 import sys
 
@@ -28,10 +28,11 @@ import re
 from copy import deepcopy
 
 class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         #self.setWindowTitle("Annotate Resource")
         self.initUI()
+        #self.load_file()
 
     def initUI(self):
         self.scroll = QtWidgets.QScrollArea()             # Scroll Area which contains the widgets, set as the centralWidget
@@ -205,6 +206,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.setGeometry(600, 100, 1000, 900)
         self.setWindowTitle("Annotate Resource")
         #self.show()
+        #if self.editState: 
+        #    self.load_file
 
         return
         
@@ -572,8 +575,6 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
             self.itemsDescriptionList = []
 
-
-
     def add_dir(self):
         
         self.saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')
@@ -721,7 +722,6 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.labelApplyNameConvention.hide()
                 self.buttonApplyNameConvention.hide()
                 
-
     def get_items_list2(self):
         #item = QListWidgetItem(self.lstbox_view.currentItem())
         #print(item.text())
@@ -783,8 +783,6 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.labelAddMultiDepend.hide()
                 self.lstbox_view2.hide()
                 
-            
-
     def conditional_priority_highlight(self, priorityText, fontColor):
 
         # not in use? confirm and delete
@@ -802,7 +800,6 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 labelW.setText('<font color = ' + fColor + '>' + labelW.text() + '</font>')
             if (labelWType == "groupbox"):
                 labelW.setStyleSheet('QGroupBox  {color: ' + fColor + ';}')
-
 
     def add_multi_resource(self):
 
@@ -915,7 +912,6 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
             self.scrollScrollArea(topOrBottom = "top")
 
-    
     def save_resource(self):
         
         # check that a dsc data package dir has been added - this is the save folder - if not exit with informative error
@@ -1152,7 +1148,34 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.userMessageBox.append(saveFormat.format(messageText)) 
         self.userMessageBox.moveCursor(QTextCursor.End)           
 
-             
+    def load_file(self):
+        #_json_filter = 'json (*.json)'
+        #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
+        print("in load_file fx")
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Resource Txt Data file you want to edit",
+               (QtCore.QDir.homePath()), "Text (*.txt)")
+
+        if not ifileName: 
+            messageText = "<br>You have not selected a file; returning."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText)) 
+        else: 
+            self.saveFilePath = ifileName
+            print("saveFilePath: ", self.saveFilePath)
+            self.saveFolderPath = Path(ifileName).parent
+            print("saveFolderPath: ", self.saveFolderPath)
+            
+            with open(ifileName, 'r') as stream:
+                data = load(stream)
+            
+            self.resource_id = data["resource.id"]
+
+            if data["assoc.file.result.depends.on"]:
+                self.popFormField = data.pop("assoc.file.result.depends.on")
+                 
+            self.form.widget.state = data
+            
+                  
 
         
 

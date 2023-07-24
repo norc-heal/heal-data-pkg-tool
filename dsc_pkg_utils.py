@@ -336,7 +336,7 @@ def get_multi_like_file_descriptions(nameConvention,fileStemList):
 
 
         allFilesDescribeList = [] 
-
+        
         for i in fileStemList:
             print(i)
         
@@ -345,7 +345,7 @@ def get_multi_like_file_descriptions(nameConvention,fileStemList):
             if nameOnlyOneExplanatory:
                 oneFileDescribe = nameConventionAllList[0] + ": " + i
             else: 
-            
+                beforeValSave = None
                 for idx, l in enumerate(nameConventionAllList):
                     print("idx: ",idx,", l: ",l)
                     beforeVal = None
@@ -357,12 +357,20 @@ def get_multi_like_file_descriptions(nameConvention,fileStemList):
                             afterVal = nameConventionAllList[idx + 1]
                             print("afterVal: ",afterVal)
                         if idx != 0: # if not first element, get element first current element  
-                            beforeVal = nameConventionAllList[idx - 1]
+                            if beforeValSave:
+                                beforeVal = beforeValSave + nameConventionAllList[idx - 1]
+                                print("YES beforeValSave")
+                                print("beforeValSave: ", beforeValSave)
+                            else:
+                                beforeVal = nameConventionAllList[idx - 1]
+                                print("NO beforeValSave")
                             print("beforeVal: ",beforeVal)
+                            
             
                         if afterVal:
                             if afterVal in i:
                                 afterValSplit = i.split(afterVal)
+                                print("afterValSplit: ", afterValSplit)
                         
                             else:
                                 #print("the file named ", i, " does not conform to the specified naming convention. It does not contain the string ",afterVal," as specified by the applied naming convention.")
@@ -375,6 +383,7 @@ def get_multi_like_file_descriptions(nameConvention,fileStemList):
                         if beforeVal:
                             if beforeVal in i:
                                 beforeValSplit = i.split(beforeVal)
+                                print("beforeValSplit: ", beforeValSplit)
                         
                             else:
                                 #print("the file named ", i, " does not conform to the specified naming convention. It does not contain the string ",beforeVal," as specified by the applied naming convention.")
@@ -394,13 +403,24 @@ def get_multi_like_file_descriptions(nameConvention,fileStemList):
 
                         if ((afterValSplit) and (not beforeValSplit)):
                             myVal = afterValSplit[0]
+                            print("afterValSplit ONLY; myVal: ", myVal)
 
                         if ((not afterValSplit) and (beforeValSplit)):
                             myVal = beforeValSplit[1]
+                            print("beforeValSplit ONLY; myVal: ", myVal)
                     
                         if ((afterValSplit) and (beforeValSplit)):
-                            myVal = afterValSplit[0]
-                            myVal = myVal.split(beforeVal)[1]
+                            #myVal = afterValSplit[0]
+                            #print("afterValSplit and beforeValSplit; myVal: ", myVal)
+                            #myVal = myVal.split(beforeVal)[1]
+
+                            myVal = beforeValSplit[1]
+                            print("afterValSplit and beforeValSplit; myVal 1: ", myVal)
+                            myVal = myVal.split(afterVal)[0]
+                            print("afterValSplit and beforeValSplit; myVal 2: ", myVal)
+
+                            beforeValSave = beforeVal + myVal
+                            print("save beforeValSave: ",beforeValSave)
                     
                         myDescribe = l + ": " + myVal
                         oneFileDescribeList.append(myDescribe)   

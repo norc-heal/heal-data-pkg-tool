@@ -45,8 +45,13 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         self.buttonAnnotateResource = QtWidgets.QPushButton(text="Annotate a new resource",parent=self)
         self.buttonAnnotateResource.clicked.connect(self.annotate_resource)
 
+        self.buttonEditResource = QtWidgets.QPushButton(text="Edit existing resource",parent=self)
+        self.buttonEditResource.clicked.connect(self.edit_resource)
+
         self.buttonAddResource = QtWidgets.QPushButton(text="Add resource to tracker",parent=self)
         self.buttonAddResource.clicked.connect(self.add_resource)
+
+        
 
         # maybe switch Line edit to this: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QPlainTextEdit.html#more
         #self.userMessageBox = QtWidgets.QLineEdit(parent=self)
@@ -56,6 +61,7 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         layout = QtWidgets.QVBoxLayout()
         
         layout.addWidget(self.buttonAnnotateResource)
+        layout.addWidget(self.buttonEditResource)
         layout.addWidget(self.buttonAddResource)
         layout.addWidget(self.userMessageBox)
 
@@ -65,8 +71,21 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
     
     def annotate_resource(self,checked):
         if self.w is None:
+            #self.w.editState = False
             self.w = ScrollAnnotateResourceWindow()
             self.w.show()
+
+        else:
+            self.w.close()  # Close window.
+            self.w = None  # Discard reference.
+
+    def edit_resource(self,checked):
+        if self.w is None:
+            #self.w.editState = True
+            self.w = ScrollAnnotateResourceWindow()
+            self.w.show()
+            self.w.load_file()
+
 
         else:
             self.w.close()  # Close window.
@@ -197,6 +216,9 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
                     print("collect_df rows: ", collect_df.shape[0])
         else: 
             print("you have not selected any files; returning")
+            messageText = "<br>You have not selected any files; returning."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText)) 
             return
 
         # once you've looped through all selected files, if none are valid, print an informative message for the user listing

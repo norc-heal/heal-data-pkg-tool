@@ -31,8 +31,9 @@ class ResourceTrkTabsWindow(QWidget):
         # Create the tab widget with two tabs
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(self.infoText), "Info")
-        tabs.addTab(CSVPushToLoadWindow(), "View/Edit Tracker")
         tabs.addTab(ResourceTrkAddWindow(), "Add Resource")
+        tabs.addTab(CSVPushToLoadWindow(), "View/Edit Tracker")
+        
         
                 
         layout.addWidget(tabs)

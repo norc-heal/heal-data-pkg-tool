@@ -108,7 +108,8 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
                 "title":"my dd title",
                 "description":"my dd description"
             },
-            inputtype="data.csv"
+            inputtype="data.csv",
+            csvtemplate_output_quoting=True
         )
         
         messageText = messageText + '\n\n\n' + 'Inferred - Success!'
@@ -149,7 +150,8 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
                 "title":"my dd title",
                 "description":"my dd description"
             },
-            inputtype="sav"
+            inputtype="sav",
+            csvtemplate_output_quoting=True
         )
         
         messageText = messageText + '\n\n\n' + 'Extracted - Success!'
@@ -182,7 +184,8 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
                 "title":"my dd title",
                 "description":"my dd description"
             },
-            inputtype=get_dd_dict["UtilsInputType"]
+            inputtype=get_dd_dict["UtilsInputType"],
+            csvtemplate_output_quoting=True
         )
         
         messageText = messageText + '\n\n\n' + get_dd_dict["GetDDAction"] + ' - Success!'
@@ -241,7 +244,8 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
                 "title":"my dd title",
                 "description":"my dd description"
             },
-            inputtype="redcap.csv"
+            inputtype="redcap.csv",
+            csvtemplate_output_quoting=True
         )
 
         messageText = messageText + '\n\n\n' + 'Converted - Success!'

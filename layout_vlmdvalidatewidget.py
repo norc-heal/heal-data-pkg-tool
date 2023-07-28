@@ -14,9 +14,9 @@ from pathlib import Path # base python, no pip install needed
 
 from healdata_utils.cli import convert_to_vlmd
 
-from frictionless import plugins # frictionless already installed as a healdata_utils dependency, no pip install needed
-from frictionless.plugins import remote
-from frictionless import describe
+#from frictionless import plugins # frictionless already installed as a healdata_utils dependency, no pip install needed
+#from frictionless.plugins import remote
+#from frictionless import describe
 
 import pandas as pd # pandas already installed as a healdata_utils dependency, no pip install needed
 import json # base python, no pip install needed

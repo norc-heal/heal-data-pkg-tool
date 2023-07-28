@@ -1,5 +1,5 @@
-from frictionless import describe
-from frictionless import Resource
+#from frictionless import describe
+#from frictionless import Resource
 import pandas as pd
 import json # base python, no pip install needed
 import pipe

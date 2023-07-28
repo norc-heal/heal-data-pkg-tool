@@ -20,7 +20,6 @@ from frictionless import describe
 
 import pandas as pd # pandas already installed as a healdata_utils dependency, no pip install needed
 import json # base python, no pip install needed
-import requests # requests already installed as a healdata_utils dependency, no pip install needed
 import pipe
 
 import dsc_pkg_utils # local module, no pip install needed

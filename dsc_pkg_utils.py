@@ -2,7 +2,6 @@ from frictionless import describe
 from frictionless import Resource
 import pandas as pd
 import json # base python, no pip install needed
-import requests
 import pipe
 import os # base python, no pip install needed
 import shutil # base python, no pip install needed
@@ -80,49 +79,49 @@ def everything_after(df, cols):
     another = df.columns.difference(cols, sort=False).tolist()
     return df[cols + another]
 
-def get_heal_csv_dd_cols(heal_json_dd_schema_url=None, required_first=True, return_df=False):
+# def get_heal_csv_dd_cols(heal_json_dd_schema_url=None, required_first=True, return_df=False):
 
-    ###########################################################################
-    # get the latest version of the heal json dd schema to populate the 
-    # heal csv dd template - user can update url in function call if necessary
-    ###########################################################################
+#     ###########################################################################
+#     # get the latest version of the heal json dd schema to populate the 
+#     # heal csv dd template - user can update url in function call if necessary
+#     ###########################################################################
     
-    if not heal_json_dd_schema_url:
-        #heal_json_dd_schema_url = 'https://raw.githubusercontent.com/HEAL/heal-metadata-schemas/main/variable-level-metadata-schema/schemas/jsonschema/fields.json'
-         heal_json_dd_schema_url = healdata_utils.schemas.jsonschema_url
+#     if not heal_json_dd_schema_url:
+#         #heal_json_dd_schema_url = 'https://raw.githubusercontent.com/HEAL/heal-metadata-schemas/main/variable-level-metadata-schema/schemas/jsonschema/fields.json'
+#          heal_json_dd_schema_url = healdata_utils.schemas.jsonschema_url
 
-    r = requests.get(heal_json_dd_schema_url)
-    heal_json_dd_schema = r.json()
-    print(heal_json_dd_schema)
+#     r = requests.get(heal_json_dd_schema_url)
+#     heal_json_dd_schema = r.json()
+#     print(heal_json_dd_schema)
 
-    my_df_col = []
+#     my_df_col = []
 
-    for p in list(heal_json_dd_schema['properties'].keys()):
-        if 'properties' in heal_json_dd_schema['properties'][p].keys():
-            for p2 in list(heal_json_dd_schema['properties'][p]['properties'].keys()):
-                my_df_col.append(p+'.'+p2)
-        else:
-            my_df_col.append(p)
+#     for p in list(heal_json_dd_schema['properties'].keys()):
+#         if 'properties' in heal_json_dd_schema['properties'][p].keys():
+#             for p2 in list(heal_json_dd_schema['properties'][p]['properties'].keys()):
+#                 my_df_col.append(p+'.'+p2)
+#         else:
+#             my_df_col.append(p)
          
 
-    if not required_first:
-        if not return_df:
-            return my_df_col
-        else:
-            return pd.DataFrame(columns=my_df_col)
-    else: 
-        heal_dd_df = pd.DataFrame(columns=my_df_col)
-        ###########################################################################
-        # get the required fields from the heal json dd schema and put those 
-        # first in the heal csv dd template
-        ###########################################################################
+#     if not required_first:
+#         if not return_df:
+#             return my_df_col
+#         else:
+#             return pd.DataFrame(columns=my_df_col)
+#     else: 
+#         heal_dd_df = pd.DataFrame(columns=my_df_col)
+#         ###########################################################################
+#         # get the required fields from the heal json dd schema and put those 
+#         # first in the heal csv dd template
+#         ###########################################################################
 
-        required_col = heal_json_dd_schema['required']
-        heal_dd_df = heal_dd_df.pipe(everything_after, required_col)
-        if not return_df:
-            return heal_dd_df.columns.values.tolist()
-        else:
-            return heal_dd_df
+#         required_col = heal_json_dd_schema['required']
+#         heal_dd_df = heal_dd_df.pipe(everything_after, required_col)
+#         if not return_df:
+#             return heal_dd_df.columns.values.tolist()
+#         else:
+#             return heal_dd_df
 
 def add_dd_to_heal_dd_template(csv_dd_df,required_first=True,save_path=None):
     # csv_dd_df is a csv data dictionary - it can be user-created or come from running infer_dd function on a csv data file

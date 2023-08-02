@@ -14,13 +14,12 @@ from pathlib import Path # base python, no pip install needed
 
 from healdata_utils.cli import convert_to_vlmd
 
-from frictionless import plugins # frictionless already installed as a healdata_utils dependency, no pip install needed
-from frictionless.plugins import remote
-from frictionless import describe
+#from frictionless import plugins # frictionless already installed as a healdata_utils dependency, no pip install needed
+#from frictionless.plugins import remote
+#from frictionless import describe
 
 import pandas as pd # pandas already installed as a healdata_utils dependency, no pip install needed
 import json # base python, no pip install needed
-import requests # requests already installed as a healdata_utils dependency, no pip install needed
 import pipe
 
 import dsc_pkg_utils # local module, no pip install needed
@@ -108,7 +107,8 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
                 "title":"my dd title",
                 "description":"my dd description"
             },
-            inputtype="data.csv"
+            inputtype="data.csv",
+            csvtemplate_output_quoting=True
         )
         
         messageText = messageText + '\n\n\n' + 'Inferred - Success!'
@@ -149,7 +149,8 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
                 "title":"my dd title",
                 "description":"my dd description"
             },
-            inputtype="sav"
+            inputtype="sav",
+            csvtemplate_output_quoting=True
         )
         
         messageText = messageText + '\n\n\n' + 'Extracted - Success!'
@@ -182,7 +183,8 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
                 "title":"my dd title",
                 "description":"my dd description"
             },
-            inputtype=get_dd_dict["UtilsInputType"]
+            inputtype=get_dd_dict["UtilsInputType"],
+            csvtemplate_output_quoting=True
         )
         
         messageText = messageText + '\n\n\n' + get_dd_dict["GetDDAction"] + ' - Success!'
@@ -241,7 +243,8 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
                 "title":"my dd title",
                 "description":"my dd description"
             },
-            inputtype="redcap.csv"
+            inputtype="redcap.csv",
+            csvtemplate_output_quoting=True
         )
 
         messageText = messageText + '\n\n\n' + 'Converted - Success!'

@@ -47,13 +47,13 @@ jobs:
         pip install -r requirements.txt
     - name: Bundle CLI
       run: |
-        pyinstaller scripts/vlmd.spec
+        pyinstaller --icon=heal-icon.ico --add-data="heal-icon.ico;." --collect-all pipe --hidden-import pipe --hidden-import pyreadstat._readstat_writer --hidden-import pyreadstat.worker --paths=. --debug=all dsc_pkg_tool.py
     - name: Zip exe (for windows) and no ext (for ubuntu/mac)
       run: |
-        python -m zipfile -c healdata-utils-${{ matrix.name }}.zip dist/vlmd.exe dist/vlmd
+        python -m zipfile -c dsc-pkg-tool-${{ matrix.name }}.zip dist/dsc_pkg_tool.exe dist/dsc_pkg_tool
     - name: Release with bundles
       uses: softprops/action-gh-release@v1
       with:
         draft: true
         files: |
-          *healdata-utils-${{ matrix.name }}.zip
+          *dsc-pkg-tool-${{ matrix.name }}.zip

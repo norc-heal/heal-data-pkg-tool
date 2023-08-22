@@ -1,0 +1,59 @@
+name: Bundle CLI
+
+on:
+  push:
+    tags:
+      - "*"
+jobs:
+  release:
+    name: Create a release from a tag
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Download artifacts (the zipped pyinstaller exe for each os)
+        uses: actions/download-artifact@v3
+      - name: Release with bundles
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+  bundle:
+    name: Bundle cli for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    needs: release
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+          - os: windows-latest
+            name: windows
+          - os: macos-latest
+            name: mac
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Bundle CLI
+      run: |
+        pyinstaller scripts/vlmd.spec
+    - name: Zip exe (for windows) and no ext (for ubuntu/mac)
+      run: |
+        python -m zipfile -c healdata-utils-${{ matrix.name }}.zip dist/vlmd.exe dist/vlmd
+    - name: Release with bundles
+      uses: softprops/action-gh-release@v1
+      with:
+        draft: true
+        files: |
+          *healdata-utils-${{ matrix.name }}.zip

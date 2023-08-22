@@ -1,4 +1,4 @@
-name: Bundle CLI
+name: Bundle CLI for Windows
 
 on:
   push:
@@ -28,12 +28,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            name: linux
           - os: windows-latest
             name: windows
-          - os: macos-latest
-            name: mac
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -48,9 +44,9 @@ jobs:
     - name: Bundle CLI
       run: |
         pyinstaller --icon=heal-icon.ico --add-data="heal-icon.ico;." --collect-all pipe --hidden-import pipe --hidden-import pyreadstat._readstat_writer --hidden-import pyreadstat.worker --paths=. --debug=all dsc_pkg_tool.py
-    - name: Zip exe (for windows) and no ext (for ubuntu/mac)
+    - name: Zip exe (for windows) 
       run: |
-        python -m zipfile -c dsc-pkg-tool-${{ matrix.name }}.zip dist/dsc_pkg_tool.exe dist/dsc_pkg_tool
+        python -m zipfile -c dsc-pkg-tool-${{ matrix.name }}.zip dist/dsc_pkg_tool.exe 
     - name: Release with bundles
       uses: softprops/action-gh-release@v1
       with:

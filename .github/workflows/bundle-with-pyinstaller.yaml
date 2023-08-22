@@ -45,14 +45,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: Bundle EXE for mac 
+    - name: Bundle EXE for mac and linux 
       run: |
         pyinstaller --icon=heal-icon.ico --add-data="heal-icon.ico:." --collect-all pipe --hidden-import pipe --hidden-import pyreadstat._readstat_writer --hidden-import pyreadstat.worker --paths=. --debug=all dsc_pkg_tool.py
-      if: ${{matrix.name}} == "mac"
-    - name: Bundle EXE for linux 
-      run: |
-        pyinstaller --icon=heal-icon.ico --add-data="heal-icon.ico:." --collect-all pipe --hidden-import pipe --hidden-import pyreadstat._readstat_writer --hidden-import pyreadstat.worker --paths=. --debug=all dsc_pkg_tool.py
-      if: ${{matrix.name}} == "linux"
+      if: ${{ matrix.name }} == "mac" || ${{ matrix.name }}  == "linux"
     - name: Bundle EXE for windows 
       run: |
         pyinstaller --icon=heal-icon.ico --add-data="heal-icon.ico;." --collect-all pipe --hidden-import pipe --hidden-import pyreadstat._readstat_writer --hidden-import pyreadstat.worker --paths=. --debug=all dsc_pkg_tool.py

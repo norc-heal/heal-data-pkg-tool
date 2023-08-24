@@ -23,7 +23,7 @@ schema_results_tracker = {
             "title" : "Result Category",
             "description": "Broad category your result falls into; Generally, these categories are: figure, or text.",
             "type": "string",
-            "enum": ["","figure","text"],
+            "enum": ["","figure","table","text"],
             "priority": "all, high"
         },
         "assoc.multi.result.file": {

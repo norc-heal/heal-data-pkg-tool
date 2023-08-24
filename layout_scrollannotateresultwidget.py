@@ -560,7 +560,56 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         self.userMessageBox.append(saveFormat.format(messageText)) 
         self.userMessageBox.moveCursor(QTextCursor.End)           
 
-             
+    def load_file(self):
+        #_json_filter = 'json (*.json)'
+        #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
+        print("in load_file fx")
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
+               (QtCore.QDir.homePath()), "Text (*.txt)")
+
+        if not ifileName: 
+            messageText = "<br>You have not selected a file; returning."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText)) 
+        else: 
+            #self.editMode = True
+                     
+            self.saveFilePath = ifileName
+            print("saveFilePath: ", self.saveFilePath)
+            self.saveFolderPath = Path(ifileName).parent
+            print("saveFolderPath: ", self.saveFolderPath)
+            
+            with open(ifileName, 'r') as stream:
+                data = load(stream)
+
+            self.resource_id = data["resource.id"]
+            self.resIdNum = int(self.resource_id.split("-")[1])
+            self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
+            #self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
+
+            # make sure an archive folder exists, if not create it
+            if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
+                os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+
+            # move the resource annotation file user opened for editing to archive folder
+            os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.resourceFileName))
+            messageText = "<br>Your original resource annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.resourceFileName) + "<br><br>"
+            saveFormat = '<span style="color:blue;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+
+            if data["assoc.file.result.depends.on"]:
+                self.popFormField = data.pop("assoc.file.result.depends.on")
+            
+            self.form.widget.state = data
+
+            if data["assoc.file.multi.like.file"]: 
+                self.lstbox_view.addItems(data["assoc.file.multi.like.file"])
+                self.add_multi_resource()
+                self.take_inputs()
+
+            if len(data["assoc.file.depends.on"]) > 2: 
+                self.lstbox_view2.addItems(data["assoc.file.depends.on"])
+                self.add_multi_depend()         
 
         
 

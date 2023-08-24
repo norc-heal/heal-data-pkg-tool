@@ -44,6 +44,9 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         self.buttonAnnotateResult = QtWidgets.QPushButton(text="Annotate a new result",parent=self)
         self.buttonAnnotateResult.clicked.connect(self.annotate_result)
 
+        self.buttonEditResult = QtWidgets.QPushButton(text="Edit existing result",parent=self)
+        self.buttonEditResult.clicked.connect(self.edit_result)
+
         self.buttonAddResult = QtWidgets.QPushButton(text="Add result to tracker",parent=self)
         self.buttonAddResult.clicked.connect(self.add_result)
 
@@ -58,6 +61,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         layout = QtWidgets.QVBoxLayout()
         
         layout.addWidget(self.buttonAnnotateResult)
+        layout.addWidget(self.buttonEditResult)
         layout.addWidget(self.buttonAddResult)
         layout.addWidget(self.buttonAutoAddResult)
         layout.addWidget(self.userMessageBox)
@@ -75,6 +79,18 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             self.w.close()  # Close window.
             self.w = None  # Discard reference.
 
+    def edit_result(self,checked):
+        if self.w is None:
+            #self.w.editState = True
+            self.w = ScrollAnnotateResultWindow()
+            self.w.show()
+            self.w.load_file()
+
+
+        else:
+            self.w.close()  # Close window.
+            self.w = None  # Discard reference.
+    
     def add_result(self):
 
         # get result file path

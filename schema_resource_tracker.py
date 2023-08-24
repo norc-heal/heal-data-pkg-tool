@@ -128,7 +128,7 @@ schema_resource_tracker = {
             "title" : "Results Resource - Sub-Category",
             "description": "Sub-category for a results resource",
             "type": "string",
-            "enum": ["","figure","text","draft-publication","publication"],
+            "enum": ["","figure","text","table","draft-publication","publication"],
             "priority": "results, high"
         },
         "assoc.file.dd": {

@@ -64,6 +64,18 @@ schema_results_tracker = {
                 #"format": "path"
             },
             "priority": "all, low"
+        },
+        "restrk.create.date.time": {
+            "title": "Results tracker entry creation datetime",
+            "description": "Date time at which the result annotation file for the result was created; auto-inferred",
+            "type": "string",
+            "priority": "results tracker, auto"
+        },
+        "restrk.mod.date.time": {
+            "title": "Resource tracker entry modification datetime",
+            "description": "Date time at which the result annotation file for the result was last modified; auto-inferred",
+            "type": "string",
+            "priority": "results tracker, auto"
         }
     }
 }

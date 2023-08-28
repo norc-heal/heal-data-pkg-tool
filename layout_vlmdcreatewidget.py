@@ -287,3 +287,9 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
     #    else:
     #        self.w.close()  # Close window.
     #        self.w = None  # Discard reference.
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = VLMDCreateWindow()
+    window.show()
+    sys.exit(app.exec_())

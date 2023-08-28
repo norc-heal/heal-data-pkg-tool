@@ -175,7 +175,20 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     validFiles.append(ifileNameStem)
                     print("valid files:", validFiles)
 
-                    add_to_df_dict = {"result.id.num": [int(IdNumStr)]}
+                    # get result annotation file creation and last modification datetime
+                    restrk_c_timestamp = os.path.getctime(filename)
+                    restrk_c_datetime = datetime.datetime.fromtimestamp(restrk_c_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("restrk_c_datetime: ", restrk_c_datetime)
+        
+                    restrk_m_timestamp = os.path.getmtime(filename)
+                    restrk_m_datetime = datetime.datetime.fromtimestamp(restrk_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("restrk_m_datetime: ", restrk_m_datetime)
+
+                    add_to_df_dict = {#"result.id":[resource_id],
+                                    "result.id.num": [int(resIdNumStr)],  
+                                    "restrk.create.date.time": [restrk_c_datetime],
+                                    "restrk.mod.date.time": [restrk_m_datetime],
+                                    "restrk.mod.time.stamp": [restrk_m_timestamp]}
 
                     add_to_df = pd.DataFrame(add_to_df_dict)
 
@@ -344,7 +357,21 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     validFiles.append(ifileNameStem)
                     print("valid files:", validFiles)
 
-                    add_to_df_dict = {"result.id.num": [int(IdNumStr)]}
+                    # get result annotation file creation and last modification datetime
+                    restrk_c_timestamp = os.path.getctime(filename)
+                    restrk_c_datetime = datetime.datetime.fromtimestamp(restrk_c_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("restrk_c_datetime: ", restrk_c_datetime)
+        
+                    restrk_m_timestamp = os.path.getmtime(filename)
+                    restrk_m_datetime = datetime.datetime.fromtimestamp(restrk_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("restrk_m_datetime: ", restrk_m_datetime)
+
+                    add_to_df_dict = {#"result.id":[resource_id],
+                                    "result.id.num": [int(resIdNumStr)],  
+                                    "restrk.create.date.time": [restrk_c_datetime],
+                                    "restrk.mod.date.time": [restrk_m_datetime],
+                                    "restrk.mod.time.stamp": [restrk_m_timestamp]}
+
 
                     add_to_df = pd.DataFrame(add_to_df_dict)
 

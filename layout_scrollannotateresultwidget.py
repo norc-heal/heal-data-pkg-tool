@@ -328,12 +328,22 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             # delete contents of conditional fields if any added
             self.form.widget.state = {
                 "figure.number": []
-            } 
+            }
+
+        if self.form.widget.state["category"] != "table":
+            self.toggle_widgets(keyText = "table", desiredToggleState = "hide")
+            # delete contents of conditional fields if any added
+            self.form.widget.state = {
+                "table.number": []
+            }  
             
         ################### show field appropriate to current selection
             
         if self.form.widget.state["category"] == "figure":
             self.toggle_widgets(keyText = "figure", desiredToggleState = "show")
+
+        if self.form.widget.state["category"] == "table":
+            self.toggle_widgets(keyText = "table", desiredToggleState = "show")
           
     def add_dir(self):
         

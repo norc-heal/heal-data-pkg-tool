@@ -50,6 +50,9 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
 
         self.buttonConvertRedcapCsvDd = QtWidgets.QPushButton(text="Redcap CSV Data Dictionary File >> HEAL CSV Data Dictionary",parent=self)
         self.buttonConvertRedcapCsvDd.clicked.connect(self.redcap_csv_dd_convert)
+        
+        self.buttonConvertMinimalCsvDd = QtWidgets.QPushButton(text="Minimal CSV Data Dictionary File >> HEAL CSV Data Dictionary",parent=self)
+        self.buttonConvertMinimalCsvDd.clicked.connect(self.minimal_csv_dd_convert)
         #self.buttonConvertRedcapCsvDd.setFixedSize(100,60)
 
         #self.buttonEditCsv = QtWidgets.QPushButton(text="View/Edit CSV", parent=self)
@@ -72,6 +75,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         layout.addWidget(self.buttonStataDtaExtractHealCsvDd)
         layout.addWidget(self.buttonSASSas7bdatExtractHealCsvDd)
         layout.addWidget(self.buttonConvertRedcapCsvDd)
+        layout.addWidget(self.buttonConvertMinimalCsvDd)
         #layout.addWidget(self.buttonEditCsv)
         #layout.addWidget(self.buttonValidateHealCsvDd)
         layout.addWidget(self.userMessageBox)
@@ -226,6 +230,18 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
 
         self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
     
+    def minimal_csv_dd_convert(self):
+        
+        get_dd_dict = {
+            "FileExplorerOpenMessage" : "Select Input Minimal CSV Data Dictionary file",
+            "FileExplorerOpenFileExt" : "CSV (*.csv *.tsv)",
+            "GetDDAction": "Converted",
+            "GetDDActionStatusMessage" : "Converting the Minimal CSV Data Dictionary at this path to HEAL CSV Data Dictionary: ",
+            "UtilsInputType" : "template.csv"
+        }
+
+        self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
+
     def redcap_csv_dd_convert(self):
         
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Redcap CSV Data Dictionary file", QtCore.QDir.homePath(), "CSV (*.csv *.tsv)")

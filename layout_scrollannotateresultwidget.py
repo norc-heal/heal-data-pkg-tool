@@ -1,6 +1,6 @@
 import sys
 import os
-from json import dumps, loads
+from json import dumps, loads, load
 
 from qtpy import QtWidgets
 
@@ -14,7 +14,7 @@ import pandas as pd
 from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, QScrollArea,QApplication,
                              QHBoxLayout, QVBoxLayout, QMainWindow, QGroupBox)
 from PyQt5.QtCore import Qt, QSize
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtGui import QTextCursor
 import sys
 
@@ -582,30 +582,22 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             with open(ifileName, 'r') as stream:
                 data = load(stream)
 
-            self.resource_id = data["resource.id"]
-            self.resIdNum = int(self.resource_id.split("-")[1])
-            self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
-            #self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
+            self.result_id = data["result.id"]
+            self.resIdNum = int(self.result_id.split("-")[1])
+            self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
+            #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
 
             # make sure an archive folder exists, if not create it
             if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
                 os.makedirs(os.path.join(self.saveFolderPath,"archive"))
 
-            # move the resource annotation file user opened for editing to archive folder
-            os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.resourceFileName))
-            messageText = "<br>Your original resource annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.resourceFileName) + "<br><br>"
+            # move the result annotation file user opened for editing to archive folder
+            os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.resultFileName))
+            messageText = "<br>Your original result annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.resultFileName) + "<br><br>"
             saveFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
 
-            if data["assoc.file.result.depends.on"]:
-                self.popFormField = data.pop("assoc.file.result.depends.on")
-            
             self.form.widget.state = data
-
-            if data["assoc.file.multi.like.file"]: 
-                self.lstbox_view.addItems(data["assoc.file.multi.like.file"])
-                self.add_multi_resource()
-                self.take_inputs()
 
             if len(data["assoc.file.depends.on"]) > 2: 
                 self.lstbox_view2.addItems(data["assoc.file.depends.on"])

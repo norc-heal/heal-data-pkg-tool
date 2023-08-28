@@ -15,8 +15,14 @@ md_results_tracker = ".\md_results_tracker.md"
 
 #################################################
 
-input_schema = schema_results_tracker
-output_md = md_results_tracker
+# input_schema = schema_results_tracker
+# output_md = md_results_tracker
+
+# input_schema = schema_experiment_tracker
+# output_md = md_experiment_tracker
+
+input_schema = schema_resource_tracker
+output_md = md_resource_tracker
 
 #################################################
 

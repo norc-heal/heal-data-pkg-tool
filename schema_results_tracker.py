@@ -72,7 +72,7 @@ schema_results_tracker = {
             "priority": "results tracker, auto"
         },
         "restrk.mod.date.time": {
-            "title": "Resource tracker entry modification datetime",
+            "title": "Results tracker entry modification datetime",
             "description": "Date time at which the result annotation file for the result was last modified; auto-inferred",
             "type": "string",
             "priority": "results tracker, auto"

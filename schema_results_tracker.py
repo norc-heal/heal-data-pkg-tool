@@ -45,6 +45,15 @@ schema_results_tracker = {
             },
             "priority": "figure, high"
         },
+        "table.number": {
+            "title" : "Table Number",
+            "description": "If the result is a table result, provide the number of the table as it appears in the corresponding multi-result file; Examples include '1' if the result is in table 1, or '1a' if the result is in table 1A. If the result is included in more than one multi-result file, use the Associated Multi-Result File(s) field above to specify all multi-result files in which the result appears, and add the table number at which the result appears in each of those files in this field, using the same order (e.g. file-1, file-2; table-number-in-file-1, table-number-in-file-2).",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "priority": "table, high"
+        },
         "assoc.file.depends.on": {
             "title": "Associated Files/Dependencies",
             "description": "Data and/or non-data supporting files the result depends upon (e.g. data, analysis plan/code, etc.). If you are using the DSC Packaging App and have many result dependencies to add, you can use the Add Multiple Result Dependencies button above the form to reveal an interface where you can drag and drop many files at once. If documenting resources wholistically (i.e. documenting all resources related to a study), only list dependencies one layer deep; if documenting resources minimally (i.e. only documenting resources that will be publicly shared), list dependencies liberally; dependencies can be data, code, protocol, etc.",

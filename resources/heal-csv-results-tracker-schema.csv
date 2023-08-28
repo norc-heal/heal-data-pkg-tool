@@ -1,6 +1,0 @@
-field,description,notes
-result.id,"id assigned to each figure or text result (a text result is not explicitly demonstrated in a figure that is published/provided as part of the data package but does appear in text that is published or provided as part of the data package); prefix is 'result-' followed by a number starting with 1 for the first result, and iterating by 1 for each successive result (i.e. result-1, result-2, etc.)",
-result.category.figure.text,is the result a figure or text result,
-result.figure.number,"if the result is a figure result, provide the number of the figure as it appears in the corresponding multi-result file; examples include '1' if the result is in figure 1, or '1a' if the result is in figure 1A",
-result.description,"describe the result; for figure results this may be the figure caption; for text results, it is recommended that this text be identical or very similar to text of result as shared in text that is published or provided as part of the data package",
-result.supports,describe a larger claim(s) that this result is used to support in text that is published or provided as part of the data package,

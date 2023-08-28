@@ -1,6 +1,6 @@
 import sys
 import os
-from json import dumps, loads
+from json import dumps, loads, load
 
 from qtpy import QtWidgets
 
@@ -14,7 +14,7 @@ import pandas as pd
 from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, QScrollArea,QApplication,
                              QHBoxLayout, QVBoxLayout, QMainWindow, QGroupBox)
 from PyQt5.QtCore import Qt, QSize
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtGui import QTextCursor
 import sys
 
@@ -328,12 +328,22 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             # delete contents of conditional fields if any added
             self.form.widget.state = {
                 "figure.number": []
-            } 
+            }
+
+        if self.form.widget.state["category"] != "table":
+            self.toggle_widgets(keyText = "table", desiredToggleState = "hide")
+            # delete contents of conditional fields if any added
+            self.form.widget.state = {
+                "table.number": []
+            }  
             
         ################### show field appropriate to current selection
             
         if self.form.widget.state["category"] == "figure":
             self.toggle_widgets(keyText = "figure", desiredToggleState = "show")
+
+        if self.form.widget.state["category"] == "table":
+            self.toggle_widgets(keyText = "table", desiredToggleState = "show")
           
     def add_dir(self):
         
@@ -366,14 +376,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(messageText)
             #self.userMessageBox.moveCursor(QTextCursor.End)
 
-            # if there's not a resource tracker template already in the directory they added
-            # let them proceed but provide an informative warning
-            dscDirFilesList = [f for f in os.listdir(self.saveFolderPath) if os.path.isfile(f)]
-            dscDirFilesStemList = [Path(f).stem for f in dscDirFilesList]
-            if not any(x.startswith("heal-csv-results-tracker") for x in dscDirFilesStemList):
-                messageText = "<br>Warning: It looks like there is no HEAL formatted result tracker in the directory you selected. Are you sure you selected a directory that is a DSC package directory and that you have created a HEAL formatted result tracker? If you have not already created a DSC package directory, you can do so now by navigating to the DSC Package tab in the application, and clicking on the Create sub-tab. This will create a directory called \n'dsc-pkg\n' which will have a HEAL formatted resource tracker and experiment tracker file inside. You can create a HEAL formatted result tracker (please create one per multi-result file - e.g. poster, publication, etc. - you will share) by navigating to the Result Tracker tab, and the Create Result Tracker sub-tab. You may save your result-tracker in your DSC Package directory, but this is not required. Once you've created your DSC Package Directory and created a HEAL formatted Result Tracker, please return here and add your DSC package directory before proceeding to annotate your result(s). While annotating your result(s) you will also need to add the HEAL formatted result tracker you created."
-                errorFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(errorFormat.format(messageText))
+            # # if there's not a results tracker template already in the directory they added
+            # # let them proceed but provide an informative warning
+            # dscDirFilesList = [f for f in os.listdir(self.saveFolderPath) if os.path.isfile(f)]
+            # dscDirFilesStemList = [Path(f).stem for f in dscDirFilesList]
+            # if not any(x.startswith("heal-csv-results-tracker") for x in dscDirFilesStemList):
+            #     messageText = "<br>Warning: It looks like there is no HEAL formatted result tracker in the directory you selected. Are you sure you selected a directory that is a DSC package directory and that you have created a HEAL formatted result tracker? If you have not already created a DSC package directory, you can do so now by navigating to the DSC Package tab in the application, and clicking on the Create sub-tab. This will create a directory called \n'dsc-pkg\n' which will have a HEAL formatted resource tracker and experiment tracker file inside. You can create a HEAL formatted result tracker (please create one per multi-result file - e.g. poster, publication, etc. - you will share) by navigating to the Result Tracker tab, and the Create Result Tracker sub-tab. You may save your result-tracker in your DSC Package directory, but this is not required. Once you've created your DSC Package Directory and created a HEAL formatted Result Tracker, please return here and add your DSC package directory before proceeding to annotate your result(s). While annotating your result(s) you will also need to add the HEAL formatted result tracker you created."
+            #     errorFormat = '<span style="color:red;">{}</span>'
+            #     self.userMessageBox.append(errorFormat.format(messageText))
 
             self.form.widget.state = {
                 "result.id": self.result_id
@@ -560,7 +570,48 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         self.userMessageBox.append(saveFormat.format(messageText)) 
         self.userMessageBox.moveCursor(QTextCursor.End)           
 
-             
+    def load_file(self):
+        #_json_filter = 'json (*.json)'
+        #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
+        print("in load_file fx")
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
+               (QtCore.QDir.homePath()), "Text (*.txt)")
+
+        if not ifileName: 
+            messageText = "<br>You have not selected a file; returning."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText)) 
+        else: 
+            #self.editMode = True
+                     
+            self.saveFilePath = ifileName
+            print("saveFilePath: ", self.saveFilePath)
+            self.saveFolderPath = Path(ifileName).parent
+            print("saveFolderPath: ", self.saveFolderPath)
+            
+            with open(ifileName, 'r') as stream:
+                data = load(stream)
+
+            self.result_id = data["result.id"]
+            self.resIdNum = int(self.result_id.split("-")[1])
+            self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
+            #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
+
+            # make sure an archive folder exists, if not create it
+            if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
+                os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+
+            # move the result annotation file user opened for editing to archive folder
+            os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.resultFileName))
+            messageText = "<br>Your original result annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.resultFileName) + "<br><br>"
+            saveFormat = '<span style="color:blue;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+
+            self.form.widget.state = data
+
+            if len(data["assoc.file.depends.on"]) > 2: 
+                self.lstbox_view2.addItems(data["assoc.file.depends.on"])
+                self.add_multi_depend()         
 
         
 

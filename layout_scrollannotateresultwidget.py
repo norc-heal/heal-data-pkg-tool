@@ -366,14 +366,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(messageText)
             #self.userMessageBox.moveCursor(QTextCursor.End)
 
-            # if there's not a resource tracker template already in the directory they added
-            # let them proceed but provide an informative warning
-            dscDirFilesList = [f for f in os.listdir(self.saveFolderPath) if os.path.isfile(f)]
-            dscDirFilesStemList = [Path(f).stem for f in dscDirFilesList]
-            if not any(x.startswith("heal-csv-results-tracker") for x in dscDirFilesStemList):
-                messageText = "<br>Warning: It looks like there is no HEAL formatted result tracker in the directory you selected. Are you sure you selected a directory that is a DSC package directory and that you have created a HEAL formatted result tracker? If you have not already created a DSC package directory, you can do so now by navigating to the DSC Package tab in the application, and clicking on the Create sub-tab. This will create a directory called \n'dsc-pkg\n' which will have a HEAL formatted resource tracker and experiment tracker file inside. You can create a HEAL formatted result tracker (please create one per multi-result file - e.g. poster, publication, etc. - you will share) by navigating to the Result Tracker tab, and the Create Result Tracker sub-tab. You may save your result-tracker in your DSC Package directory, but this is not required. Once you've created your DSC Package Directory and created a HEAL formatted Result Tracker, please return here and add your DSC package directory before proceeding to annotate your result(s). While annotating your result(s) you will also need to add the HEAL formatted result tracker you created."
-                errorFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(errorFormat.format(messageText))
+            # # if there's not a results tracker template already in the directory they added
+            # # let them proceed but provide an informative warning
+            # dscDirFilesList = [f for f in os.listdir(self.saveFolderPath) if os.path.isfile(f)]
+            # dscDirFilesStemList = [Path(f).stem for f in dscDirFilesList]
+            # if not any(x.startswith("heal-csv-results-tracker") for x in dscDirFilesStemList):
+            #     messageText = "<br>Warning: It looks like there is no HEAL formatted result tracker in the directory you selected. Are you sure you selected a directory that is a DSC package directory and that you have created a HEAL formatted result tracker? If you have not already created a DSC package directory, you can do so now by navigating to the DSC Package tab in the application, and clicking on the Create sub-tab. This will create a directory called \n'dsc-pkg\n' which will have a HEAL formatted resource tracker and experiment tracker file inside. You can create a HEAL formatted result tracker (please create one per multi-result file - e.g. poster, publication, etc. - you will share) by navigating to the Result Tracker tab, and the Create Result Tracker sub-tab. You may save your result-tracker in your DSC Package directory, but this is not required. Once you've created your DSC Package Directory and created a HEAL formatted Result Tracker, please return here and add your DSC package directory before proceeding to annotate your result(s). While annotating your result(s) you will also need to add the HEAL formatted result tracker you created."
+            #     errorFormat = '<span style="color:red;">{}</span>'
+            #     self.userMessageBox.append(errorFormat.format(messageText))
 
             self.form.widget.state = {
                 "result.id": self.result_id

@@ -507,6 +507,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         if self.form.widget.state["category"] != "multi-result":
             self.toggle_widgets(keyText = "multi-result", desiredToggleState = "hide")
+            self.toggle_widgets(keyText = "not multi-result", desiredToggleState = "show")
             self.form.widget.state = {
                     "assoc.file.result.tracker": []
                 } 
@@ -542,6 +543,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         if self.form.widget.state["category"] == "multi-result":
             self.toggle_widgets(keyText = "multi-result", desiredToggleState = "show")
+            self.toggle_widgets(keyText = "not multi-result", desiredToggleState = "hide")
 
         if self.form.widget.state["category"] == "metadata":
             if self.form.widget.state["category.sub.metadata"] == "heal-formatted-results-tracker":

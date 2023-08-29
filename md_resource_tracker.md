@@ -16,7 +16,7 @@
 - **`description.row`** *(string)*: For a tabular data resource, a description of what one row in the tabular data resource represents; e.g. one row represents one subject at one timepoint.
 - **`category.sub.metadata`** *(string)*: Sub-category for a metadata resource. Must be one of: `["", "heal-formatted-data-dictionary", "other-formatted-data-dictionary", "protocol", "id-map", "analysis-plan", "heal-formatted-results-tracker", "heal-formatted-experiment-tracker"]`.
 - **`category.sub.data`** *(string)*: Sub-category for a data resource. Must be one of: `["", "raw", "processed-intermediate", "processed-final"]`.
-- **`category.sub.results`** *(string)*: Sub-category for a results resource. Must be one of: `["", "figure", "text", "table", "draft-publication", "publication"]`.
+- **`category.sub.results`** *(string)*: Sub-category for a results resource. Must be one of: `["", "figure", "table", "text", "draft-publication", "publication", "report", "white-paper", "presentation", "poster"]`.
 - **`assoc.file.dd`** *(array)*: For a tabular data file resources, a reference/file path to associated data dictionary file(s) - preferably in heal csv data dictionary format.
   - **Items** *(string)*
 - **`assoc.file.protocol`** *(array)*: For a data file resource, a reference/file path to associated protocol file(s).

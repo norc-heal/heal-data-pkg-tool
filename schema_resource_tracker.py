@@ -128,7 +128,7 @@ schema_resource_tracker = {
             "title" : "Results Resource - Sub-Category",
             "description": "Sub-category for a results resource",
             "type": "string",
-            "enum": ["","figure","text","table","draft-publication","publication"],
+            "enum": ["","figure","table","text","draft-publication","publication","report","white-paper","presentation","poster"],
             "priority": "results, high"
         },
         "assoc.file.dd": {
@@ -179,7 +179,7 @@ schema_resource_tracker = {
                 "type": "string",
                 "format": "path"
             },
-            "priority": "all, high, not results-tracker"
+            "priority": "all, high, not results-tracker, not multi-result"
         },
         "assoc.file.result.depends.on": {
             "title": "Result-tracker - Associated Files/Dependencies",

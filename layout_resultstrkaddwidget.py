@@ -185,15 +185,18 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     print("restrk_m_datetime: ", restrk_m_datetime)
 
                     add_to_df_dict = {#"result.id":[resource_id],
-                                    "result.id.num": [int(resIdNumStr)],  
-                                    "restrk.create.date.time": [restrk_c_datetime],
-                                    "restrk.mod.date.time": [restrk_m_datetime],
+                                    "result.id.num": [int(IdNumStr)],  
+                                    #"restrk.create.date.time": [restrk_c_datetime],
+                                    #"restrk.mod.date.time": [restrk_m_datetime],
                                     "restrk.mod.time.stamp": [restrk_m_timestamp]}
 
                     add_to_df = pd.DataFrame(add_to_df_dict)
 
                     # convert json to pd df
                     df = pd.json_normalize(data) # df is a one row dataframe
+                    print(df)
+                    df["restrk.create.date.time"][0] = restrk_c_datetime
+                    df["restrk.mod.date.time"][0] = restrk_m_datetime
                     print(df)
                     df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
                     print(df)
@@ -367,9 +370,9 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     print("restrk_m_datetime: ", restrk_m_datetime)
 
                     add_to_df_dict = {#"result.id":[resource_id],
-                                    "result.id.num": [int(resIdNumStr)],  
-                                    "restrk.create.date.time": [restrk_c_datetime],
-                                    "restrk.mod.date.time": [restrk_m_datetime],
+                                    "result.id.num": [int(IdNumStr)],  
+                                    #"restrk.create.date.time": [restrk_c_datetime],
+                                    #"restrk.mod.date.time": [restrk_m_datetime],
                                     "restrk.mod.time.stamp": [restrk_m_timestamp]}
 
 
@@ -377,6 +380,9 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
 
                     # convert json to pd df
                     df = pd.json_normalize(data) # df is a one row dataframe
+                    print(df)
+                    df["restrk.create.date.time"][0] = restrk_c_datetime
+                    df["restrk.mod.date.time"][0] = restrk_m_datetime
                     print(df)
                     df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
                     print(df)

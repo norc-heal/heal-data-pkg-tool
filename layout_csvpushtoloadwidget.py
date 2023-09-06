@@ -59,3 +59,14 @@ class CSVPushToLoadWindow(QtWidgets.QMainWindow):
         else:
             self.w.close()  # Close window.
             self.w = None  # Discard reference.
+
+if __name__ == "__main__":
+    
+    #app = QtWidgets.QApplication(sys.argv)
+
+    #app.exec_()
+
+    app = QtWidgets.QApplication(sys.argv)
+    window = CSVPushToLoadWindow()
+    window.show()
+    sys.exit(app.exec_())

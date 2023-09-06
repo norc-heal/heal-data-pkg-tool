@@ -47,10 +47,10 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         self.buttonEditResult = QtWidgets.QPushButton(text="Edit existing result",parent=self)
         self.buttonEditResult.clicked.connect(self.edit_result)
 
-        self.buttonAddResult = QtWidgets.QPushButton(text="Add result to tracker",parent=self)
-        self.buttonAddResult.clicked.connect(self.add_result)
+        # self.buttonAddResult = QtWidgets.QPushButton(text="Add result to tracker",parent=self)
+        # self.buttonAddResult.clicked.connect(self.add_result)
 
-        self.buttonAutoAddResult = QtWidgets.QPushButton(text="Auto-add result to tracker",parent=self)
+        self.buttonAutoAddResult = QtWidgets.QPushButton(text="Add result to tracker",parent=self)
         self.buttonAutoAddResult.clicked.connect(self.auto_add_result)
 
         # maybe switch Line edit to this: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QPlainTextEdit.html#more
@@ -62,7 +62,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         
         layout.addWidget(self.buttonAnnotateResult)
         layout.addWidget(self.buttonEditResult)
-        layout.addWidget(self.buttonAddResult)
+        # layout.addWidget(self.buttonAddResult)
         layout.addWidget(self.buttonAutoAddResult)
         layout.addWidget(self.userMessageBox)
 

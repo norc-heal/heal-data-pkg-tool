@@ -12,7 +12,8 @@ from PyQt5.QtWidgets import (
 
 from layout_vlmdcreatewidget import VLMDCreateWindow
 from layout_exptrkaddwidget import ExpTrkAddWindow
-from layout_csvpushtoloadwidget import CSVPushToLoadWindow
+from layout_csvviewpushtoloadwidget import CSVViewPushToLoadWindow
+#from layout_csvpushtoloadwidget import CSVPushToLoadWindow
 from layout_infotextwidget import InfoTextWindow
 
 class ExpTrkTabsWindow(QWidget):
@@ -31,28 +32,28 @@ class ExpTrkTabsWindow(QWidget):
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(self.infoText), "Info")
         tabs.addTab(ExpTrkAddWindow(), "Add Experiment")
-        tabs.addTab(CSVPushToLoadWindow(), "View/Edit Tracker")
+        tabs.addTab(CSVViewPushToLoadWindow(), "View Tracker")
         
                 
         layout.addWidget(tabs)
 
-    def generalTabUI(self):
-        """Create the General page UI."""
-        generalTab = QWidget()
-        layout = QVBoxLayout()
-        layout.addWidget(QCheckBox("General Option 1"))
-        layout.addWidget(QCheckBox("General Option 2"))
-        generalTab.setLayout(layout)
-        return generalTab
+    # def generalTabUI(self):
+    #     """Create the General page UI."""
+    #     generalTab = QWidget()
+    #     layout = QVBoxLayout()
+    #     layout.addWidget(QCheckBox("General Option 1"))
+    #     layout.addWidget(QCheckBox("General Option 2"))
+    #     generalTab.setLayout(layout)
+    #     return generalTab
 
-    def networkTabUI(self):
-        """Create the Network page UI."""
-        networkTab = QWidget()
-        layout = QVBoxLayout()
-        layout.addWidget(QCheckBox("Network Option 1"))
-        layout.addWidget(QCheckBox("Network Option 2"))
-        networkTab.setLayout(layout)
-        return networkTab
+    # def networkTabUI(self):
+    #     """Create the Network page UI."""
+    #     networkTab = QWidget()
+    #     layout = QVBoxLayout()
+    #     layout.addWidget(QCheckBox("Network Option 1"))
+    #     layout.addWidget(QCheckBox("Network Option 2"))
+    #     networkTab.setLayout(layout)
+    #     return networkTab
 
 
 if __name__ == "__main__":

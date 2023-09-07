@@ -152,8 +152,8 @@ schema_resource_tracker = {
             "priority": "data, high"
         },
         "assoc.file.result.tracker": {
-            "title": "Associated Result Tracker",
-            "description": "For a multi-result file resource, a reference/file path to associated HEAL result tracker file - HEAL result tracker is a file that tracks each result in a multi-result file (e.g. a publication, poster, etc.), along with the data and other supporting files that underly/support each result. If you are using the DSC Packaging Desktop Application, you can head to the Result Tracker tab of the application to create a HEAL formatted result tracker for your multi-result resource file(s).",
+            "title": "Associated Results Tracker",
+            "description": "For a multi-result file resource, a reference/file path to associated HEAL results tracker file - HEAL results tracker is a file that tracks each result in a multi-result file (e.g. a publication, poster, etc.), along with the data and other supporting files that underly/support each result. If you are using the DSC Packaging Desktop Application, you can head to the Result Tracker tab of the application to create a HEAL formatted result tracker for your multi-result resource file(s).",
             "type": "array",
             "items": {
                 "type": "string",

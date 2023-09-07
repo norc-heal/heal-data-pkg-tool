@@ -23,9 +23,10 @@ import json # base python, no pip install needed
 import pipe
 
 import dsc_pkg_utils # local module, no pip install needed
-from layout_csveditwidget import CSVEditWindow
+#from layout_csveditwidget import CSVEditWindow
+from layout_csvviewwidget import CSVViewWindow
 
-class CSVPushToLoadWindow(QtWidgets.QMainWindow):
+class CSVViewPushToLoadWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super().__init__()
@@ -33,10 +34,9 @@ class CSVPushToLoadWindow(QtWidgets.QMainWindow):
         
         widget = QtWidgets.QWidget()
         
-        self.buttonEditCsv = QtWidgets.QPushButton(text="View/Edit CSV", parent=self)
-        self.buttonEditCsv.clicked.connect(self.view_edit_csv)
-        #self.setCentralWidget(self.buttonEditCsv)
-        #self.buttonEditCsv.setFixedSize(100,60)
+        self.buttonViewCsv = QtWidgets.QPushButton(text="View CSV", parent=self)
+        self.buttonViewCsv.clicked.connect(self.view_csv)
+        
 
         # maybe switch Line edit to this: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QPlainTextEdit.html#more
         #self.userMessageBox = QtWidgets.QLineEdit(parent=self)
@@ -44,16 +44,16 @@ class CSVPushToLoadWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setReadOnly(True)
         
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.buttonEditCsv)
+        layout.addWidget(self.buttonViewCsv)
         layout.addWidget(self.userMessageBox)
 
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
     
-    def view_edit_csv(self,checked):
+    def view_csv(self,checked):
         if self.w is None:
-            self.w = CSVEditWindow('')
+            self.w = CSVViewWindow('')
             self.w.show()
 
         else:
@@ -67,6 +67,6 @@ if __name__ == "__main__":
     #app.exec_()
 
     app = QtWidgets.QApplication(sys.argv)
-    window = CSVPushToLoadWindow()
+    window = CSVViewPushToLoadWindow()
     window.show()
     sys.exit(app.exec_())

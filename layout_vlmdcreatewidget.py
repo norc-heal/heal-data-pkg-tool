@@ -106,13 +106,13 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setText(messageText)
 
         mydicts = convert_to_vlmd(
-            filepath=ifileName,
+            input_filepath=ifileName,
             data_dictionary_props={
                 "title":"my dd title",
                 "description":"my dd description"
             },
             inputtype="data.csv",
-            csvtemplate_output_quoting=True
+            output_csv_quoting=True
         )
         
         messageText = messageText + '\n\n\n' + 'Inferred - Success!'
@@ -136,7 +136,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
             "FileExplorerOpenMessage" : "Select Input SPSS Sav Data file",
             "FileExplorerOpenFileExt" : "SAV Files (*.sav)",
             "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from SPSS Sav data file: ",
-            "UtilsInputType" : "sav"
+            "UtilsInputType" : "spss"
         }
 
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input SPSS Sav Data file",
@@ -148,13 +148,13 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setText(messageText)
 
         mydicts = convert_to_vlmd(
-            filepath=ifileName,
+            input_filepath=ifileName,
             data_dictionary_props={
                 "title":"my dd title",
                 "description":"my dd description"
             },
-            inputtype="sav",
-            csvtemplate_output_quoting=True
+            inputtype="spss",
+            output_csv_quoting=True
         )
         
         messageText = messageText + '\n\n\n' + 'Extracted - Success!'
@@ -182,13 +182,13 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setText(messageText)
 
         mydicts = convert_to_vlmd(
-            filepath=ifileName,
+            input_filepath=ifileName,
             data_dictionary_props={
                 "title":"my dd title",
                 "description":"my dd description"
             },
             inputtype=get_dd_dict["UtilsInputType"],
-            csvtemplate_output_quoting=True
+            output_csv_quoting=True
         )
         
         messageText = messageText + '\n\n\n' + get_dd_dict["GetDDAction"] + ' - Success!'
@@ -225,7 +225,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
             "FileExplorerOpenFileExt" : "Sas7bdat Files (*.sas7bdat)",
             "GetDDAction": "Extracted",
             "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from SAS Sas7bdat data file: ",
-            "UtilsInputType" : "sas7bdat"
+            "UtilsInputType" : "sas"
         }
 
         self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
@@ -237,7 +237,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
             "FileExplorerOpenFileExt" : "CSV (*.csv *.tsv)",
             "GetDDAction": "Converted",
             "GetDDActionStatusMessage" : "Converting the Minimal CSV Data Dictionary at this path to HEAL CSV Data Dictionary: ",
-            "UtilsInputType" : "template.csv"
+            "UtilsInputType" : "csv-data-dict"
         }
 
         self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
@@ -254,13 +254,13 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         #outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
         
         mydicts = convert_to_vlmd(
-            filepath=ifileName,
+            input_filepath=ifileName,
             data_dictionary_props={
                 "title":"my dd title",
                 "description":"my dd description"
             },
-            inputtype="redcap.csv",
-            csvtemplate_output_quoting=True
+            inputtype="redcap-csv",
+            output_csv_quoting=True
         )
 
         messageText = messageText + '\n\n\n' + 'Converted - Success!'

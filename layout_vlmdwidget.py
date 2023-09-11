@@ -88,7 +88,7 @@ class VLMDWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setText(messageText)
 
         mydicts = convert_to_vlmd(
-            filepath=ifileName,
+            input_filepath=ifileName,
             data_dictionary_props={
                 "title":"my dd title",
                 "description":"my dd description"
@@ -124,12 +124,12 @@ class VLMDWindow(QtWidgets.QMainWindow):
         #outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
         
         mydicts = convert_to_vlmd(
-            filepath=ifileName,
+            input_filepath=ifileName,
             data_dictionary_props={
                 "title":"my dd title",
                 "description":"my dd description"
             },
-            inputtype="redcap.csv"
+            inputtype="redcap-csv"
         )
 
         messageText = messageText + '\n\n\n' + 'Converted - Success!'

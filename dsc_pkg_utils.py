@@ -17,7 +17,30 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+def heal_metadata_json_schema(metadataType):
 
+    print(metadataType)
+
+    if metadataType == "data-dictionary":
+        schema = healjsonschema["properties"]["data_dictionary"]
+        
+
+    if metadataType == "resource-tracker":
+        schema = schema_resource_tracker
+        
+
+    if metadataType == "experiment-tracker":
+        schema = schema_experiment_tracker
+
+    if metadataType == "results-tracker":
+        schema = schema_results_tracker
+        
+
+    if metadataType not in ["data-dictionary","resource-tracker","experiment-tracker","results-tracker"]:
+        print("metadata type not supported; metadataType must be one of data-dictionary, resource-tracker, experiment-tracker, results-tracker")
+        return
+    
+    return schema
 
 
 def heal_metadata_json_schema_properties(metadataType):

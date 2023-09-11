@@ -22,8 +22,8 @@ def heal_metadata_json_schema(metadataType):
     print(metadataType)
 
     if metadataType == "data-dictionary":
-        schema = healjsonschema["properties"]["data_dictionary"]
-        
+        #schema = healjsonschema["properties"]["data_dictionary"]
+        schema = healjsonschema
 
     if metadataType == "resource-tracker":
         schema = schema_resource_tracker

@@ -13,6 +13,8 @@ import re
 import itertools
 
 from healdata_utils.schemas import healjsonschema, healcsvschema
+from healdata_utils.transforms.frictionless import conversion
+
 from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
@@ -22,8 +24,9 @@ def heal_metadata_json_schema(metadataType):
     print(metadataType)
 
     if metadataType == "data-dictionary":
-        schema = healjsonschema["properties"]["data_dictionary"]
-        #schema = healjsonschema
+        #schema = healjsonschema["properties"]["data_dictionary"]
+        schema = conversion.convert_frictionless_to_jsonschema(healcsvschema)
+        
 
     if metadataType == "resource-tracker":
         schema = schema_resource_tracker
@@ -48,7 +51,10 @@ def heal_metadata_json_schema_properties(metadataType):
     print(metadataType)
 
     if metadataType == "data-dictionary":
-        props = healjsonschema["properties"]["data_dictionary"]["items"]["properties"]
+        #props = healjsonschema["properties"]["data_dictionary"]["items"]["properties"]
+        intJson = conversion.convert_frictionless_to_jsonschema(healcsvschema)
+        props = intJson["items"]["properties"]
+        print("csv dd spec props: ", props)
         
 
     if metadataType == "resource-tracker":

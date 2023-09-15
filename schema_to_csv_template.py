@@ -45,6 +45,6 @@ for (schema_type, output_template) in zip(schema_type_list, output_csv_list):
 
     print(input_schema_props_df)
 
-    input_schema_props_df.to_csv(output_template)
+    input_schema_props_df.to_csv(output_template, index=False)
 
     

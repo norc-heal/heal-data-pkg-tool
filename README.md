@@ -1,5 +1,5 @@
 # HEAL Data Package Tool
-Desktop application tool that provides a user-friendly tool/interface to operationalize data packaging and curation compliant with NIH HEAL initiative data packaging recommendations; Developed by HEAL Data Sharing Consultancy (DSC) team at NORC at the University of Chicago.
+Desktop tool that provides a user-friendly tool/interface to operationalize data packaging and curation compliant with NIH HEAL initiative data packaging recommendations; Developed by HEAL Data Sharing Consultancy (DSC) team at NORC at the University of Chicago.
 
 **Enables:**
 - Create/initialize data package

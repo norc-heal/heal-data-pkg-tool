@@ -3,13 +3,13 @@ Desktop tool that provides a user-friendly tool/interface to operationalize data
 
 **Enables:**
 - Create/initialize data package
-- Create and complete standard data package metadata files
+- Create and complete standard data package metadata files, including
     - Study level
-      - experiment-tracker - one per study
-      - resource-tracker - one per study
+      - Experiment-tracker - one per study
+      - Resource-tracker - one per study
     - File level
-      - results-tracker - one per multi-result file (e.g. manuscript)
-      - data-dictionary - one per tabular data file
+      - Results-tracker - one per multi-result file (e.g. manuscript)
+      - Data-dictionary - one per tabular data file
 
 # Download and Open Tool (Windows executable)
 - Go to [latest release](https://github.com/norc-heal/heal-data-pkg-tool/releases/latest/) for tool repository 

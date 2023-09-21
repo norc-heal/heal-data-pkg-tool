@@ -299,9 +299,11 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         if exceltype == "multiple":
             text = "each worksheet -> 1 DD"
             multiple_data_dicts = True
+            sheet_name = None
         elif exceltype == "combined":
             text = "combining all worksheets to 1 DD"
             multiple_data_dicts = False
+            sheet_name = None
         elif exceltype == "first":
             text = "the first worksheet"
             multiple_data_dicts = False

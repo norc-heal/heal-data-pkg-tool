@@ -39,6 +39,14 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         self.buttonInferHealCsvDd = QtWidgets.QPushButton(text="CSV Data File >> HEAL CSV Data Dictionary",parent=self)
         self.buttonInferHealCsvDd.clicked.connect(self.csv_data_infer_dd)
 
+        self.buttonConvertExcelMultipleHEALCsvDd = QtWidgets.QPushButton(text="Excel Data Workbook >> HEAL CSV Data Dictionaries (1 per worksheet)",parent=self)
+        self.buttonConvertExcelMultipleHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("multiple"))
+        self.buttonConvertExcelCombinedHEALCsvDd = QtWidgets.QPushButton(text="Excel Data Workbook >> HEAL CSV Data Dictionary (Combined across worksheets)",parent=self)
+        self.buttonConvertExcelCombinedHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("combined"))
+        # self.buttonConvertExcelFirstHEALCsvDd = QtWidgets.QPushButton(text="Excel Data Workbook >> HEAL CSV Data Dictionary (of first worksheet)",parent=self)
+        # self.buttonConvertExcelFirstHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("first"))
+
+
         self.buttonSPSSSavExtractHealCsvDd = QtWidgets.QPushButton(text="SPSS Sav Data File >> HEAL CSV Data Dictionary",parent=self)
         self.buttonSPSSSavExtractHealCsvDd.clicked.connect(self.spss_sav_data_extract_dd)
 
@@ -56,12 +64,6 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         
 
 
-        self.buttonConvertExcelMultipleHEALCsvDd = QtWidgets.QPushButton(text="Excel Data Workbook >> HEAL CSV Data Dictionaries (1 DD for every worksheet)",parent=self)
-        self.buttonConvertExcelMultipleHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("multiple"))
-        self.buttonConvertExcelCombinedHEALCsvDd = QtWidgets.QPushButton(text="Excel Data Workbook >> HEAL CSV Data Dictionary (Combined dd of all sheets)",parent=self)
-        self.buttonConvertExcelCombinedHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("combined"))
-        self.buttonConvertExcelFirstHEALCsvDd = QtWidgets.QPushButton(text="Excel Data Workbook >> HEAL CSV Data Dictionary (of first worksheet)",parent=self)
-        self.buttonConvertExcelFirstHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("first"))
         #self.buttonConvertRedcapCsvDd.setFixedSize(100,60)
 
         #self.buttonEditCsv = QtWidgets.QPushButton(text="View/Edit CSV", parent=self)

@@ -127,7 +127,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
                 "title":"my dd title",
                 "description":"my dd description"
             },
-            inputtype="data.csv",
+            inputtype="csv-data",
             output_csv_quoting=True
         )
         
@@ -229,7 +229,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
             "FileExplorerOpenFileExt" : "DTA Files (*.dta)",
             "GetDDAction": "Extracted",
             "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from Stata Dta data file: ",
-            "UtilsInputType" : "dta"
+            "UtilsInputType" : "stata"
         }
 
         self.get_heal_csv_dd(get_dd_dict=get_dd_dict)

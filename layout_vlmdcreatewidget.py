@@ -347,8 +347,11 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
             mydicts = {"one":mydicts}
 
         for name,dictionary in mydicts.items():
+
+            stemsuffix = "" if name == "one" else f"-{name}"
+
             ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, f"Save the {name} worksheet to a HEAL CSV Data Dictionary File", 
-                        (QtCore.QDir.homePath() + "/" + ifname +"-"+name+"-"+ ".csv"),"CSV Files (*.csv)") 
+                        (QtCore.QDir.homePath() + "/" + ifname +stemsuffix+ ".csv"),"CSV Files (*.csv)") 
 
             messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
             self.userMessageBox.setText(messageText)

@@ -1,7 +1,7 @@
-# HEAL Data Package Tool
+# HEAL Data Packaging Tool
 Desktop tool that provides a user-friendly tool/interface to operationalize data packaging and curation compliant with NIH HEAL initiative data packaging recommendations; Developed by HEAL Data Sharing Consultancy (DSC) team at NORC at the University of Chicago.
 
-**Enables:**
+## **Tool Functions**
 - Create/initialize data package
 - Create and complete standard data package metadata files, including
     - Study level
@@ -10,6 +10,12 @@ Desktop tool that provides a user-friendly tool/interface to operationalize data
     - File level
       - Results-tracker - one per multi-result file (e.g. manuscript)
       - Data-dictionary - one per tabular data file
+     
+## **Tool Documentation**
+- Navigate to the [HEAL Data Packaging Tool Documentation](https://norc-heal.github.io/heal-data-pkg-tool-docs/) website for instructions on:
+    - How to Download and Open the Tool
+        - Instructions for how to download and open the tool can also be found just below
+    - How to Use the Tool 
 
 # Download and Open Tool (Windows executable)
 - Go to [latest release](https://github.com/norc-heal/heal-data-pkg-tool/releases/latest/) for tool repository 

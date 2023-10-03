@@ -13,6 +13,7 @@ from PyQt5.uic import loadUi
 from pathlib import Path # base python, no pip install needed
 
 from healdata_utils.cli import convert_to_vlmd
+from healdata_utils.conversion import input_short_descriptions
 
 #from frictionless import plugins # frictionless already installed as a healdata_utils dependency, no pip install needed
 #from frictionless.plugins import remote
@@ -38,30 +39,35 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
 
         self.buttonCsvDataInferHealCsvDd = QtWidgets.QPushButton(text="CSV Data File >> HEAL CSV Data Dictionary",parent=self)
         self.buttonCsvDataInferHealCsvDd.clicked.connect(self.csv_data_infer_dd)
+        self.buttonCsvDataInferHealCsvDd.setToolTip(input_short_descriptions["csv-data"])
 
         self.buttonXlsxDataInferMultipleHealCsvDd = QtWidgets.QPushButton(text="Excel Data File >> HEAL CSV Data Dictionary (one per tab)",parent=self)
         self.buttonXlsxDataInferMultipleHealCsvDd.clicked.connect(lambda exceltype: self.xlsx_data_infer_dd("multiple"))
-        
+        self.buttonXlsxDataInferMultipleHealCsvDd.setToolTip(input_short_descriptions["excel-data"])
+
         self.buttonXlsxDataInferCombinedHealCsvDd = QtWidgets.QPushButton(text="Excel Data File >> HEAL CSV Data Dictionary (one across tabs)",parent=self)
         self.buttonXlsxDataInferCombinedHealCsvDd.clicked.connect(lambda exceltype: self.xlsx_data_infer_dd("combined"))
-        # self.buttonConvertExcelFirstHEALCsvDd = QtWidgets.QPushButton(text="Excel Data Workbook >> HEAL CSV Data Dictionary (of first worksheet)",parent=self)
-        # self.buttonConvertExcelFirstHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("first"))
-
+        self.buttonXlsxDataInferCombinedHealCsvDd.setToolTip(input_short_descriptions["excel-data"])
 
         self.buttonSPSSSavExtractHealCsvDd = QtWidgets.QPushButton(text="SPSS Sav Data File >> HEAL CSV Data Dictionary",parent=self)
         self.buttonSPSSSavExtractHealCsvDd.clicked.connect(self.spss_sav_data_extract_dd)
+        self.buttonSPSSSavExtractHealCsvDd.setToolTip(input_short_descriptions["spss"])
 
         self.buttonStataDtaExtractHealCsvDd = QtWidgets.QPushButton(text="Stata Dta Data File >> HEAL CSV Data Dictionary",parent=self)
         self.buttonStataDtaExtractHealCsvDd.clicked.connect(self.stata_dta_data_extract_dd)
+        self.buttonStataDtaExtractHealCsvDd.setToolTip(input_short_descriptions["stata"])
 
         self.buttonSASSas7bdatExtractHealCsvDd = QtWidgets.QPushButton(text="SAS Sas7bdat Data File >> HEAL CSV Data Dictionary",parent=self)
         self.buttonSASSas7bdatExtractHealCsvDd.clicked.connect(self.sas_sas7bdat_data_extract_dd)
+        self.buttonSASSas7bdatExtractHealCsvDd.setToolTip(input_short_descriptions["sas"])
 
         self.buttonConvertRedcapCsvDd = QtWidgets.QPushButton(text="Redcap CSV Data Dictionary File >> HEAL CSV Data Dictionary",parent=self)
         self.buttonConvertRedcapCsvDd.clicked.connect(self.redcap_csv_dd_convert)
+        self.buttonConvertRedcapCsvDd.setToolTip(input_short_descriptions["redcap-csv"])
         
         self.buttonConvertMinimalCsvDd = QtWidgets.QPushButton(text="Minimal CSV Data Dictionary File >> HEAL CSV Data Dictionary",parent=self)
         self.buttonConvertMinimalCsvDd.clicked.connect(self.minimal_csv_dd_convert)
+        self.buttonConvertMinimalCsvDd.setToolTip(input_short_descriptions["csv-data-dict"])
         
 
 

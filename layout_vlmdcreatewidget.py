@@ -39,9 +39,10 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         self.buttonInferHealCsvDd = QtWidgets.QPushButton(text="CSV Data File >> HEAL CSV Data Dictionary",parent=self)
         self.buttonInferHealCsvDd.clicked.connect(self.csv_data_infer_dd)
 
-        self.buttonConvertExcelMultipleHEALCsvDd = QtWidgets.QPushButton(text="Excel Data Workbook >> HEAL CSV Data Dictionaries (1 per worksheet)",parent=self)
+        self.buttonConvertExcelMultipleHEALCsvDd = QtWidgets.QPushButton(text="XLSX Data File(s) >> HEAL CSV Data Dictionary (one per tab)",parent=self)
         self.buttonConvertExcelMultipleHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("multiple"))
-        self.buttonConvertExcelCombinedHEALCsvDd = QtWidgets.QPushButton(text="Excel Data Workbook >> HEAL CSV Data Dictionary (Combined across worksheets)",parent=self)
+        
+        self.buttonConvertExcelCombinedHEALCsvDd = QtWidgets.QPushButton(text="XLSX Data File(s) >> HEAL CSV Data Dictionary (one across tabs)",parent=self)
         self.buttonConvertExcelCombinedHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("combined"))
         # self.buttonConvertExcelFirstHEALCsvDd = QtWidgets.QPushButton(text="Excel Data Workbook >> HEAL CSV Data Dictionary (of first worksheet)",parent=self)
         # self.buttonConvertExcelFirstHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("first"))
@@ -90,7 +91,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
 
         layout.addWidget(self.buttonConvertExcelMultipleHEALCsvDd)
         layout.addWidget(self.buttonConvertExcelCombinedHEALCsvDd)
-        layout.addWidget(self.buttonConvertExcelFirstHEALCsvDd)
+        #layout.addWidget(self.buttonConvertExcelFirstHEALCsvDd)
         
         #layout.addWidget(self.buttonEditCsv)
         #layout.addWidget(self.buttonValidateHealCsvDd)
@@ -118,7 +119,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         
         ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
         
-        messageText = 'Inferring minimal data dictionary from tabular csv data file: ' + ifileName
+        messageText = 'Inferring minimal HEAL CSV Data Dictionary from tabular csv data file: ' + ifileName
         self.userMessageBox.setText(messageText)
 
         mydicts = convert_to_vlmd(
@@ -296,18 +297,19 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
 
     def excel_dd_convert(self,exceltype):
         
-        inputmess = "Converting the excel worksheets at this path to a HEAL CSV Data Dictionary ({}):"
+
+        inputmess = "Inferring minimal HEAL CSV Data Dictionary(s) from the Excel Workbook at this path ({}):"
         
         if exceltype == "multiple":
-            text = "each worksheet -> 1 DD"
+            text = "one Data Dictionary per tab"
             multiple_data_dicts = True
             sheet_name = None
         elif exceltype == "combined":
-            text = "combining all worksheets to 1 DD"
+            text = "one Data Dictionary across all tabs"
             multiple_data_dicts = False
             sheet_name = None
         elif exceltype == "first":
-            text = "the first worksheet"
+            text = "one Data Dictionary for just the first tab"
             multiple_data_dicts = False
             sheet_name = 0
         else:
@@ -316,10 +318,12 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         get_dd_dict = {
             "FileExplorerOpenMessage" : "Select Input Excel (xlsx) File",
             "FileExplorerOpenFileExt" : "XLSX (*.xlsx)",
-            "GetDDAction": "Converted",
+            "GetDDAction": "Inferred",
             "GetDDActionStatusMessage" : inputmess.format(text),
             "UtilsInputType" : "excel-data"
         }
+
+        #self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
 
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, get_dd_dict["FileExplorerOpenMessage"],
                (QtCore.QDir.homePath()), get_dd_dict["FileExplorerOpenFileExt"])
@@ -348,14 +352,27 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         if mydicts.get("csvtemplate"):
             mydicts = {"one":mydicts}
 
+        folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select your DSC Folder - your Data Dictionary(s) will be saved there:')
+        baseDDName = "heal-csv-dd-" + ifname 
+        
+        print(baseDDName)
+        
+        
         for name,dictionary in mydicts.items():
 
-            stemsuffix = "" if name == "one" else f"-{name}"
+            stemsuffix = "" if name == "one" else f"{name}"
+            fullDDName = baseDDName + stemsuffix + ".csv" if name == "one" else baseDDName + "-" + stemsuffix + ".csv" 
+            
+            #ofileName = baseDDName + stemsuffix + ".csv" if name == "one" else baseDDName + "-" + stemsuffix + ".csv" 
+            ofileName = os.path.join(folderpath,fullDDName)
+            print(ofileName)
+            
+            
+            
+            # ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, f"Save the {name} worksheet to a HEAL CSV Data Dictionary File", 
+            #             (QtCore.QDir.homePath() + "/" + ifname +stemsuffix+ ".csv"),"CSV Files (*.csv)") 
 
-            ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, f"Save the {name} worksheet to a HEAL CSV Data Dictionary File", 
-                        (QtCore.QDir.homePath() + "/" + ifname +stemsuffix+ ".csv"),"CSV Files (*.csv)") 
-
-            messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
+            messageText = messageText + '\n\n\n' + 'Your HEAL CSV Data Dictionary will be saved as: ' + ofileName
             self.userMessageBox.setText(messageText)
 
             # write just the heal csv dd to file

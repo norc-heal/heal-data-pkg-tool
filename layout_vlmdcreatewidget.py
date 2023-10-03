@@ -158,7 +158,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setText(messageText)
 
         ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
+                       (QtCore.QDir.homePath() + "/" + "heal-csv-dd-" + ifname + ".csv"),"CSV Files (*.csv)") 
 
         messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
         self.userMessageBox.setText(messageText)
@@ -200,7 +200,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setText(messageText)
 
         ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
+                       (QtCore.QDir.homePath() + "/" + "heal-csv-dd-" + ifname + ".csv"),"CSV Files (*.csv)") 
 
         messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
         self.userMessageBox.setText(messageText)
@@ -234,7 +234,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setText(messageText)
 
         ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
+                       (QtCore.QDir.homePath() + "/" + "heal-csv-dd-" + ifname + ".csv"),"CSV Files (*.csv)") 
 
         messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
         self.userMessageBox.setText(messageText)
@@ -306,7 +306,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setText(messageText)
 
         ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + ifname + ".csv"),"CSV Files (*.csv)") 
+                       (QtCore.QDir.homePath() + "/" + "heal-csv-dd-" + ifname + ".csv"),"CSV Files (*.csv)") 
 
         messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
         self.userMessageBox.setText(messageText)

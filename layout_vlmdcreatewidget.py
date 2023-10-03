@@ -36,14 +36,14 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         #self.buttonNewPkg = QtWidgets.QPushButton(text="Create New HEAL-DSC Data Package",parent=self)
         #self.buttonNewPkg.clicked.connect(self.create_new_pkg)
 
-        self.buttonInferHealCsvDd = QtWidgets.QPushButton(text="CSV Data File >> HEAL CSV Data Dictionary",parent=self)
-        self.buttonInferHealCsvDd.clicked.connect(self.csv_data_infer_dd)
+        self.buttonCsvDataInferHealCsvDd = QtWidgets.QPushButton(text="CSV Data File >> HEAL CSV Data Dictionary",parent=self)
+        self.buttonCsvDataInferHealCsvDd.clicked.connect(self.csv_data_infer_dd)
 
-        self.buttonConvertExcelMultipleHEALCsvDd = QtWidgets.QPushButton(text="XLSX Data File(s) >> HEAL CSV Data Dictionary (one per tab)",parent=self)
-        self.buttonConvertExcelMultipleHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("multiple"))
+        self.buttonXlsxDataInferMultipleHealCsvDd = QtWidgets.QPushButton(text="Excel Data File >> HEAL CSV Data Dictionary (one per tab)",parent=self)
+        self.buttonXlsxDataInferMultipleHealCsvDd.clicked.connect(lambda exceltype: self.xlsx_data_infer_dd("multiple"))
         
-        self.buttonConvertExcelCombinedHEALCsvDd = QtWidgets.QPushButton(text="XLSX Data File(s) >> HEAL CSV Data Dictionary (one across tabs)",parent=self)
-        self.buttonConvertExcelCombinedHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("combined"))
+        self.buttonXlsxDataInferCombinedHealCsvDd = QtWidgets.QPushButton(text="Excel Data File >> HEAL CSV Data Dictionary (one across tabs)",parent=self)
+        self.buttonXlsxDataInferCombinedHealCsvDd.clicked.connect(lambda exceltype: self.xlsx_data_infer_dd("combined"))
         # self.buttonConvertExcelFirstHEALCsvDd = QtWidgets.QPushButton(text="Excel Data Workbook >> HEAL CSV Data Dictionary (of first worksheet)",parent=self)
         # self.buttonConvertExcelFirstHEALCsvDd.clicked.connect(lambda exceltype: self.excel_dd_convert("first"))
 
@@ -80,26 +80,48 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         self.userMessageBox = QtWidgets.QTextEdit(parent=self)
         self.userMessageBox.setReadOnly(True)
         
-        layout = QtWidgets.QVBoxLayout()
-        #layout.addWidget(self.buttonNewPkg)
-        layout.addWidget(self.buttonInferHealCsvDd)
-        layout.addWidget(self.buttonSPSSSavExtractHealCsvDd)
-        layout.addWidget(self.buttonStataDtaExtractHealCsvDd)
-        layout.addWidget(self.buttonSASSas7bdatExtractHealCsvDd)
-        layout.addWidget(self.buttonConvertRedcapCsvDd)
-        layout.addWidget(self.buttonConvertMinimalCsvDd)
+        self.layout = QtWidgets.QVBoxLayout()
 
-        layout.addWidget(self.buttonConvertExcelMultipleHEALCsvDd)
-        layout.addWidget(self.buttonConvertExcelCombinedHEALCsvDd)
-        #layout.addWidget(self.buttonConvertExcelFirstHEALCsvDd)
-        
-        #layout.addWidget(self.buttonEditCsv)
-        #layout.addWidget(self.buttonValidateHealCsvDd)
-        layout.addWidget(self.userMessageBox)
+        self.data_input_layout = QtWidgets.QVBoxLayout()
+        self.dd_input_layout = QtWidgets.QVBoxLayout()
 
         
+        self.data_input_layout.addWidget(self.buttonCsvDataInferHealCsvDd)
+        self.data_input_layout.addWidget(self.buttonXlsxDataInferMultipleHealCsvDd)
+        self.data_input_layout.addWidget(self.buttonXlsxDataInferCombinedHealCsvDd)
+
+        self.data_input_layout.addWidget(self.buttonSPSSSavExtractHealCsvDd)
+        self.data_input_layout.addWidget(self.buttonStataDtaExtractHealCsvDd)
+        self.data_input_layout.addWidget(self.buttonSASSas7bdatExtractHealCsvDd)
+
+        self.dd_input_layout.addWidget(self.buttonConvertMinimalCsvDd)
+        self.dd_input_layout.addWidget(self.buttonConvertRedcapCsvDd)
+
+        self.data_input_groupbox = QtWidgets.QGroupBox("Start with a Data File")
+        self.data_input_groupbox.setLayout(self.data_input_layout)
+
+        self.dd_input_groupbox = QtWidgets.QGroupBox("Start with a Data Dictionary File")
+        self.dd_input_groupbox.setLayout(self.dd_input_layout)
+
+
+        # layout.addWidget(self.buttonInferHealCsvDd)
+        # layout.addWidget(self.buttonSPSSSavExtractHealCsvDd)
+        # layout.addWidget(self.buttonStataDtaExtractHealCsvDd)
+        # layout.addWidget(self.buttonSASSas7bdatExtractHealCsvDd)
+        # layout.addWidget(self.buttonConvertRedcapCsvDd)
+        # layout.addWidget(self.buttonConvertMinimalCsvDd)
+
+        # layout.addWidget(self.buttonConvertExcelMultipleHEALCsvDd)
+        # layout.addWidget(self.buttonConvertExcelCombinedHEALCsvDd)
+       
+        self.layout.addWidget(self.data_input_groupbox)
+        self.layout.addWidget(self.dd_input_groupbox)
+
+        self.layout.addWidget(self.userMessageBox)
+
         
-        widget.setLayout(layout)
+        
+        widget.setLayout(self.layout)
         self.setCentralWidget(widget)
 
     #def create_new_pkg(self):
@@ -295,10 +317,10 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         messageText = messageText + '\n\n\n' + 'Saved - Success!'
         self.userMessageBox.setText(messageText) 
 
-    def excel_dd_convert(self,exceltype):
+    def xlsx_data_infer_dd(self,exceltype):
         
 
-        inputmess = "Inferring minimal HEAL CSV Data Dictionary(s) from the Excel Workbook at this path ({}):"
+        inputmess = "Inferring minimal HEAL CSV Data Dictionary(s) from the XLSX data file at this path ({}):"
         
         if exceltype == "multiple":
             text = "one Data Dictionary per tab"

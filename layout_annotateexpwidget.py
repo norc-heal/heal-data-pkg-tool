@@ -38,7 +38,7 @@ class AnnotateExpWindow(QtWidgets.QWidget):
 
         self.form = builder.create_form(schema, ui_schema)
         self.form.widget.state = {
-            "experiment.id": "exp-1",
+            "experimentId": "exp-1",
             #"schema_path": "some_file.py",
             #"integerRangeSteps": 60,
             #"sky_colour": "#8f5902"
@@ -61,16 +61,16 @@ class AnnotateExpWindow(QtWidgets.QWidget):
         #self.form.widget.on_changed.connect(self.validate_exp_id)
         #form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4)))
         #form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4), file=open('test-out.txt','w')))
-        #form.widget.on_changed.connect(lambda d: print(loads(dumps(d, indent=4))['experiment.id']))
+        #form.widget.on_changed.connect(lambda d: print(loads(dumps(d, indent=4))['experimentId']))
         
-        #form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experiment.id'] + '.txt','w')))
+        #form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experimentId'] + '.txt','w')))
 
             
     def save_exp(self):
-        #self.form.widget(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experiment.id'] + '.txt','w')))
+        #self.form.widget(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experimentId'] + '.txt','w')))
         print(self.form.widget.state)
         exp = self.form.widget.state
-        exp_id = exp["experiment.id"]
+        exp_id = exp["experimentId"]
         print(exp_id)
 
         saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new experiment will be saved there!')

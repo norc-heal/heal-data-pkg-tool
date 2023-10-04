@@ -79,13 +79,13 @@ class AnnotateResourceWindow(QtWidgets.QWidget):
         #self.form.widget.on_changed.connect(self.validate_exp_id)
         #form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4)))
         #form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4), file=open('test-out.txt','w')))
-        #form.widget.on_changed.connect(lambda d: print(loads(dumps(d, indent=4))['experiment.id']))
+        #form.widget.on_changed.connect(lambda d: print(loads(dumps(d, indent=4))['experimentId']))
         
-        #form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experiment.id'] + '.txt','w')))
+        #form.widget.on_changed.connect(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experimentId'] + '.txt','w')))
 
             
     def save_resource(self):
-        #self.form.widget(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experiment.id'] + '.txt','w')))
+        #self.form.widget(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experimentId'] + '.txt','w')))
         print(self.form.widget.state)
         resource = self.form.widget.state
         resource_id = exp["resource.id"]

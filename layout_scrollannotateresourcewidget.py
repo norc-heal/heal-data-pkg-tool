@@ -413,14 +413,14 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                         self.userMessageBox.append(errorFormat.format(messageText))
                        
                         resultsTrk = pd.read_csv(self.form.widget.state["path"])
-                        resultIds = resultsTrk["result.id"].tolist()
+                        resultIds = resultsTrk["resultId"].tolist()
 
                         if resultIds:
-                            resultIdDependencies = resultsTrk["assoc.file.depends.on"].tolist()
+                            resultIdDependencies = resultsTrk["associatedFileDependsOn"].tolist()
 
                             
                             
-                            popFormField = [{"result.id": rId, "result.id.depends.on": rIdD.strip("][").split(", ")} for rId,rIdD in zip(resultIds,resultIdDependencies)]
+                            popFormField = [{"resultId": rId, "resultIdDependsOn": rIdD.strip("][").split(", ")} for rId,rIdD in zip(resultIds,resultIdDependencies)]
                             print("popFormField: ", popFormField)
 
                             messageText = "<br>Extracted file dependencies for each result in the results tracker are as follows:<br><br>"
@@ -434,9 +434,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                                 self.userMessageBox.append(f"{i + 1}. ")
                                 for j, key in enumerate(list_item.keys()):
                                     self.userMessageBox.append(f"{key}:{list_item[key]}{'' if j == len(list_item) - 1 else ', '}")
-                                    if key == "result.id":
+                                    if key == "resultId":
                                         resultId = list_item[key]
-                                    if key == "result.id.depends.on":
+                                    if key == "resultIdDependsOn":
                                         if not list_item[key]:
                                             emptyDependencies.append(resultId)
                                             print("emptyDependencies: ",emptyDependencies)
@@ -446,7 +446,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                                             
                                 self.userMessageBox.append("")
 
-                            self.popFormField = [{"result.id": rId, "result.id.depends.on": rIdD} for rId,rIdD in zip(resultIds,formatDependencies)]
+                            self.popFormField = [{"resultId": rId, "resultIdDependsOn": rIdD} for rId,rIdD in zip(resultIds,formatDependencies)]
                             print("popFormField_format: ", self.popFormField)
 
                             if emptyDependencies:
@@ -774,7 +774,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         self.form.widget.state = {
             #"path": updatePath,
-            "assoc.file.depends.on": updateAssocFileMultiDepend
+            "associatedFileDependsOn": updateAssocFileMultiDepend
         } 
 
         
@@ -1026,13 +1026,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             #print(self.form.widget.state)
             resource = deepcopy(self.form.widget.state)
 
-            resourceDepend = resource["assoc.file.dd"] + resource["assoc.file.protocol"] + resource["assoc.file.result.tracker"] + resource["assoc.file.depends.on"]
+            resourceDepend = resource["assoc.file.dd"] + resource["assoc.file.protocol"] + resource["assoc.file.result.tracker"] + resource["associatedFileDependsOn"]
             
             if self.popFormField:
                 resource["assoc.file.result.depends.on"] = self.popFormField
 
                 for item in resource["assoc.file.result.depends.on"]:
-                    resourceDepend.extend(item["result.id.depends.on"])
+                    resourceDepend.extend(item["resultIdDependsOn"])
 
  
             for idx, p in enumerate(self.saveFilePathList):
@@ -1215,8 +1215,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.add_multi_resource()
                 self.take_inputs()
 
-            if len(data["assoc.file.depends.on"]) > 2: 
-                self.lstbox_view2.addItems(data["assoc.file.depends.on"])
+            if len(data["associatedFileDependsOn"]) > 2: 
+                self.lstbox_view2.addItems(data["associatedFileDependsOn"])
                 self.add_multi_depend()
 
     def take_inputs(self):

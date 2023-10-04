@@ -33,7 +33,7 @@ formSubProps = \
     "assoc.file.dd",
     "assoc.file.protocol",
     "assoc.file.result.tracker",
-    "assoc.file.depends.on",
+    "associatedFileDependsOn",
     "assoc.file.result.depends.on",
     "assoc.file.multi.like.file",
     "access",
@@ -171,7 +171,7 @@ schema_resource_tracker = {
         #        "format": "path"
         #    }
         #},
-        "assoc.file.depends.on": {
+        "associatedFileDependsOn": {
             "title": "Associated Files/Dependencies",
             "description": "For all resource files, if the current resource file has dependencies/if other files are necessary to make this file (e.g. raw data file necessary to make processed data file), or to interpret/understand this file (e.g. protocol, analysis plan, etc.), list them here; if documenting resources wholistically (i.e. documenting all resources related to a study), only list dependencies one layer deep; if documenting resources minimally (i.e. only documenting resources that will be publicly shared), list dependencies liberally; dependencies can be data, code, protocol, etc.; if already listed under assoc.file.dd, assoc.file.protocol, or assoc.file.id.map no need to repeat here.",
             "type": "array",
@@ -188,10 +188,10 @@ schema_resource_tracker = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "result.id": {
+                    "resultId": {
                         "type": "string"
                     },
-                    "result.id.depends.on": {
+                    "resultIdDependsOn": {
                         "type": "array",
                         #"format": "path"
                     }
@@ -294,13 +294,13 @@ schema_resource_tracker = {
             "type": "string",
             "priority": "resource tracker, auto"
         },
-        "restrk.create.date.time": {
+        "annotationCreateDateTime": {
             "title": "Resource tracker entry creation datetime",
             "description": "Date time at which the resource tracker file for the resource was created; auto-inferred",
             "type": "string",
             "priority": "resource tracker, auto"
         },
-        "restrk.mod.date.time": {
+        "annotationModDateTime": {
             "title": "Resource tracker entry modification datetime",
             "description": "Date time at which the resource tracker file for the resource was last modified; auto-inferred",
             "type": "string",

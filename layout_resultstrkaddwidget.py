@@ -184,19 +184,19 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     restrk_m_datetime = datetime.datetime.fromtimestamp(restrk_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
                     print("restrk_m_datetime: ", restrk_m_datetime)
 
-                    add_to_df_dict = {#"result.id":[resource_id],
-                                    "result.id.num": [int(IdNumStr)],  
-                                    #"restrk.create.date.time": [restrk_c_datetime],
-                                    #"restrk.mod.date.time": [restrk_m_datetime],
-                                    "restrk.mod.time.stamp": [restrk_m_timestamp]}
+                    add_to_df_dict = {#"resultId":[resource_id],
+                                    "resultIdNumber": [int(IdNumStr)],  
+                                    #"annotationCreateDateTime": [restrk_c_datetime],
+                                    #"annotationModDateTime": [restrk_m_datetime],
+                                    "annotationModTimeStamp": [restrk_m_timestamp]}
 
                     add_to_df = pd.DataFrame(add_to_df_dict)
 
                     # convert json to pd df
                     df = pd.json_normalize(data) # df is a one row dataframe
                     print(df)
-                    df["restrk.create.date.time"][0] = restrk_c_datetime
-                    df["restrk.mod.date.time"][0] = restrk_m_datetime
+                    df["annotationCreateDateTime"][0] = restrk_c_datetime
+                    df["annotationModDateTime"][0] = restrk_m_datetime
                     print(df)
                     df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
                     print(df)
@@ -241,7 +241,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 #all_df = pd.concat([all_df, df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
                 all_df = pd.concat([all_df, collect_df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
             
-                all_df.sort_values(by = ["result.id.num"], inplace=True)
+                all_df.sort_values(by = ["resultIdNumber"], inplace=True)
                 # drop any exact duplicate rows
                 #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
                 # this current approach does not appear to be working at the moment
@@ -369,11 +369,11 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     restrk_m_datetime = datetime.datetime.fromtimestamp(restrk_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
                     print("restrk_m_datetime: ", restrk_m_datetime)
 
-                    add_to_df_dict = {#"result.id":[resource_id],
-                                    "result.id.num": [int(IdNumStr)],  
-                                    #"restrk.create.date.time": [restrk_c_datetime],
-                                    #"restrk.mod.date.time": [restrk_m_datetime],
-                                    "restrk.mod.time.stamp": [restrk_m_timestamp]}
+                    add_to_df_dict = {#"resultId":[resource_id],
+                                    "resultIdNumber": [int(IdNumStr)],  
+                                    #"annotationCreateDateTime": [restrk_c_datetime],
+                                    #"annotationModDateTime": [restrk_m_datetime],
+                                    "annotationModTimeStamp": [restrk_m_timestamp]}
 
 
                     add_to_df = pd.DataFrame(add_to_df_dict)
@@ -381,8 +381,8 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     # convert json to pd df
                     df = pd.json_normalize(data) # df is a one row dataframe
                     print(df)
-                    df["restrk.create.date.time"][0] = restrk_c_datetime
-                    df["restrk.mod.date.time"][0] = restrk_m_datetime
+                    df["annotationCreateDateTime"][0] = restrk_c_datetime
+                    df["annotationModDateTime"][0] = restrk_m_datetime
                     print(df)
                     df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
                     print(df)
@@ -426,7 +426,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             collect_df_cols = list(collect_df.columns)
             print("collect_df_cols: ", collect_df_cols)
 
-            myDummies = collect_df["assoc.multi.result.file"].str.join('|').str.get_dummies()
+            myDummies = collect_df["associatedFileMultiResultFile"].str.join('|').str.get_dummies()
             print(list(myDummies.columns))
 
             collect_df = pd.concat([collect_df, myDummies], axis = 1)
@@ -443,7 +443,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             #else:
             #    resultsTrkFileStemList = []
 
-            multiResultFileList = collect_df["assoc.multi.result.file"].explode().unique().tolist()
+            multiResultFileList = collect_df["associatedFileMultiResultFile"].explode().unique().tolist()
             print("multi result file list: ",multiResultFileList)
             multiResultFileStemList = [Path(filename).stem for filename in multiResultFileList]
             print(multiResultFileStemList)
@@ -494,7 +494,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 print(print_df.shape)
                 print(print_df.columns)
 
-                writeResultsList = print_df["result.id"].tolist()
+                writeResultsList = print_df["resultId"].tolist()
                 writeResultsFileList = ["result-trk-" + r for r in writeResultsList]
                 
                 output_path = t
@@ -502,7 +502,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 #all_df = pd.concat([all_df, df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
                 all_df = pd.concat([all_df, print_df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
             
-                all_df.sort_values(by = ["result.id.num"], inplace=True)
+                all_df.sort_values(by = ["resultIdNumber"], inplace=True)
                 # drop any exact duplicate rows
                 #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
                 # this current approach does not appear to be working at the moment

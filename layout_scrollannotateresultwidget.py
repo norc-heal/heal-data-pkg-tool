@@ -50,7 +50,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         self.form = self.builder.create_form(self.ui_schema)
         
         self.formDefaultState = {
-            "result.id": "result-1"
+            "resultId": "result-1"
         }
 
         self.form.widget.state = deepcopy(self.formDefaultState)
@@ -327,14 +327,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             self.toggle_widgets(keyText = "figure", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                "figure.number": []
+                "figureNumber": []
             }
 
         if self.form.widget.state["category"] != "table":
             self.toggle_widgets(keyText = "table", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                "table.number": []
+                "tableNumber": []
             }  
             
         ################### show field appropriate to current selection
@@ -386,7 +386,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             #     self.userMessageBox.append(errorFormat.format(messageText))
 
             self.form.widget.state = {
-                "result.id": self.result_id
+                "resultId": self.result_id
             }
 
         else:
@@ -444,7 +444,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
         self.form.widget.state = {
             #"path": updatePath,
-            "assoc.file.depends.on": updateAssocFileMultiDepend
+            "associatedFileDependsOn": updateAssocFileMultiDepend
         } 
 
         
@@ -476,7 +476,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
         # check that file path and at least a minimal description has been added to the form 
         # if not exit with informative error
-        if not ((self.form.widget.state["assoc.multi.result.file"]) and (self.form.widget.state["description"])):
+        if not ((self.form.widget.state["associatedFileMultiResultFile"]) and (self.form.widget.state["description"])):
             messageText = "<br>You must add at least a minimal description of your result and at least one multi-result file in which this result is cited to your result file form before saving your result file. Please add at least a minimal description of your result in the Result Description field in the form, and add at least one multi-result file in which this result appears by browsing to a file path(s) in the Associated Multi-Result File(s) field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
@@ -489,9 +489,9 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # form fields that will be the same), and save again with a new id - in this case the user can modify the 
         # id manually, incrementing the id number by one - if id modified, updated it in memory and regenerate
         # the save file name, save file path, and id number
-        if self.form.widget.state["result.id"] != self.result_id:
+        if self.form.widget.state["resultId"] != self.result_id:
             
-            self.result_id = self.form.widget.state["result.id"]
+            self.result_id = self.form.widget.state["resultId"]
             self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
 
@@ -592,7 +592,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             with open(ifileName, 'r') as stream:
                 data = load(stream)
 
-            self.result_id = data["result.id"]
+            self.result_id = data["resultId"]
             self.resIdNum = int(self.result_id.split("-")[1])
             self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
             #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
@@ -609,8 +609,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
             self.form.widget.state = data
 
-            if len(data["assoc.file.depends.on"]) > 2: 
-                self.lstbox_view2.addItems(data["assoc.file.depends.on"])
+            if len(data["associatedFileDependsOn"]) > 2: 
+                self.lstbox_view2.addItems(data["associatedFileDependsOn"])
                 self.add_multi_depend()         
 
         

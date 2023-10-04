@@ -54,9 +54,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.form = self.builder.create_form(self.ui_schema)
         
         self.formDefaultState = {
-            "resource.id": "resource-1",
-            "exp.belongs.to": "exp-999",
-            "access.date": "2099-01-01"
+            "resourceId": "resource-1",
+            "expBelongsTo": "exp-999",
+            "accessDate": "2099-01-01"
         }
 
         self.form.widget.state = deepcopy(self.formDefaultState)
@@ -163,8 +163,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.form.widget.on_changed.connect(self.check_tooltip)
         self.formWidgetList[self.formWidgetNameList.index("category")].on_changed.connect(self.conditional_fields)
         self.formWidgetList[self.formWidgetNameList.index("access")].on_changed.connect(self.conditional_fields)
-        self.formWidgetList[self.formWidgetNameList.index("description.file.name.convention")].on_changed.connect(self.conditional_highlight_apply_convention)
-        self.formWidgetList[self.formWidgetNameList.index("category.sub.metadata")].on_changed.connect(self.conditional_fields)
+        self.formWidgetList[self.formWidgetNameList.index("descriptionFileNameConvention")].on_changed.connect(self.conditional_highlight_apply_convention)
+        self.formWidgetList[self.formWidgetNameList.index("categorySubMetadata")].on_changed.connect(self.conditional_fields)
         self.formWidgetList[self.formWidgetNameList.index("path")].on_changed.connect(self.conditional_fields)
         
         #self.form.widget.on_changed.connect(self.check_priority_highlight)
@@ -388,7 +388,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
 
         if self.form.widget.state["category"] == "metadata":
-            if self.form.widget.state["category.sub.metadata"] == "heal-formatted-results-tracker":
+            if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
                 messageText = "<br>You have indicated your resource is a HEAL formatted Results Tracker. The Associated Files/Dependencies field in this form has been hidden from view because this field cannot be used to add file dependencies for a Results Tracker file. If your Result Tracker is correctly formatted, and you have provided file dependencies for each result listed in the results tracker, file dependencies will be pulled in directly from the Results Tracker."
                 errorFormat = '<span style="color:blue;">{}</span>'
                 self.userMessageBox.append(errorFormat.format(messageText))
@@ -455,7 +455,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                                 self.userMessageBox.append(errorFormat.format(messageText))
 
                             #self.form.widget.state = {
-                            #    "assoc.file.result.depends.on": popFormField
+                            #    "associatedFileResultsDependOn": popFormField
                             #}
                         
                         else: 
@@ -477,8 +477,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.toggle_widgets(keyText = "tabular data", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                "description.row": "",
-                "assoc.file.dd": []
+                "descriptionRow": "",
+                "associatedFileDataDict": []
             } 
             
         if self.form.widget.state["category"] != "non-tabular-data":
@@ -487,42 +487,42 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if self.form.widget.state["category"] not in ["tabular-data","non-tabular-data"]:
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                    "category.sub.data": "",
-                    "assoc.file.protocol": []
+                    "categorySubData": "",
+                    "associatedFileProtocol": []
                 } 
         
         if self.form.widget.state["category"] != "metadata":
             self.toggle_widgets(keyText = "metadata", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                    "category.sub.metadata": ""
+                    "categorySubMetadata": ""
                 } 
 
         if self.form.widget.state["category"] not in ["single-result","multi-result"]:
             self.toggle_widgets(keyText = "results", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                    "category.sub.results": ""
+                    "categorySubResults": ""
                 } 
 
         if self.form.widget.state["category"] != "multi-result":
             self.toggle_widgets(keyText = "multi-result", desiredToggleState = "hide")
             self.toggle_widgets(keyText = "not multi-result", desiredToggleState = "show")
             self.form.widget.state = {
-                    "assoc.file.result.tracker": []
+                    "associatedFileResultsTracker": []
                 } 
 
         if self.form.widget.state["category"] == "metadata":
-            if self.form.widget.state["category.sub.metadata"] != "heal-formatted-results-tracker":
+            if self.form.widget.state["categorySubMetadata"] != "heal-formatted-results-tracker":
                 self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
-                # clear assoc.file.result.depends.on field (not sure the format for this, is it a list of lists?)
+                # clear associatedFileResultsDependOn field (not sure the format for this, is it a list of lists?)
                 self.popFormField = []
 
         if self.form.widget.state["category"] != "metadata":
-            #if self.form.widget.state["category.sub.metadata"] == "heal-formatted-results-tracker":
+            #if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
                 self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
                 self.form.widget.state = {
-                    "category.sub.metadata": ""
+                    "categorySubMetadata": ""
                 } 
                 self.popFormField = []
 
@@ -546,7 +546,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.toggle_widgets(keyText = "not multi-result", desiredToggleState = "hide")
 
         if self.form.widget.state["category"] == "metadata":
-            if self.form.widget.state["category.sub.metadata"] == "heal-formatted-results-tracker":
+            if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
                 self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "hide")
 
         #if changedFieldName == "access":
@@ -562,18 +562,18 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.toggle_widgets(keyText = "temporary private", desiredToggleState = "hide") 
 
             self.form.widget.state = {
-                "access.date": self.formDefaultState["access.date"]
+                "accessDate": self.formDefaultState["accessDate"]
             } 
                 
     def conditional_highlight_apply_convention(self):
 
-        if self.form.widget.state["description.file.name.convention"]:
+        if self.form.widget.state["descriptionFileNameConvention"]:
             self.buttonApplyNameConvention.setStyleSheet("background-color : rgba(0,125,0,50)")
         else:
             self.buttonApplyNameConvention.setStyleSheet("")
             
             self.form.widget.state = {
-                "description.file": ""
+                "descriptionFile": ""
             }
 
             self.itemsDescriptionList = []
@@ -617,7 +617,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.userMessageBox.append(errorFormat.format(messageText))
 
             self.form.widget.state = {
-                "resource.id": self.resource_id
+                "resourceId": self.resource_id
             }
 
         else:
@@ -675,7 +675,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         self.form.widget.state = {
             "path": updatePath,
-            "assoc.file.multi.like.file": updateAssocFileMultiLike
+            "associatedFileMultiLikeFiles": updateAssocFileMultiLike
         } 
 
         
@@ -826,7 +826,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # have to do this after add_tooltip because these items are defined in that function - may want to change that at some point
         # get the name convention widget 
         # if the contents of the name convention widget
-        self.nameConventionWidgetIdx = self.formWidgetNameList.index("description.file.name.convention")
+        self.nameConventionWidgetIdx = self.formWidgetNameList.index("descriptionFileNameConvention")
         self.nameConventionWidget = self.formWidgetList[self.nameConventionWidgetIdx] 
         print("my state: ", self.nameConventionWidget.state)
         self.nameConvention = self.nameConventionWidget.state
@@ -890,7 +890,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             
             if all(self.itemsDescriptionList):
                 self.form.widget.state = {
-                    "description.file": self.itemsDescriptionList[0]
+                    "descriptionFile": self.itemsDescriptionList[0]
                 } 
 
                 applyConvention = "successful. Please see the Resource File Description field in the form below to see the file description assigned to the first file in your set of multiple 'like' resource files"
@@ -939,9 +939,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # form fields that will be the same), and save again with a new resource id - in this case the user can modify the 
         # resource id manually, incrementing the id number by one - if resource id modified, updated it in memory and regenerate
         # the save file name, save file path, and resource id number
-        if self.form.widget.state["resource.id"] != self.resource_id:
+        if self.form.widget.state["resourceId"] != self.resource_id:
             
-            self.resource_id = self.form.widget.state["resource.id"]
+            self.resource_id = self.form.widget.state["resourceId"]
             self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
 
@@ -978,20 +978,20 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.resourceFileNameList = [self.resourceFileName]
                 self.saveFilePathList = [self.saveFilePath]
                 self.items = [self.form.widget.state["path"]]
-                self.itemsDescriptionList = [self.form.widget.state["description.file"]]
+                self.itemsDescriptionList = [self.form.widget.state["descriptionFile"]]
         else:
             self.resource_id_list = [self.resource_id]
             self.resourceFileNameList = [self.resourceFileName]
             self.saveFilePathList = [self.saveFilePath]
             self.items = [self.form.widget.state["path"]]
-            self.itemsDescriptionList = [self.form.widget.state["description.file"]]
+            self.itemsDescriptionList = [self.form.widget.state["descriptionFile"]]
                 
         if self.editSingle:
             self.resource_id_list = [self.resource_id]
             self.resourceFileNameList = [self.resourceFileName]
             self.saveFilePathList = [self.saveFilePath]
             self.items = [self.form.widget.state["path"]]
-            self.itemsDescriptionList = [self.form.widget.state["description.file"]]            
+            self.itemsDescriptionList = [self.form.widget.state["descriptionFile"]]            
         
         #messageText = ""
 
@@ -1026,12 +1026,12 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             #print(self.form.widget.state)
             resource = deepcopy(self.form.widget.state)
 
-            resourceDepend = resource["assoc.file.dd"] + resource["assoc.file.protocol"] + resource["assoc.file.result.tracker"] + resource["associatedFileDependsOn"]
+            resourceDepend = resource["associatedFileDataDict"] + resource["associatedFileProtocol"] + resource["associatedFileResultsTracker"] + resource["associatedFileDependsOn"]
             
             if self.popFormField:
-                resource["assoc.file.result.depends.on"] = self.popFormField
+                resource["associatedFileResultsDependOn"] = self.popFormField
 
-                for item in resource["assoc.file.result.depends.on"]:
+                for item in resource["associatedFileResultsDependOn"]:
                     resourceDepend.extend(item["resultIdDependsOn"])
 
  
@@ -1040,9 +1040,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 #resource = self.form.widget.state
                 currentResource = deepcopy(resource)
                     
-                currentResource["resource.id"] = self.resource_id_list[idx]
+                currentResource["resourceId"] = self.resource_id_list[idx]
                 currentResource["path"] = self.items[idx]
-                currentResource["description.file"] = self.itemsDescriptionList[idx]
+                currentResource["descriptionFile"] = self.itemsDescriptionList[idx]
                 
                 f=open(p,'w')
                 print(dumps(currentResource, indent=4), file=f)
@@ -1067,7 +1067,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.moveCursor(QTextCursor.End)
 
             if self.form.widget.state["category"] == "tabular-data":
-                if not self.form.widget.state["assoc.file.dd"]:
+                if not self.form.widget.state["associatedFileDataDict"]:
 
                     messageText = "<br>WARNING: You annotated a tabular data resource and did not include a data dictionary for this tabular data resource. If you don't already have a data dictionary, please visit the Data Dictionary tab to create a data dictionary for this resource. You can easily and automatically create a data dictionary using only your tabular data file. Once you have a data dictionary, you can come back here and edit this form to add your data dictionary and save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed." + "\n\n"
                     saveFormat = '<span style="color:red;">{}</span>'
@@ -1082,7 +1082,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
-                if self.form.widget.state["access.date"] == self.formDefaultState["access.date"]:
+                if self.form.widget.state["accessDate"] == self.formDefaultState["accessDate"]:
 
                     messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'public\n' or to \n'restricted-access\n'. Please return to the form to indicate the date at which temporary-provate access level will expire in the Access Date field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
                     saveFormat = '<span style="color:red;">{}</span>'
@@ -1190,7 +1190,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             with open(ifileName, 'r') as stream:
                 data = load(stream)
 
-            self.resource_id = data["resource.id"]
+            self.resource_id = data["resourceId"]
             self.resIdNum = int(self.resource_id.split("-")[1])
             self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
             #self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
@@ -1205,13 +1205,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             saveFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
 
-            if data["assoc.file.result.depends.on"]:
-                self.popFormField = data.pop("assoc.file.result.depends.on")
+            if data["associatedFileResultsDependOn"]:
+                self.popFormField = data.pop("associatedFileResultsDependOn")
             
             self.form.widget.state = data
 
-            if data["assoc.file.multi.like.file"]: 
-                self.lstbox_view.addItems(data["assoc.file.multi.like.file"])
+            if data["associatedFileMultiLikeFiles"]: 
+                self.lstbox_view.addItems(data["associatedFileMultiLikeFiles"])
                 self.add_multi_resource()
                 self.take_inputs()
 

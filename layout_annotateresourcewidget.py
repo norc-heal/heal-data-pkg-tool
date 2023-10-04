@@ -29,10 +29,10 @@ class AnnotateResourceWindow(QtWidgets.QWidget):
                 "ui:widget": "filepath"
             }
             ,
-            "assoc.file.dd": {
+            "associatedFileDataDict": {
                 "ui:widget": "filepath"
             },
-            "assoc.file.protocol": {
+            "associatedFileProtocol": {
                 "ui:widget": "filepath"
             },
             "assoc.file.id.map": {
@@ -55,8 +55,8 @@ class AnnotateResourceWindow(QtWidgets.QWidget):
 
         self.form = builder.create_form(schema, ui_schema)
         self.form.widget.state = {
-            "exp.belongs.to": "exp-999",
-            "access.date": "2099-01-01"
+            "expBelongsTo": "exp-999",
+            "accessDate": "2099-01-01"
             #"schema_path": "some_file.py",
             #"integerRangeSteps": 60,
             #"sky_colour": "#8f5902"
@@ -88,7 +88,7 @@ class AnnotateResourceWindow(QtWidgets.QWidget):
         #self.form.widget(lambda d: print(dumps(d, indent=4), file=open('test-out-'+ loads(dumps(d, indent=4))['experimentId'] + '.txt','w')))
         print(self.form.widget.state)
         resource = self.form.widget.state
-        resource_id = exp["resource.id"]
+        resource_id = exp["resourceId"]
         print(resource_id)
 
         saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')

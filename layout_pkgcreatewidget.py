@@ -49,11 +49,20 @@ class PkgCreateWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(widget)
 
     def create_new_pkg(self):
-        #file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-        #folder = str(QFileDialog.getExistingDirectory(None, "Select Directory"))
-        #filepath = QtWidgets.QFileDialog.getOpenFileName(self, 'Hey! Select a File')
+        
         parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Parent Directory Where Data Package Should Be Created!')
+        
+        if not parentFolderPath:
+            messageText = "<br>" + "You must select a parent directory where the data package directory should be created to proceed."
+            self.userMessageBox.append(messageText)
+            return
+
         pkgPath = dsc_pkg_utils.new_pkg(pkg_parent_dir_path=parentFolderPath)
+
+        if not pkgPath:
+            messageText = "<br>" + "A Data Package folder could not be created at " + parentFolderPath + ". Check to see if a Data Package folder (a directory called dsc-pkg) already exists at this location."
+            self.userMessageBox.append(messageText)
+            return
 
         messageText = 'Created new HEAL DSC data package at: ' + pkgPath
         self.userMessageBox.append(messageText)

@@ -175,16 +175,8 @@ def add_dd_to_heal_dd_template(csv_dd_df,required_first=True,save_path=None):
 
 def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path='./resources/'):
     
-    #if not pkg_dir_name:
-    #    pkg_dir_name = 'dsc-pkg'
-
-    #if not dsc_pkg_resource_dir_path:
-    #    dsc_pkg_resource_dir_path = './resources/'
-
     pkg_path = os.path.join(pkg_parent_dir_path,pkg_dir_name)
-    #pkg_resources_path = os.path.join(pkg_path,"resources") # create a subdir in the pkg dir for schema and template resources
-
-    
+            
     # create the new package directory    
     try:
         os.makedirs(pkg_path, exist_ok = False)
@@ -195,51 +187,8 @@ def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path
         return
 
     
-    # add template starter files to new package directory
-    #source_folder = dsc_pkg_resource_dir_path
+    #destination_folder = pkg_path
     
-
-    # fetch all files
-    #results_schemas = []
-    #results_templates = []
-    #results_resources = []
-    #results_use = []
-
-    #results_schemas += [each for each in os.listdir(source_folder) if each.endswith('schema.csv')]
-    #print(results_schemas) 
-    #results_templates += [each for each in os.listdir(source_folder) if each.endswith('template.csv')]
-    #print(results_templates) 
-    #results_resources = results_schemas + results_templates
-    #print(results_resources)
-    
-    #results_use += [each for each in os.listdir(source_folder) if each.endswith('tracker.csv')]
-    #print(results_use)
-
-    #destination_folder = pkg_resources_path
-    #for file_name in os.listdir(source_folder):
-    #for file_name in results_resources:
-    #    # construct full file path
-    #    #source = source_folder + file_name
-    #    #destination = destination_folder + file_name
-    #    source = os.path.join(source_folder,file_name)
-    #    destination = os.path.join(destination_folder,file_name)
-    #    # copy only files
-    #    if os.path.isfile(source):
-    #        shutil.copy(source, destination)
-    #        print('copied', file_name)
-
-    destination_folder = pkg_path
-    #for file_name in os.listdir(source_folder):
-    #for file_name in results_use:
-    #    # construct full file path
-    #    #source = source_folder + file_name
-    #    #destination = destination_folder + file_name
-    #    source = os.path.join(source_folder,file_name)
-    #    destination = os.path.join(destination_folder,file_name)
-    #    # copy only files
-    #    if os.path.isfile(source):
-    #        shutil.copy(source, destination)
-    #        print('copied', file_name)
 
     for metadataType in ["experiment-tracker", "resource-tracker"]:
         props = heal_metadata_json_schema_properties(metadataType=metadataType)

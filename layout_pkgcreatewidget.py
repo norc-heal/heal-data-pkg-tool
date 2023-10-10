@@ -36,6 +36,9 @@ class PkgCreateWindow(QtWidgets.QMainWindow):
         self.buttonNewPkg = QtWidgets.QPushButton(text="Create New Data Package",parent=self)
         self.buttonNewPkg.clicked.connect(self.create_new_pkg)
 
+        self.buttonContinuePkg = QtWidgets.QPushButton(text="Continue Existing Data Package",parent=self)
+        self.buttonContinuePkg.clicked.connect(self.continue_pkg)
+
         # maybe switch Line edit to this: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QPlainTextEdit.html#more
         #self.userMessageBox = QtWidgets.QLineEdit(parent=self)
         self.userMessageBox = QtWidgets.QTextEdit(parent=self)
@@ -43,6 +46,7 @@ class PkgCreateWindow(QtWidgets.QMainWindow):
         
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.buttonNewPkg)
+        layout.addWidget(self.buttonContinuePkg)
         layout.addWidget(self.userMessageBox)
 
         widget.setLayout(layout)
@@ -64,7 +68,47 @@ class PkgCreateWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(messageText)
             return
 
-        messageText = 'Created new HEAL DSC data package at: ' + pkgPath
+        messageText = "<br>" + "Created new HEAL DSC data package at: "  + pkgPath
         self.userMessageBox.append(messageText)
+
+        messageText = "<br>" + "Your working data package directory has been set at: "  + pkgPath
+        self.userMessageBox.append(messageText)
+
+        self.pkgPath = pkgPath
+        
+
+    def continue_pkg(self):
+        
+        pkgPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your Existing Data Package Directory!')
+        
+        if not pkgPath:
+            messageText = "<br>" + "You must select an existing data package directory to proceed."
+            self.userMessageBox.append(messageText)
+            return
+
+        requiredFiles = ["heal-csv-experiment-tracker.csv","heal-csv-resource-tracker.csv"]
+        requiredDirPrefix = "dsc-pkg"
+
+        print(Path(pkgPath).name)
+        print(str(Path(pkgPath).name))
+        print(str(Path(pkgPath).name).startswith(requiredDirPrefix))
+
+        if not str(Path(pkgPath).name).startswith(requiredDirPrefix):
+            messageText = "<br>" + "The directory you selected as your existing data package directory does not have a name that starts with the required data package directory prefix of " + requiredDirPrefix + ". Check that you selected the correct directory. You can use the Create New Data Package push button above to create a new data package directory with the require data package directory prefix."
+            self.userMessageBox.append(messageText)
+            return
+
+        requiredFilesExist = [os.path.isfile(os.path.join(pkgPath,f)) for f in requiredFiles]
+        print("requiredFilesExist: ", requiredFilesExist)
+
+        if not all(requiredFilesExist):
+            messageText = "<br>" + "The directory you selected as your existing data package directory does not contain all required files for an initialized data package directory. Required files include: " + "<br><br>" + "<br>".join(requiredFiles) + "<br><br>" + "Check that you selected the correct directory. You can use the Create New Data Package push button above to create a new data package directory with the required files." 
+            self.userMessageBox.append(messageText)
+            return
+
+        messageText = "<br>" + "Your working data package directory has been set at: "  + pkgPath
+        self.userMessageBox.append(messageText)
+
+        self.pkgPath = pkgPath
 
     

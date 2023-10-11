@@ -78,16 +78,23 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             messageText = "<br>You must set a valid working data package path directory to proceed. Navigate to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to either <br><Br>1. create a new data package directory and set it as the working data package directory, or <br>2. set an existing data package directory as the working data package directory."
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
-            return
+            return False
         else:
             self.workingDataPkgDir = testPath  
+            return True
              
 
 
 
     def annotate_result(self,checked):
+        
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not self.getWorkingDataPkgDir():
+            return
+        
+        # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
-            self.w = ScrollAnnotateResultWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay)
+            self.w = ScrollAnnotateResultWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir)
             self.w.show()
 
         else:
@@ -95,12 +102,17 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             self.w = None  # Discard reference.
 
     def edit_result(self,checked):
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not self.getWorkingDataPkgDir():
+            return
+
+        # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
             #self.w.editState = True
-            self.w = ScrollAnnotateResultWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay)
+            self.w = ScrollAnnotateResultWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir)
             self.w.show()
             self.w.load_file()
-
 
         else:
             self.w.close()  # Close window.
@@ -108,7 +120,10 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
     
     def add_result(self):
 
-        
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not self.getWorkingDataPkgDir():
+            return
+            
         # get result file path
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
                (QtCore.QDir.homePath()), "Text (*.txt)")

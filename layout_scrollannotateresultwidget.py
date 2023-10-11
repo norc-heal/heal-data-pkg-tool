@@ -57,14 +57,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
         self.form.widget.state = deepcopy(self.formDefaultState)
       
-         # create 'add dsc data pkg directory' button
-        self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
-        self.buttonAddDir.clicked.connect(self.add_dir)
+        #  # create 'add dsc data pkg directory' button
+        # self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
+        # self.buttonAddDir.clicked.connect(self.add_dir)
 
-        self.buttonAddDir.setSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
-        )
-        self.buttonAddDir.setStyleSheet("QPushButton{background-color:rgba(10,105,33,100);} QPushButton:hover{background-color:rgba(0,125,0,50);}");
+        # self.buttonAddDir.setSizePolicy(
+        #     QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        # )
+        # self.buttonAddDir.setStyleSheet("QPushButton{background-color:rgba(10,105,33,100);} QPushButton:hover{background-color:rgba(0,125,0,50);}");
                 
 
         # create save button
@@ -118,6 +118,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # initialize tool tip for each form field based on the description text for the corresponding schema property
         self.add_tooltip()
         self.add_priority_highlight_and_hide()
+        self.add_dir()
+        self.get_id()
         #self.add_priority_highlight()
         #self.initial_hide()
 
@@ -133,7 +135,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         ################################## Finished creating component widgets
         
 
-        self.vbox.addWidget(self.buttonAddDir)
+        #self.vbox.addWidget(self.buttonAddDir)
         self.vbox.addWidget(self.buttonSaveResult)
         self.vbox.addWidget(self.buttonClearForm)
         self.vbox.addWidget(self.labelUserMessageBox)
@@ -349,8 +351,11 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
           
     def add_dir(self):
         
-        self.saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new result will be saved there!')
-        
+        #self.saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new result will be saved there!')
+        self.saveFolderPath = self.workingDataPkgDir
+
+    def get_id(self):
+
         if self.saveFolderPath:
 
             # get new result ID for new result file - get the max id num used for existing result files and add 1; if no result files yet, set id num to 1
@@ -373,8 +378,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
 
-            messageText = "<br>Based on other results already saved in your DSC Package directory, your new result will be saved with the unique ID: " + self.result_id + "<br>Result ID has been added to the result form."
-            messageText = messageText + "<br>Your new result file will be saved in your DSC Package directory as: " + self.saveFilePath + "<br><br>"
+            messageText = "<br>Based on other results already saved in your working DSC Data Package directory, your new result will be saved with the unique ID: " + self.result_id + "<br>Result ID has been added to the result form."
+            messageText = messageText + "<br><br>Your new result file will be saved in your working DSC Data Package directory as: " + self.saveFilePath + "<br><br>"
             self.userMessageBox.append(messageText)
             #self.userMessageBox.moveCursor(QTextCursor.End)
 
@@ -391,6 +396,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 "resultId": self.result_id
             }
 
+        # this should no longer be necessary as the form widget will only be opened if a workingDataPkgDir has been set and the path has been as a string 
         else:
             messageText = "<br>Please select your DSC Package Directory to proceed."
             errorFormat = '<span style="color:red;">{}</span>'
@@ -469,6 +475,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
     def save_result(self):
         
+        # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
         # check that a dsc data package dir has been added - this is the save folder
         if not self.saveFolderPath:
             messageText = "<br>You must add a DSC Data Package Directory before saving your result file. Please add a DSC Data Package Directory and then try saving again." 
@@ -561,15 +568,17 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             if self.items2:
                 self.items2 = []
 
-
+        
         messageText = "<br>Your form was successfully cleared and you can start annotating a new resource"
         saveFormat = '<span style="color:green;">{}</span>'
         self.userMessageBox.append(saveFormat.format(messageText))
         self.userMessageBox.moveCursor(QTextCursor.End)
 
-        messageText = "<br>NOTE: The Result ID in your form has been re-set to the default value of \n'result-1\n'. If you know which result IDs you've already used, you can change the Result ID in the cleared form manually by adding 1 to the max Result ID you've already used. To generate a unique Result ID automatically, click the Add DSC Package Directory button above the form - this will re-add your DSC Package Directory, search that directory for Result IDs already used, generate a unique Result ID by adding 1 to the max Result ID already in use, and add that Result ID value to the form for you."
-        saveFormat = '<span style="color:blue;">{}</span>'
-        self.userMessageBox.append(saveFormat.format(messageText)) 
+        self.get_id()
+
+        # messageText = "<br>NOTE: The Result ID in your form has been re-set to the default value of \n'result-1\n'. If you know which result IDs you've already used, you can change the Result ID in the cleared form manually by adding 1 to the max Result ID you've already used. To generate a unique Result ID automatically, click the Add DSC Package Directory button above the form - this will re-add your DSC Package Directory, search that directory for Result IDs already used, generate a unique Result ID by adding 1 to the max Result ID already in use, and add that Result ID value to the form for you."
+        # saveFormat = '<span style="color:blue;">{}</span>'
+        # self.userMessageBox.append(saveFormat.format(messageText)) 
         self.userMessageBox.moveCursor(QTextCursor.End)           
 
     def load_file(self):

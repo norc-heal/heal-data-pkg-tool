@@ -27,9 +27,12 @@ from layout_csveditwidget import CSVEditWindow
 
 class PkgCreateWindow(QtWidgets.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, workingDataPkgDirDisplay):
         super().__init__()
         self.w = None  # No external window yet.
+        
+        self.pkgPath = None # Initialize with no working data package directory path
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         
         widget = QtWidgets.QWidget()
         
@@ -75,6 +78,7 @@ class PkgCreateWindow(QtWidgets.QMainWindow):
         self.userMessageBox.append(messageText)
 
         self.pkgPath = pkgPath
+        self.workingDataPkgDirDisplay.setText(self.pkgPath)
         
 
     def continue_pkg(self):
@@ -110,5 +114,6 @@ class PkgCreateWindow(QtWidgets.QMainWindow):
         self.userMessageBox.append(messageText)
 
         self.pkgPath = pkgPath
+        self.workingDataPkgDirDisplay.setText(self.pkgPath)
 
     

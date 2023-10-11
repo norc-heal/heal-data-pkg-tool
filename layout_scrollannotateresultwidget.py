@@ -26,8 +26,9 @@ import re
 from copy import deepcopy
 
 class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self, workingDataPkgDirDisplay):
         super().__init__()
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         self.initUI()
 
     def initUI(self):

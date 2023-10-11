@@ -19,10 +19,11 @@ from layout_csvviewpushtoloadwidget import CSVViewPushToLoadWindow
 #from layout_csvpushtoloadwidget import CSVPushToLoadWindow
 
 class ResultsTrkTabsWindow(QWidget):
-    def __init__(self):
+    def __init__(self, workingDataPkgDirDisplay):
         super().__init__()
         self.setWindowTitle("Results Tracker")
         #self.resize(270, 110)
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         
         # Create a top-level layout
         layout = QVBoxLayout()
@@ -34,7 +35,7 @@ class ResultsTrkTabsWindow(QWidget):
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(self.infoText), "Info")
         #tabs.addTab(ResultsTrkCreateWindow(), "Create Result Tracker")
-        tabs.addTab(ResultsTrkAddWindow(), "Add Result")
+        tabs.addTab(ResultsTrkAddWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Add Result")
         tabs.addTab(CSVViewPushToLoadWindow(), "View Tracker")
         
         

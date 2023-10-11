@@ -89,7 +89,7 @@ class MainWindow(QMainWindow):
         tabs.addTab(ExpTrkTabsWindow(), "Experiment Tracker")
         tabs.addTab(ResourceTrkTabsWindow(), "Resource Tracker")
         tabs.addTab(VLMDTabsWindow(), "Data Dictionary")
-        tabs.addTab(ResultsTrkTabsWindow(), "Results Tracker")
+        tabs.addTab(ResultsTrkTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Results Tracker")
         
         #for n, color in enumerate(["red", "green", "blue", "yellow"]):
         #    tabs.addTab(Color(color), color)

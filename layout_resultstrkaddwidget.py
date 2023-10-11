@@ -35,9 +35,10 @@ import datetime
 
 class ResultsTrkAddWindow(QtWidgets.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, workingDataPkgDirDisplay):
         super().__init__()
         self.w = None  # No external window yet.
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         
         widget = QtWidgets.QWidget()
         
@@ -69,10 +70,24 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-    
+    def getWorkingDataPkgDir(self):
+        testPath = self.workingDataPkgDirDisplay.toPlainText()
+        print("testPath: ",testPath)
+
+        if not os.path.exists(testPath):
+            messageText = "<br>You must set a valid working data package path directory to proceed. Navigate to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to either <br><Br>1. create a new data package directory and set it as the working data package directory, or <br>2. set an existing data package directory as the working data package directory."
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return
+        else:
+            self.workingDataPkgDir = testPath  
+             
+
+
+
     def annotate_result(self,checked):
         if self.w is None:
-            self.w = ScrollAnnotateResultWindow()
+            self.w = ScrollAnnotateResultWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay)
             self.w.show()
 
         else:
@@ -82,7 +97,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
     def edit_result(self,checked):
         if self.w is None:
             #self.w.editState = True
-            self.w = ScrollAnnotateResultWindow()
+            self.w = ScrollAnnotateResultWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay)
             self.w.show()
             self.w.load_file()
 
@@ -93,6 +108,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
     
     def add_result(self):
 
+        
         # get result file path
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
                (QtCore.QDir.homePath()), "Text (*.txt)")

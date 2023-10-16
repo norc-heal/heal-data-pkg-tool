@@ -26,10 +26,11 @@ import re
 from copy import deepcopy
 
 class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
-    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir):
+    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add"):
         super().__init__()
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         self.workingDataPkgDir = workingDataPkgDir
+        self.mode = mode
         self.initUI()
 
     def initUI(self):
@@ -119,7 +120,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         self.add_tooltip()
         self.add_priority_highlight_and_hide()
         self.add_dir()
-        self.get_id()
+        if self.mode == "add":
+            self.get_id()
         #self.add_priority_highlight()
         #self.initial_hide()
 
@@ -585,8 +587,12 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         #_json_filter = 'json (*.json)'
         #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
         print("in load_file fx")
+
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
+        #        (QtCore.QDir.homePath()), "Text (*.txt)")
+
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
-               (QtCore.QDir.homePath()), "Text (*.txt)")
+               self.saveFolderPath, "Text (*.txt)")
 
         if not ifileName: 
             messageText = "<br>You have not selected a file; returning."
@@ -597,7 +603,17 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                      
             self.saveFilePath = ifileName
             print("saveFilePath: ", self.saveFilePath)
-            self.saveFolderPath = Path(ifileName).parent
+            print(Path(ifileName).parent)
+            print(Path(self.saveFolderPath))
+
+            # if user selects a result txt file that is not in the working data pkg dir, return w informative message
+            if Path(self.saveFolderPath) != Path(ifileName).parent:
+                messageText = "<br>You selected a result txt file that is not in your working Data Package Directory; You must select a result txt file that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            #self.saveFolderPath = Path(ifileName).parent
             print("saveFolderPath: ", self.saveFolderPath)
             
             with open(ifileName, 'r') as stream:

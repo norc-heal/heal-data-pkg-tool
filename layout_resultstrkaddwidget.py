@@ -94,7 +94,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
-            self.w = ScrollAnnotateResultWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir)
+            self.w = ScrollAnnotateResultWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add")
             self.w.show()
 
         else:
@@ -110,7 +110,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
             #self.w.editState = True
-            self.w = ScrollAnnotateResultWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir)
+            self.w = ScrollAnnotateResultWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="edit")
             self.w.show()
             self.w.load_file()
 
@@ -320,6 +320,18 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                self.workingDataPkgDir, "Text (*.txt)")
         
         if ifileName:
+
+            # just for the first annotation file selected for addition to the tracker, check to make sure it is 
+            # in the working data pkg dir - if not return with informative message
+            ifileNameCheckDir = ifileName[0]
+
+            # if user selects a result txt file that is not in the working data pkg dir, return w informative message
+            if Path(self.workingDataPkgDir) != Path(ifileNameCheckDir).parent:
+                messageText = "<br>You selected a result txt file that is not in your working Data Package Directory; You must select a result txt file that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
             #countFiles = len(ifileName)
 
             # initialize lists to collect valid and invalid files
@@ -332,6 +344,8 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             
             for filename in ifileName:
                 print(filename)
+
+                
                 
                 # get result id and filename stem
                 ifileNameStem = Path(filename).stem

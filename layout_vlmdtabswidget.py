@@ -17,10 +17,11 @@ from layout_csvpushtoloadwidget import CSVPushToLoadWindow
 from layout_vlmdvalidatewidget import VLMDValidateWindow
 
 class VLMDTabsWindow(QWidget):
-    def __init__(self):
+    def __init__(self, workingDataPkgDirDisplay):
         super().__init__()
         self.setWindowTitle("Data Dictionary")
         #self.resize(270, 110)
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         
         # Create a top-level layout
         layout = QVBoxLayout()
@@ -30,7 +31,7 @@ class VLMDTabsWindow(QWidget):
         # Create the tab widget 
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(infoText=self.infoText), "Info")
-        tabs.addTab(VLMDCreateWindow(), "Create")
+        tabs.addTab(VLMDCreateWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Create")
         tabs.addTab(VLMDValidateWindow(), "Validate")
         tabs.addTab(CSVPushToLoadWindow(), "View/Edit")
         layout.addWidget(tabs)

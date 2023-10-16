@@ -75,7 +75,7 @@ class MainWindow(QMainWindow):
         self.layout = QVBoxLayout(self.main_widget)
         #self.setLayout(self.layout)
         
-        self.workingDataPkgDirDisplayDefaultText = "Set a working data package directory! <br><br> Navigate to the \"Create or Continue Data Package\" sub-tab of the \"Data Package\" tab to set a new or existing data package directory as your working data package directory"
+        self.workingDataPkgDirDisplayDefaultText = "Set a working data package directory! <br><br> Navigate to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to either: <br><br>1. <b>Create New Data Package</b>: Create a new Data Package Directory and set it as the working Data Package Directory, or <br>2. <b>Continue Existing Data Package</b>: Set an existing Data Package Directory as the working Data Package Directory."
         self.workingDataPkgDirLabel = QLabel("Working Data Package Directory:", self)
         self.workingDataPkgDirDisplay = QtWidgets.QTextEdit(parent=self)
         self.workingDataPkgDirDisplay.setReadOnly(True)

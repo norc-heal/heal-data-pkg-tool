@@ -75,7 +75,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         print("testPath: ",testPath)
 
         if not os.path.exists(testPath):
-            messageText = "<br>You must set a valid working data package path directory to proceed. Navigate to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to either <br><Br>1. create a new data package directory and set it as the working data package directory, or <br>2. set an existing data package directory as the working data package directory."
+            messageText = "<br>You must set a valid working Data Package Directory to proceed. Navigate to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to either: <br><br>1. <b>Create New Data Package</b>: Create a new Data Package Directory and set it as the working Data Package Directory, or <br>2. <b>Continue Existing Data Package</b>: Set an existing Data Package Directory as the working Data Package Directory."
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return False
@@ -120,14 +120,12 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
     
     def add_result(self):
 
-        # check if user has set a working data package dir - if not exit gracefully with informative message
-        if not self.getWorkingDataPkgDir():
-            return
+        # not updated to use working data package dir as set in data package tab as this function is currently not in use
             
         # get result file path
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
                (QtCore.QDir.homePath()), "Text (*.txt)")
-        
+
         if ifileName:
             #countFiles = len(ifileName)
 
@@ -309,9 +307,17 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
 
     def auto_add_result(self):
 
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not self.getWorkingDataPkgDir():
+            return
+
         # get result file path
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
-               (QtCore.QDir.homePath()), "Text (*.txt)")
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
+        #        (QtCore.QDir.homePath()), "Text (*.txt)")
+
+        # open files select file browse to working data package directory
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s) from your working Data Package Directory",
+               self.workingDataPkgDir, "Text (*.txt)")
         
         if ifileName:
             #countFiles = len(ifileName)
@@ -442,8 +448,10 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         # now get location of dsc pkg dir, check if appropriate results trackers already exist, if not create them, then add
         # results to appropriate results trackers
 
-        dscDirPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your result(s) will be auto-added to appropriate Results Tracker(s) there!')
-        
+        # no longer need to ask user to browse to dsc data package dir - instead use working data package dir set by user in data package tab of tool
+        #dscDirPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your result(s) will be auto-added to appropriate Results Tracker(s) there!')
+        dscDirPath = self.workingDataPkgDir
+
         if not dscDirPath:
             messageText = "You have not selected a directory. Please select your DSC Data Package Directory. If you have not yet created a DSC Data Package Directory, use the \"Create New Data Package\" button on the \"Create\" sub-tab of the \"Data Package\" tab to create a DSC Data Package Directory. You can then come back here and try adding your result file(s) again! <br><br>Exiting \"Add Result\" function now."
             errorFormat = '<span style="color:red;">{}</span>'
@@ -541,9 +549,9 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 all_df = all_df[-(all_df.astype('string').duplicated())]
                 print("all_df rows, without dupes: ", all_df.shape[0])
             
-                # before writing to file may want to check for duplicate resource IDs and if duplicate resource IDs, ensure that 
-                # user wants to overwrite the earlier instance of the resource ID in the resource tracker - right now, dup entries 
-                # for a resource are all kept as long as not exact dup (i.e. at least one thing has changed)
+                # before writing to file may want to check for duplicate result IDs and if duplicate result IDs, ensure that 
+                # user wants to overwrite the earlier instance of the result ID in the results tracker - right now, dup entries 
+                # for a result are all kept as long as not exact dup (i.e. at least one thing has changed)
 
                 all_df.to_csv(output_path, mode='w', header=True, index=False)
                 #df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)

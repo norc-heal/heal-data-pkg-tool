@@ -45,11 +45,11 @@ jobs:
         pip install -r requirements.txt
     - name: Bundle EXE for mac  
       run: |
-        pyinstaller --icon=heal-icon.ico --add-data="heal-icon.ico:." --collect-all pipe --hidden-import pipe --hidden-import pyreadstat._readstat_writer --hidden-import pyreadstat.worker --paths=. --debug=all --onefile dsc_pkg_tool.py
+        pyinstaller --icon=heal-icon.ico --add-data="heal-icon.ico:." --collect-all pipe --hidden-import pipe --hidden-import pyreadstat._readstat_writer --hidden-import pyreadstat.worker --paths=. --onefile dsc_pkg_tool.py
       if: ${{ matrix.name == 'mac' }} 
     - name: Bundle EXE for windows 
       run: |
-        pyinstaller --icon=heal-icon.ico --add-data="heal-icon.ico;." --collect-all pipe --hidden-import pipe --hidden-import pyreadstat._readstat_writer --hidden-import pyreadstat.worker --paths=. --debug=all --onefile dsc_pkg_tool.py
+        pyinstaller --icon=heal-icon.ico --add-data="heal-icon.ico;." --collect-all pipe --hidden-import pipe --hidden-import pyreadstat._readstat_writer --hidden-import pyreadstat.worker --paths=. --onefile dsc_pkg_tool.py
       if: ${{matrix.name == 'windows' }} 
     - name: Zip exe (for windows) and no ext (for ubuntu/mac)
       run: |

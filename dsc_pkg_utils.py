@@ -19,6 +19,20 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+def getWorkingDataPkgDir(self):
+        testPath = self.workingDataPkgDirDisplay.toPlainText()
+        print("testPath: ",testPath)
+
+        if not os.path.exists(testPath):
+            messageText = "<br>You must set a valid working Data Package Directory to proceed. Navigate to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to either: <br><br>1. <b>Create New Data Package</b>: Create a new Data Package Directory and set it as the working Data Package Directory, or <br>2. <b>Continue Existing Data Package</b>: Set an existing Data Package Directory as the working Data Package Directory."
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return False
+        else:
+            self.workingDataPkgDir = testPath  
+            return True
+
+
 def heal_metadata_json_schema(metadataType):
 
     print(metadataType)

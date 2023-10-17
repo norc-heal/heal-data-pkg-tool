@@ -131,117 +131,8 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
 
-    #def create_new_pkg(self):
-    #    #file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-    #    #folder = str(QFileDialog.getExistingDirectory(None, "Select Directory"))
-    #    #filepath = QtWidgets.QFileDialog.getOpenFileName(self, 'Hey! Select a File')
-    #    parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Parent Directory Where Data Package Should Be Created!')
-    #    pkgPath = dsc_pkg_utils.new_pkg(pkg_parent_dir_path=parentFolderPath)
-
-    #    messageText = 'Created new HEAL DSC data package at: ' + pkgPath
-    #    self.userMessageBox.setText(messageText)
-
-    def csv_data_infer_dd(self):
-
-        get_dd_dict = {
-            "FileExplorerOpenMessage" : "Select Input CSV Data file",
-            "FileExplorerOpenFileExt" : "CSV (*.csv *.tsv)",
-            "GetDDAction": "Inferred",
-            "GetDDActionStatusMessage" : "Inferring minimal HEAL CSV Data Dictionary from CSV data file: ",
-            "UtilsInputType" : "csv-data"
-        }
-
-        self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
-
-        ###
-
-        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Tabular CSV Data file",
-        #        (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
-        
-        # ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-        
-        # messageText = 'Inferring minimal HEAL CSV Data Dictionary from tabular csv data file: ' + ifileName
-        # self.userMessageBox.setText(messageText)
-
-        # mydicts = convert_to_vlmd(
-        #     input_filepath=ifileName,
-        #     data_dictionary_props={
-        #         "title":"my dd title",
-        #         "description":"my dd description"
-        #     },
-        #     inputtype="csv-data",
-        #     output_csv_quoting=True
-        # )
-        
-        # messageText = messageText + '\n\n\n' + 'Inferred - Success!'
-        # self.userMessageBox.setText(messageText)
-
-        # ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-        #                (QtCore.QDir.homePath() + "/" + "heal-csv-dd-" + ifname + ".csv"),"CSV Files (*.csv)") 
-
-        # messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        # self.userMessageBox.setText(messageText)
-
-        # # write just the heal csv dd to file
-        # pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
-
-        # messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        # self.userMessageBox.setText(messageText)
-
-    def spss_sav_data_extract_dd(self):
-
-        get_dd_dict = {
-            "FileExplorerOpenMessage" : "Select Input SPSS Sav Data file",
-            "FileExplorerOpenFileExt" : "SAV Files (*.sav)",
-            "GetDDAction": "Extracted",
-            "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from SPSS Sav data file: ",
-            "UtilsInputType" : "spss"
-        }
-
-        self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
-
-        ###
-        
-        # get_dd_dict = {
-        #     "FileExplorerOpenMessage" : "Select Input SPSS Sav Data file",
-        #     "FileExplorerOpenFileExt" : "SAV Files (*.sav)",
-        #     "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from SPSS Sav data file: ",
-        #     "UtilsInputType" : "spss"
-        # }
-
-        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input SPSS Sav Data file",
-        #        (QtCore.QDir.homePath()), "SAV Files (*.sav)")
-        
-        # ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-        
-        # messageText = 'Extracting metadata to populate HEAL CSV Data Dictionary from SPSS Sav data file: ' + ifileName
-        # self.userMessageBox.setText(messageText)
-
-        # mydicts = convert_to_vlmd(
-        #     input_filepath=ifileName,
-        #     data_dictionary_props={
-        #         "title":"my dd title",
-        #         "description":"my dd description"
-        #     },
-        #     inputtype="spss",
-        #     output_csv_quoting=True
-        # )
-        
-        # messageText = messageText + '\n\n\n' + 'Extracted - Success!'
-        # self.userMessageBox.setText(messageText)
-
-        # ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-        #                (QtCore.QDir.homePath() + "/" + "heal-csv-dd-" + ifname + ".csv"),"CSV Files (*.csv)") 
-
-        # messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        # self.userMessageBox.setText(messageText)
-
-        # # write just the heal csv dd to file
-        # pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
-
-        # messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        # self.userMessageBox.setText(messageText)    
     
+
     def get_heal_csv_dd(self,get_dd_dict):
         
         # check if user has set a working data package dir - if not exit gracefully with informative message
@@ -301,6 +192,30 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         messageText = "<br><br>" + 'Saved - Success!'
         self.userMessageBox.append(messageText)
 
+    def csv_data_infer_dd(self):
+
+        get_dd_dict = {
+            "FileExplorerOpenMessage" : "Select Input CSV Data file",
+            "FileExplorerOpenFileExt" : "CSV (*.csv *.tsv)",
+            "GetDDAction": "Inferred",
+            "GetDDActionStatusMessage" : "Inferring minimal HEAL CSV Data Dictionary from CSV data file: ",
+            "UtilsInputType" : "csv-data"
+        }
+
+        self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
+
+    def spss_sav_data_extract_dd(self):
+
+        get_dd_dict = {
+            "FileExplorerOpenMessage" : "Select Input SPSS Sav Data file",
+            "FileExplorerOpenFileExt" : "SAV Files (*.sav)",
+            "GetDDAction": "Extracted",
+            "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from SPSS Sav data file: ",
+            "UtilsInputType" : "spss"
+        }
+
+        self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
+    
     def stata_dta_data_extract_dd(self):
         
         get_dd_dict = {

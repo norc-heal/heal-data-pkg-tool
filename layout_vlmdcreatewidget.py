@@ -156,6 +156,7 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         if not ifileName:
             messageText = "<br><br>" + "You did not select a file - To proceed, you must: " + get_dd_dict["FileExplorerOpenMessage"] + "<br><br>"
             self.userMessageBox.append(messageText)
+            return
 
         ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
         
@@ -305,10 +306,21 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, get_dd_dict["FileExplorerOpenMessage"],
                self.workingDataPkgDir, get_dd_dict["FileExplorerOpenFileExt"])
 
+        print("ifileName: ", ifileName)
+        print(not ifileName)
+        print(ifileName is None)
+        print(ifileName == "")
+
         # error handling for if user does not select a file
         if not ifileName:
             messageText = "<br><br>" + "You did not select a file - To proceed, you must: " + get_dd_dict["FileExplorerOpenMessage"] + "<br><br>"
             self.userMessageBox.append(messageText)
+            return
+
+        # if os.path.isdir(ifileName):
+        #     messageText = "<br><br>" + "You did not select a file - To proceed, you must: " + get_dd_dict["FileExplorerOpenMessage"] + "<br><br>"
+        #     self.userMessageBox.append(messageText)
+        #     return
         
         ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
         

@@ -571,7 +571,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 self.items2 = []
 
         
-        messageText = "<br>Your form was successfully cleared and you can start annotating a new resource"
+        messageText = "<br>Your form was successfully cleared and you can start annotating a new result"
         saveFormat = '<span style="color:green;">{}</span>'
         self.userMessageBox.append(saveFormat.format(messageText))
         self.userMessageBox.moveCursor(QTextCursor.End)

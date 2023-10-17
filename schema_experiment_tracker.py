@@ -7,18 +7,21 @@ schema_experiment_tracker = {
             "title": "Experiment ID",
             "description": "id assigned to each experiment relevant to the data package; prefix is 'exp-' followed by a number starting with 1 for the first experiment, and iterating by 1 for each successive experiment (i.e. exp-1, exp-2, etc.)",
             "type": "string",
-            "pattern": "^exp-+-*[0-9]*[1-9][0-9]*$"
+            "pattern": "^exp-+-*[0-9]*[1-9][0-9]*$",
+            "priority": "all, high, auto"
         },
         "experimentType": {
             "title" : "Experiment Type",
             "description": "discovery|materials and methods development",
             "type": "string",
-            "enum": ["discovery","materials and methods development"]
+            "enum": ["discovery","materials and methods development"],
+            "priority": "all"
         },
         "experimentDescription": {
             "title": "Experiment Description",
             "description": "provide a brief description of the experiment; this is NOT a protocol",
-            "type": "string"
+            "type": "string",
+            "priority": "all, high"
         },
         "experimentQuestion": {
             "title": "Experiment Question(s)",
@@ -26,7 +29,8 @@ schema_experiment_tracker = {
             "type": "array",
             "items": {
                 "type": "string"
-            }
+            },
+            "priority": "all, high"
         },
         "experimentHypothesis": {
             "title": "Experiment Hypothesis(es)",
@@ -34,7 +38,8 @@ schema_experiment_tracker = {
             "type": "array",
             "items": {
                 "type": "string"
-            }
+            },
+            "priority": "all"
         }
     }
 }

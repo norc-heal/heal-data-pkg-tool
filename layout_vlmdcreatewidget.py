@@ -264,40 +264,6 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
 
         self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
         
-        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Redcap CSV Data Dictionary file", QtCore.QDir.homePath(), "CSV (*.csv *.tsv)")
-        
-        # ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-
-        # messageText = 'Converting the Redcap CSV Data Dictionary at this path to HEAL CSV Data Dictionary: ' + ifileName 
-        # self.userMessageBox.setText(messageText)      
-       
-        # #outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
-        
-        # mydicts = convert_to_vlmd(
-        #     input_filepath=ifileName,
-        #     data_dictionary_props={
-        #         "title":"my dd title",
-        #         "description":"my dd description"
-        #     },
-        #     inputtype="redcap-csv",
-        #     output_csv_quoting=True
-        # )
-
-        # messageText = messageText + '\n\n\n' + 'Converted - Success!'
-        # self.userMessageBox.setText(messageText)
-
-        # ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-        #                (QtCore.QDir.homePath() + "/" + "heal-csv-dd-" + ifname + ".csv"),"CSV Files (*.csv)") 
-
-        # messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        # self.userMessageBox.setText(messageText)
-
-        # # write just the heal csv dd to file
-        # pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
-
-        # messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        # self.userMessageBox.setText(messageText) 
-
     def xlsx_data_infer_dd(self,exceltype):
         
 

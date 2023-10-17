@@ -35,7 +35,7 @@ class InfoTextBrowserWindow(QtWidgets.QMainWindow):
         
         self.userMessageBox = QtWidgets.QTextBrowser(parent=self)
         self.userMessageBox.setOpenExternalLinks(True)
-        self.userMessageBox.setStyleSheet('font-size: 14px;')
+        self.userMessageBox.setStyleSheet('font-size: 12px;')
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.userMessageBox)

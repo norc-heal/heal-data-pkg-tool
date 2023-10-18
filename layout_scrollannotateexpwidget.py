@@ -54,7 +54,8 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         self.form = self.builder.create_form(self.ui_schema)
         
         self.formDefaultState = {
-            "experimentId": "exp-1"
+            "experimentId": "exp-1",
+            "experimentName": "default-experiment-name"
         }
 
         self.form.widget.state = deepcopy(self.formDefaultState)
@@ -552,7 +553,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             #self.form.widget.state[key] = clearState[key]
             print("key: ", key)
             print("value: ", value)
-            
+
             self.form.widget.state = {
                 key: clearState[key]
             } 

@@ -214,8 +214,8 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
     
     def add_priority_highlight_and_hide(self):
 
-        self.labelAddMultiDepend.hide()
-        self.lstbox_view2.hide()
+        #self.labelAddMultiDepend.hide()
+        #self.lstbox_view2.hide()
 
         print(self.form.widget.layout())
 
@@ -366,166 +366,158 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             annotationFileList = [filename for filename in os.listdir(self.saveFolderPath) if filename.startswith("exp-trk-exp-")]
             print(annotationFileList)
 
-            if resFileList: # if the list is not empty
-                resFileStemList = [Path(filename).stem for filename in resFileList]
-                print(resFileStemList)
-                resIdNumList = [int(filename.rsplit('-',1)[1]) for filename in resFileStemList]
-                print(resIdNumList)
-                resIdNum = max(resIdNumList) + 1
-                print(max(resIdNumList),resIdNum)
+            if annotationFileList: # if the list is not empty
+                annotationFileStemList = [Path(filename).stem for filename in annotationFileList]
+                print(annotationFileStemList)
+                annotationIdNumList = [int(filename.rsplit('-',1)[1]) for filename in annotationFileStemList]
+                print(annotationIdNumList)
+                annotationIdNum = max(annotationIdNumList) + 1
+                print(max(annotationIdNumList),annotationIdNum)
             else:
-                resIdNum = 1
+                annotationIdNum = 1
 
-            self.resIdNum = resIdNum
-            self.result_id = 'result-'+ str(self.resIdNum)
-            self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
-            self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
+            self.annotationIdNum = annotationIdNum
+            self.annotation_id = 'exp-'+ str(self.annotationIdNum)
+            self.annotationFileName = 'exp-trk-'+ self.annotation_id + '.txt'
+            self.saveFilePath = os.path.join(self.saveFolderPath,self.annotationFileName)
 
-            messageText = "<br>Based on other results already saved in your working DSC Data Package directory, your new result will be saved with the unique ID: " + self.result_id + "<br>Result ID has been added to the result form."
-            messageText = messageText + "<br><br>Your new result file will be saved in your working DSC Data Package directory as: " + self.saveFilePath + "<br><br>"
+            messageText = "<br>Based on other experiments already saved in your working DSC Data Package directory, your new experiment will be saved with the unique ID: " + self.annotation_id + "<br>Experiment ID has been added to the experiment form."
+            messageText = messageText + "<br><br>Your new experiment annotation file will be saved in your working DSC Data Package directory as: " + self.saveFilePath + "<br><br>"
             self.userMessageBox.append(messageText)
             #self.userMessageBox.moveCursor(QTextCursor.End)
 
-            # # if there's not a results tracker template already in the directory they added
-            # # let them proceed but provide an informative warning
-            # dscDirFilesList = [f for f in os.listdir(self.saveFolderPath) if os.path.isfile(f)]
-            # dscDirFilesStemList = [Path(f).stem for f in dscDirFilesList]
-            # if not any(x.startswith("heal-csv-results-tracker") for x in dscDirFilesStemList):
-            #     messageText = "<br>Warning: It looks like there is no HEAL formatted result tracker in the directory you selected. Are you sure you selected a directory that is a DSC package directory and that you have created a HEAL formatted result tracker? If you have not already created a DSC package directory, you can do so now by navigating to the DSC Package tab in the application, and clicking on the Create sub-tab. This will create a directory called \n'dsc-pkg\n' which will have a HEAL formatted resource tracker and experiment tracker file inside. You can create a HEAL formatted result tracker (please create one per multi-result file - e.g. poster, publication, etc. - you will share) by navigating to the Result Tracker tab, and the Create Result Tracker sub-tab. You may save your result-tracker in your DSC Package directory, but this is not required. Once you've created your DSC Package Directory and created a HEAL formatted Result Tracker, please return here and add your DSC package directory before proceeding to annotate your result(s). While annotating your result(s) you will also need to add the HEAL formatted result tracker you created."
-            #     errorFormat = '<span style="color:red;">{}</span>'
-            #     self.userMessageBox.append(errorFormat.format(messageText))
-
+            
             self.form.widget.state = {
-                "resultId": self.result_id
+                "experimentId": self.annotation_id
             }
 
         # this should no longer be necessary as the form widget will only be opened if a workingDataPkgDir has been set and the path has been as a string 
         else:
-            messageText = "<br>Please select your DSC Package Directory to proceed."
+            messageText = "<br>Please select your DSC Data Package Directory to proceed."
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
         
-    def get_items_list2(self):
-        #item = QListWidgetItem(self.lstbox_view.currentItem())
-        #print(item.text())
-        if self.programmaticListUpdate2:
-            self.programmaticListUpdate2 = False
-            return
+    # def get_items_list2(self):
+    #     #item = QListWidgetItem(self.lstbox_view.currentItem())
+    #     #print(item.text())
+    #     if self.programmaticListUpdate2:
+    #         self.programmaticListUpdate2 = False
+    #         return
 
-        lw = self.lstbox_view2
+    #     lw = self.lstbox_view2
         
-        oldLength = None
-        if self.items2:
-            oldLength = len(self.items2)
-            oldItems = self.items2
+    #     oldLength = None
+    #     if self.items2:
+    #         oldLength = len(self.items2)
+    #         oldItems = self.items2
 
-        self.items2 = [lw.item(x).text() for x in range(lw.count())]
-        print(self.items2)
+    #     self.items2 = [lw.item(x).text() for x in range(lw.count())]
+    #     print(self.items2)
 
-        refactorItems = []
-        for i in self.items2:
-            print(i)
-            if os.path.isdir(i):
-                #self.programmaticListUpdate = True
-                myFiles = [os.path.join(i,f) for f in os.listdir(i) if os.path.isfile(os.path.join(i,f))]
-                print(myFiles)
-                refactorItems.extend(myFiles)
-            else:
-                refactorItems.append(i)
+    #     refactorItems = []
+    #     for i in self.items2:
+    #         print(i)
+    #         if os.path.isdir(i):
+    #             #self.programmaticListUpdate = True
+    #             myFiles = [os.path.join(i,f) for f in os.listdir(i) if os.path.isfile(os.path.join(i,f))]
+    #             print(myFiles)
+    #             refactorItems.extend(myFiles)
+    #         else:
+    #             refactorItems.append(i)
 
-        if self.items2 != refactorItems:
-            self.programmaticListUpdate2 = True
+    #     if self.items2 != refactorItems:
+    #         self.programmaticListUpdate2 = True
 
-            self.items2 = refactorItems
-            self.lstbox_view2.clear()
-            self.lstbox_view2.addItems(self.items2)
+    #         self.items2 = refactorItems
+    #         self.lstbox_view2.clear()
+    #         self.lstbox_view2.addItems(self.items2)
 
-        newLength = len(self.items2)
-        print(self.items2)  
-        #print(type(self.items)) 
-        print(len(self.items2))
+    #     newLength = len(self.items2)
+    #     print(self.items2)  
+    #     #print(type(self.items)) 
+    #     print(len(self.items2))
 
-        if self.items2:
-            #updatePath = self.items2[0]
-            updateAssocFileMultiDepend = self.items2
-        else:
-            #updatePath = ""
-            updateAssocFileMultiDepend = []
+    #     if self.items2:
+    #         #updatePath = self.items2[0]
+    #         updateAssocFileMultiDepend = self.items2
+    #     else:
+    #         #updatePath = ""
+    #         updateAssocFileMultiDepend = []
 
-        self.form.widget.state = {
-            #"path": updatePath,
-            "associatedFileDependsOn": updateAssocFileMultiDepend
-        } 
+    #     self.form.widget.state = {
+    #         #"path": updatePath,
+    #         "associatedFileDependsOn": updateAssocFileMultiDepend
+    #     } 
 
         
     
-        if oldLength:
-            if ((oldLength > 0) and (newLength == 0)):
-                print("hide")
+    #     if oldLength:
+    #         if ((oldLength > 0) and (newLength == 0)):
+    #             print("hide")
                 
-                self.labelAddMultiDepend.hide()
-                self.lstbox_view2.hide()
+    #             self.labelAddMultiDepend.hide()
+    #             self.lstbox_view2.hide()
                 
-    def add_multi_depend(self):
+    # def add_multi_depend(self):
 
-        if ((self.lstbox_view2.isHidden()) and (self.labelAddMultiDepend.isHidden())):
-            self.lstbox_view2.show()
-            self.labelAddMultiDepend.show()
-        else:
-            self.lstbox_view2.hide()
-            self.labelAddMultiDepend.hide()
+    #     if ((self.lstbox_view2.isHidden()) and (self.labelAddMultiDepend.isHidden())):
+    #         self.lstbox_view2.show()
+    #         self.labelAddMultiDepend.show()
+    #     else:
+    #         self.lstbox_view2.hide()
+    #         self.labelAddMultiDepend.hide()
 
-    def save_result(self):
+    def save_experiment(self):
         
         # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
         # check that a dsc data package dir has been added - this is the save folder
         if not self.saveFolderPath:
-            messageText = "<br>You must add a DSC Data Package Directory before saving your result file. Please add a DSC Data Package Directory and then try saving again." 
+            messageText = "<br>You must add a DSC Data Package Directory before saving your experiment annotation file. Please add a DSC Data Package Directory and then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
-        # check that file path and at least a minimal description has been added to the form 
+        # check that at least a minimal description has been added to the form 
         # if not exit with informative error
-        if not ((self.form.widget.state["associatedFileMultiResultFile"]) and (self.form.widget.state["description"])):
-            messageText = "<br>You must add at least a minimal description of your result and at least one multi-result file in which this result is cited to your result file form before saving your result file. Please add at least a minimal description of your result in the Result Description field in the form, and add at least one multi-result file in which this result appears by browsing to a file path(s) in the Associated Multi-Result File(s) field in the form. Then try saving again." 
+        if not (self.form.widget.state["experimentDescription"]):
+            messageText = "<br>You must add at least a minimal description of your experiment before saving your experiment annotation file. Please add at least a minimal description of your experiment in the Experiment Description field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
         
-        # check if user has modified the result id from the one that was autogenerated when adding dsc data dir for saving
-        # this may happen if for example a user annotates a result using the autogenerated id, then wants to keep 
-        # going using the same form window instance, modify the contents to annotate a new result (perhaps one with some 
+        # check if user has modified the exp id from the one that was autogenerated when adding dsc data dir for saving
+        # this may happen if for example a user annotates an experiment using the autogenerated id, then wants to keep 
+        # going using the same form window instance, modify the contents to annotate a new experiment (perhaps one with some 
         # form fields that will be the same), and save again with a new id - in this case the user can modify the 
         # id manually, incrementing the id number by one - if id modified, updated it in memory and regenerate
         # the save file name, save file path, and id number
-        if self.form.widget.state["resultId"] != self.result_id:
+        if self.form.widget.state["experimentId"] != self.annotation_id:
             
-            self.result_id = self.form.widget.state["resultId"]
-            self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
-            self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
+            self.annotation_id = self.form.widget.state["experimentId"]
+            self.annotationFileName = 'exp-trk-'+ self.annotation_id + '.txt'
+            self.saveFilePath = os.path.join(self.saveFolderPath,self.annotationFileName)
 
-            self.resIdNum = int(self.result_id.split("-")[1])
+            self.annotationIdNum = int(self.annotation_id.split("-")[1])
         
-        # check if saveFilePath already exists (same as if a file for this resource id already exists); if exists, exit our with informative message;
+        # check if saveFilePath already exists (same as if a file for this experiment id already exists); if exists, exit our with informative message;
         # otherwise go ahead and save
         if os.path.isfile(self.saveFilePath):
-            messageText = "A result file for a result with id " + self.result_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your result tracker file(s) and check which result IDs you've already used and added to your tracker(s), 2) Use File Explorer to navigate to your DSC Data Package Directory and check which result IDs you've already used and for which you've already created result files - these files will be called \'result-trk-result-{a number}.txt\'. While you perform these checks, your result tracker form will remain open unless you explicitly close it. You can come back to it, change your result ID, and hit the save button again to save with a result ID that is not already in use. If you meant to overwrite a result file you previously created for a result with this result ID, please delete the previously created result file and try saving again.<br><br>" 
+            messageText = "An experiment annotation file for an experiment with id " + self.annotation_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your experiment tracker file(s) and check which experiment IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which experiment IDs you've already used (i.e. for which you've already created experiment annotation files - these files will be called \'exp-trk-exp-{a number}.txt\'. While you perform these checks, your experiment tracker form will remain open unless you explicitly close it. You can come back to it, change your experiment ID, and hit the save button again to save with an experiment ID that is not already in use. If you meant to overwrite an experiment annotation file you previously created for an experiment with this experiment ID, please delete the previously created experiment annotation file and try saving again.<br><br>" 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
         else:
                               
-            result = self.form.widget.state
+            annotationContent = self.form.widget.state
             f=open(self.saveFilePath,'w')
-            print(dumps(result, indent=4), file=f)
+            print(dumps(annotationContent, indent=4), file=f)
             f.close()
                 
             #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
-            messageText = "<br>Your result was successfully written at: " + self.saveFilePath + "<br><br>You'll want to head back to the \'Add Result\' tab and use the \'Add Result\' button to add this result file to your result tracker file(s)! You can do this now, or later - You can add result files to a result tracker file one at a time, or you can add multiple result files all at once, so you may choose to create result files for several/all of your results and then add them in one go to your result tracker file(s)."
+            messageText = "<br>Your experiment was successfully written at: " + self.saveFilePath + "<br><br>You'll want to head back to the \'Add Experiment\' tab and use the \'Add Experiment\' button to add this experiment file to your experiment tracker file! You can do this now, or later - You can add experiment files to an experiment tracker file one at a time, or you can add multiple experiment files all at once, so you may choose to create experiment files for several/all of your experiments and then add them in one go to your experiment tracker file."
             saveFormat = '<span style="color:green;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
             self.userMessageBox.moveCursor(QTextCursor.End)
@@ -535,7 +527,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         clearState = deepcopy(self.form.widget.state)
         #clearState = currentState.fromkeys(currentState, None)
 
-        print(clearState) # form state before clear
+        print("clearState before clear: ", clearState) # form state before clear
 
         for key, value in clearState.items():
             print(key, value)
@@ -544,7 +536,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             if type(value) is list:
                 clearState[key] = []
 
-        print(clearState) # form state totally cleared
+        print("clearState after clear: ", clearState) # form state totally cleared
         
         for key, value in clearState.items():
             print(key, value)
@@ -552,11 +544,15 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
                 print("yes")
                 clearState[key] = self.formDefaultState[key]
         
-        print(clearState) # form state with default values added back in
-
+        print("clearState with default vals: ", clearState) # form state with default values added back in
+        print(self.form.widget.state)
+        print(self.form.widget.state.items())
+        
         for key, value in self.form.widget.state.items():
             #self.form.widget.state[key] = clearState[key]
-
+            print("key: ", key)
+            print("value: ", value)
+            
             self.form.widget.state = {
                 key: clearState[key]
             } 
@@ -564,15 +560,15 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         #self.form.widget.state = deepcopy(clearState)
         print(self.form.widget.state)
 
-        if self.lstbox_view2.count() > 0:
-            self.lstbox_view2.clear()
-            self.get_items_list2()
-        else:
-            if self.items2:
-                self.items2 = []
+        # if self.lstbox_view2.count() > 0:
+        #     self.lstbox_view2.clear()
+        #     self.get_items_list2()
+        # else:
+        #     if self.items2:
+        #         self.items2 = []
 
         
-        messageText = "<br>Your form was successfully cleared and you can start annotating a new resource"
+        messageText = "<br>Your form was successfully cleared and you can start annotating a new experiment"
         saveFormat = '<span style="color:green;">{}</span>'
         self.userMessageBox.append(saveFormat.format(messageText))
         self.userMessageBox.moveCursor(QTextCursor.End)
@@ -609,7 +605,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
 
             # if user selects a result txt file that is not in the working data pkg dir, return w informative message
             if Path(self.saveFolderPath) != Path(ifileName).parent:
-                messageText = "<br>You selected a result txt file that is not in your working Data Package Directory; You must select a result txt file that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                messageText = "<br>You selected an experiment txt file that is not in your working Data Package Directory; You must select an experiment txt file that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return
@@ -620,26 +616,26 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             with open(ifileName, 'r') as stream:
                 data = load(stream)
 
-            self.result_id = data["resultId"]
-            self.resIdNum = int(self.result_id.split("-")[1])
-            self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
+            self.annotation_id = data["experimentId"]
+            self.annotationIdNum = int(self.annotation_id.split("-")[1])
+            self.annotationFileName = 'exp-trk-'+ self.annotation_id + '.txt'
             #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
 
             # make sure an archive folder exists, if not create it
             if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
                 os.makedirs(os.path.join(self.saveFolderPath,"archive"))
 
-            # move the result annotation file user opened for editing to archive folder
-            os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.resultFileName))
-            messageText = "<br>Your original result annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.resultFileName) + "<br><br>"
+            # move the experiment annotation file user opened for editing to archive folder
+            os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationFileName))
+            messageText = "<br>Your original experiment annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationFileName) + "<br><br>"
             saveFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
 
             self.form.widget.state = data
 
-            if len(data["associatedFileDependsOn"]) > 2: 
-                self.lstbox_view2.addItems(data["associatedFileDependsOn"])
-                self.add_multi_depend()         
+            # if len(data["associatedFileDependsOn"]) > 2: 
+            #     self.lstbox_view2.addItems(data["associatedFileDependsOn"])
+            #     self.add_multi_depend()         
 
         
 
@@ -650,6 +646,6 @@ if __name__ == "__main__":
     #app.exec_()
 
     app = QtWidgets.QApplication(sys.argv)
-    window = ScrollAnnotateResultWindow()
+    window = ScrollAnnotateExpWindow()
     window.show()
     sys.exit(app.exec_())

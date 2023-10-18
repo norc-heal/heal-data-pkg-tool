@@ -86,7 +86,7 @@ class MainWindow(QMainWindow):
         tabs.setMovable(True)
 
         tabs.addTab(PkgTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Data Package")
-        tabs.addTab(ExpTrkTabsWindow(), "Experiment Tracker")
+        tabs.addTab(ExpTrkTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Experiment Tracker")
         tabs.addTab(ResourceTrkTabsWindow(), "Resource Tracker")
         tabs.addTab(VLMDTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Data Dictionary")
         tabs.addTab(ResultsTrkTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Results Tracker")

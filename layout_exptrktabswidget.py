@@ -17,10 +17,11 @@ from layout_csvviewpushtoloadwidget import CSVViewPushToLoadWindow
 from layout_infotextwidget import InfoTextWindow
 
 class ExpTrkTabsWindow(QWidget):
-    def __init__(self):
+    def __init__(self, workingDataPkgDirDisplay):
         super().__init__()
         self.setWindowTitle("Experiment Tracker")
         #self.resize(270, 110)
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         
         # Create a top-level layout
         layout = QVBoxLayout()
@@ -31,7 +32,7 @@ class ExpTrkTabsWindow(QWidget):
         # Create the tab widget with two tabs
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(self.infoText), "Info")
-        tabs.addTab(ExpTrkAddWindow(), "Add Experiment")
+        tabs.addTab(ExpTrkAddWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Add Experiment")
         tabs.addTab(CSVViewPushToLoadWindow(), "View Tracker")
         
                 

@@ -14,8 +14,8 @@ schema_experiment_tracker = {
             "title" : "Experiment Type",
             "description": "discovery|materials and methods development",
             "type": "string",
-            "enum": ["discovery","materials and methods development"],
-            "priority": "all"
+            "enum": ["","discovery","materials and methods development"],
+            "priority": "all, high"
         },
         "experimentDescription": {
             "title": "Experiment Description",
@@ -39,7 +39,19 @@ schema_experiment_tracker = {
             "items": {
                 "type": "string"
             },
-            "priority": "all"
+            "priority": "all, low"
+        },
+        "annotationCreateDateTime": {
+            "title": "Experiment tracker entry creation datetime",
+            "description": "Date time at which the experiment annotation file for the experiment was created; auto-inferred",
+            "type": "string",
+            "priority": "experiment tracker, auto"
+        },
+        "annotationModDateTime": {
+            "title": "Experiment tracker entry modification datetime",
+            "description": "Date time at which the experiment annotation file for the experiment was last modified; auto-inferred",
+            "type": "string",
+            "priority": "experiment tracker, auto"
         }
     }
 }

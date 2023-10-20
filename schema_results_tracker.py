@@ -26,6 +26,14 @@ schema_results_tracker = {
             "enum": ["","figure","table","text"],
             "priority": "all, high"
         },
+        "experimentNameBelongsTo": {
+            "title": "Experiment Result \"Belongs\" To",
+            "description": "If the result pertains specifically to one of the study experiments (i.e. all data/observations/activities that underly this result came from a single study experiment or activity), list the experiment name for that experiment here; If the result pertains to more than one experiment, or to all experiments/the study as a whole, leave this blank; Use the experiment name as assigned/formatted in your Experiment Tracker file.",
+            "type": "string",
+            #"pattern": "^(?=.{3,50}$)[a-z]+(-*)([a-z0-9]+)(-[a-z,0-9]+)*$",
+            "enum": [""],
+            "priority": "all, low"
+        },
         "associatedFileMultiResultFile": {
             "title": "Associated Multi-Result File",
             "description": "The multi-result file(s) in which this result has been shared.",

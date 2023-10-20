@@ -22,6 +22,7 @@ formSubProps = \
     "path", 
     "description", 
     "category", 
+    "experimentNameBelongsTo",
     "expBelongsTo", 
     "title", 
     "descriptionFileNameConvention", 
@@ -73,11 +74,19 @@ schema_resource_tracker = {
             "enum": ["","multi-result","single-result","tabular-data","non-tabular-data","metadata","code"],
             "priority": "all, high"
         },
-        "expBelongsTo": {
-            "title": "Experiment Belongs To",
-            "description": "If the file pertains specifically to one of the study experiments, list the experiment ID for that experiment here; If the file pertains to more than one experiment, or to all experiments/the study as a whole, leave this blank; Use the experiment ID as assigned/formatted in your Experiment Tracker file (prefix is 'exp-' followed by a number starting with 1 for the first experiment, and iterating by 1 for each successive experiment - i.e. exp-1, exp-2, etc.)",
+        # "expBelongsTo": {
+        #     "title": "Experiment Belongs To",
+        #     "description": "If the file pertains specifically to one of the study experiments, list the experiment ID for that experiment here; If the file pertains to more than one experiment, or to all experiments/the study as a whole, leave this blank; Use the experiment ID as assigned/formatted in your Experiment Tracker file (prefix is 'exp-' followed by a number starting with 1 for the first experiment, and iterating by 1 for each successive experiment - i.e. exp-1, exp-2, etc.)",
+        #     "type": "string",
+        #     "pattern": "^exp-+-*[0-9]*[1-9][0-9]*$",
+        #     "priority": "all, low"
+        # },
+        "experimentNameBelongsTo": {
+            "title": "Experiment Resource \"Belongs\" To",
+            "description": "If the resource pertains specifically to one of the study experiments (e.g. this resource may be a protocol for, data collected from, code used to analyze data from, a single study experiment or activity), list the experiment name for that experiment here; If the resource pertains to more than one experiment, or to all experiments/the study as a whole, leave this blank; Use the experiment name as assigned/formatted in your Experiment Tracker file.",
             "type": "string",
-            "pattern": "^exp-+-*[0-9]*[1-9][0-9]*$",
+            #"pattern": "^(?=.{3,50}$)[a-z]+(-*)([a-z0-9]+)(-[a-z,0-9]+)*$",
+            "enum": [""],
             "priority": "all, low"
         },
         "name": {

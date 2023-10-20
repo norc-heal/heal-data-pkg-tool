@@ -9,7 +9,7 @@ from pyqtschema.builder import WidgetBuilder
 
 #from schema_results_tracker import schema_results_tracker
 from schema_experiment_tracker import schema_experiment_tracker
-from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions
+from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions, get_exp_names
 import pandas as pd
 
 from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, QScrollArea,QApplication,
@@ -134,7 +134,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         # errors changes - #TODO)
         self.form.widget.on_changed.connect(self.check_tooltip)
         #self.formWidgetList[self.formWidgetNameList.index("category")].on_changed.connect(self.conditional_fields)
-        
+        self.formWidgetList[self.formWidgetNameList.index("experimentName")].on_changed.connect(self.check_exp_name_unique)
         
         ################################## Finished creating component widgets
         
@@ -184,6 +184,16 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             self.scroll.verticalScrollBar().setValue(
                 self.scroll.verticalScrollBar().minimum()
             )
+
+    # def mousePressEvent(self,event):
+    #     print('mouse pressed outside view')
+    #     event.accept()
+
+    # def eventFilter(self,object,event):
+    #     if object == self.formWidgetList[self.formWidgetNameList.index("experimentName")] and event.type() == QtCore.QEvent.Mouse:
+    #         print('mouse pressed inside view')
+    #         return True
+    #     return super().eventFilter(object,event)
 
     def add_tooltip(self):
         
@@ -298,6 +308,32 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
                 widget.setToolTip(self.toolTipContentList[i]) # if empty then set it to the tooltip content from schema description that was stored on initialization
 
             i+=1 # increment
+
+    def check_exp_name_unique(self):
+        
+        self.experimentNameList = []
+        self.experimentNameList = get_exp_names(self=self) # gets self.experimentNameList
+
+        print("self.experimentNameList: ",self.experimentNameList)
+        currentExperimentName = self.formWidgetList[self.formWidgetNameList.index("experimentName")].text()
+
+        if currentExperimentName in self.experimentNameList:
+            messageText = "<br>You've used this experiment name before, and experiment name must be unique - Please enter a unique experiment name. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+        else:  
+            messageText = "<br>Your experiment name is unique! <br><br>" 
+            errorFormat = '<span style="color:green;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText)) 
+
+            
+
+        
+
+
+
+
+        
 
     def toggle_widgets(self, keyText, desiredToggleState):
 

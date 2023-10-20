@@ -198,7 +198,7 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
                 # if valid, continue:
                 else:
                     #messageText = "The following resource file is valid: " + ifileName
-                    messageText = "The following result file is valid: " + filename
+                    messageText = "The following experiment file is valid: " + filename
                     self.userMessageBox.append(messageText)
 
                     # add file to list of valid files

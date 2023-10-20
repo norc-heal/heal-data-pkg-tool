@@ -134,7 +134,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         # errors changes - #TODO)
         self.form.widget.on_changed.connect(self.check_tooltip)
         #self.formWidgetList[self.formWidgetNameList.index("category")].on_changed.connect(self.conditional_fields)
-        self.formWidgetList[self.formWidgetNameList.index("experimentName")].on_changed.connect(self.check_exp_name_unique)
+        self.formWidgetList[self.formWidgetNameList.index("experimentName")].on_changed.connect(lambda saveStatus: self.check_exp_name_unique("check"))
         
         ################################## Finished creating component widgets
         
@@ -309,26 +309,46 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
 
             i+=1 # increment
 
-    def check_exp_name_unique(self):
+    def check_exp_name_unique(self, saveStatus):
+        
+        if saveStatus == "save":
+            self.uniqueExpNameOnSave = True
         
         self.experimentNameList = []
         self.experimentNameList = get_exp_names(self=self) # gets self.experimentNameList
 
         print("self.experimentNameList: ",self.experimentNameList)
         currentExperimentName = self.formWidgetList[self.formWidgetNameList.index("experimentName")].text()
+        print("currentExperimentName: ",currentExperimentName)
 
         if currentExperimentName == "default-experiment-name":
-            messageText = "<br>You've re-set the experiment name to the default value of \"default-experiment-name\". This is the equivalent of NOT naming your experiment. If you wish to name your experiment, please enter a unique experiment name that is NOT equal to \"default-experiment-name\". Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
+            if saveStatus != "save":
+                messageText = "<br>You've re-set the experiment name to the default value of \"default-experiment-name\". This is the equivalent of NOT naming your experiment. If you wish to name your experiment, please enter a unique experiment name that is NOT equal to \"default-experiment-name\". Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
+                errorFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+            
+            if saveStatus == "save":
+                messageText = "<br>Your experiment will be saved with the default experiment name of \"default-experiment-name\". This is the equivalent of NOT assigning an experiment name to your experiment. If you wish to assign an experiment name to your experiment, you can edit your experiment by navigating to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab, clicking on the \"Edit existing experiment\" push-button, opening the form for this experiment, and editing the Experiment Name form field."
+                errorFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+
         elif currentExperimentName in self.experimentNameList:
-            messageText = "<br>You've used this experiment name before, and experiment name must be unique - Please enter a unique experiment name. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
-        else:  
-            messageText = "<br>Your experiment name is unique! <br><br>" 
-            errorFormat = '<span style="color:green;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText)) 
+            if saveStatus != "save":
+                messageText = "<br>You've used this experiment name before, and experiment name must be unique - Please enter a unique experiment name. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
+                errorFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+
+            if saveStatus == "save":
+                messageText = "<br>Your experiment cannot be saved because the experiment name you entered in the Experiment Name form field is not unique. If you want to assign an experiment name to your experiment you must choose a unique experiment name and enter it into the Experiment Name form field, then try saving again. If you do not want to assign an experiment name to your experiment, re-set the value of the Experiment Name form field to \"default-experiment-name\" and try saving again. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
+                errorFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+                self.uniqueExpNameOnSave = False
+
+        else: 
+            if saveStatus != "save": 
+                messageText = "<br>Your experiment name is unique! <br><br>" 
+                errorFormat = '<span style="color:green;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText)) 
 
     def toggle_widgets(self, keyText, desiredToggleState):
 
@@ -518,6 +538,11 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
+        #self.buttonXlsxDataInferCombinedHealCsvDd.clicked.connect(lambda exceltype: self.xlsx_data_infer_dd("combined"))
+        self.check_exp_name_unique("save") # this checks if experimentName is unique, if not sets self.uniqueExpNameOnSave to False, also outputs informative message if exp name is not unique or if it is left/set at the default value of default-experiment-name
+        if not self.uniqueExpNameOnSave:
+            return
+             
         
         # check if user has modified the exp id from the one that was autogenerated when adding dsc data dir for saving
         # this may happen if for example a user annotates an experiment using the autogenerated id, then wants to keep 

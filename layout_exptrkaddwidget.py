@@ -43,13 +43,15 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
         
         widget = QtWidgets.QWidget()
         
-        self.buttonAnnotateExp = QtWidgets.QPushButton(text="Annotate a new experiment",parent=self)
+        #self.buttonAnnotateExp = QtWidgets.QPushButton(text="Annotate a new experiment",parent=self)
+        self.buttonAnnotateExp = QtWidgets.QPushButton(text="Add a new experiment",parent=self)
         self.buttonAnnotateExp.clicked.connect(self.annotate_exp)
 
         self.buttonEditExp = QtWidgets.QPushButton(text="Edit an existing experiment",parent=self)
         self.buttonEditExp.clicked.connect(self.edit_exp)
 
-        self.buttonAddExp = QtWidgets.QPushButton(text="Add experiment to tracker",parent=self)
+        #self.buttonAddExp = QtWidgets.QPushButton(text="Add experiment to tracker",parent=self)
+        self.buttonAddExp = QtWidgets.QPushButton(text="Batch add existing experiment(s) to tracker",parent=self)
         self.buttonAddExp.clicked.connect(self.add_exp)
 
         # maybe switch Line edit to this: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QPlainTextEdit.html#more
@@ -58,10 +60,16 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setReadOnly(True)
         
         layout = QtWidgets.QVBoxLayout()
+
+        advanced_layout = QtWidgets.QVBoxLayout()
+        advanced_layout.addWidget(self.buttonAddExp)
+        advanced_groupbox = QtWidgets.QGroupBox("Advanced")
+        advanced_groupbox.setLayout(advanced_layout)
         
         layout.addWidget(self.buttonAnnotateExp)
         layout.addWidget(self.buttonEditExp)
-        layout.addWidget(self.buttonAddExp)
+        #layout.addWidget(self.buttonAddExp)
+        layout.addWidget(advanced_groupbox)
         layout.addWidget(self.userMessageBox)
 
         widget.setLayout(layout)

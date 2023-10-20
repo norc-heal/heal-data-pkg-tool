@@ -28,9 +28,10 @@ from layout_csveditwidget import CSVEditWindow
 
 class VLMDCreateWindow(QtWidgets.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, workingDataPkgDirDisplay):
         super().__init__()
         self.w = None  # No external window yet.
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         
         widget = QtWidgets.QWidget()
         
@@ -130,101 +131,37 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
 
-    #def create_new_pkg(self):
-    #    #file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-    #    #folder = str(QFileDialog.getExistingDirectory(None, "Select Directory"))
-    #    #filepath = QtWidgets.QFileDialog.getOpenFileName(self, 'Hey! Select a File')
-    #    parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Parent Directory Where Data Package Should Be Created!')
-    #    pkgPath = dsc_pkg_utils.new_pkg(pkg_parent_dir_path=parentFolderPath)
-
-    #    messageText = 'Created new HEAL DSC data package at: ' + pkgPath
-    #    self.userMessageBox.setText(messageText)
-
-    def csv_data_infer_dd(self):
-        
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Tabular CSV Data file",
-               (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
-        
-        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-        
-        messageText = 'Inferring minimal HEAL CSV Data Dictionary from tabular csv data file: ' + ifileName
-        self.userMessageBox.setText(messageText)
-
-        mydicts = convert_to_vlmd(
-            input_filepath=ifileName,
-            data_dictionary_props={
-                "title":"my dd title",
-                "description":"my dd description"
-            },
-            inputtype="csv-data",
-            output_csv_quoting=True
-        )
-        
-        messageText = messageText + '\n\n\n' + 'Inferred - Success!'
-        self.userMessageBox.setText(messageText)
-
-        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + "heal-csv-dd-" + ifname + ".csv"),"CSV Files (*.csv)") 
-
-        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        self.userMessageBox.setText(messageText)
-
-        # write just the heal csv dd to file
-        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
-
-        messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        self.userMessageBox.setText(messageText)
-
-    def spss_sav_data_extract_dd(self):
-        
-        get_dd_dict = {
-            "FileExplorerOpenMessage" : "Select Input SPSS Sav Data file",
-            "FileExplorerOpenFileExt" : "SAV Files (*.sav)",
-            "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from SPSS Sav data file: ",
-            "UtilsInputType" : "spss"
-        }
-
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input SPSS Sav Data file",
-               (QtCore.QDir.homePath()), "SAV Files (*.sav)")
-        
-        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-        
-        messageText = 'Extracting metadata to populate HEAL CSV Data Dictionary from SPSS Sav data file: ' + ifileName
-        self.userMessageBox.setText(messageText)
-
-        mydicts = convert_to_vlmd(
-            input_filepath=ifileName,
-            data_dictionary_props={
-                "title":"my dd title",
-                "description":"my dd description"
-            },
-            inputtype="spss",
-            output_csv_quoting=True
-        )
-        
-        messageText = messageText + '\n\n\n' + 'Extracted - Success!'
-        self.userMessageBox.setText(messageText)
-
-        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + "heal-csv-dd-" + ifname + ".csv"),"CSV Files (*.csv)") 
-
-        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        self.userMessageBox.setText(messageText)
-
-        # write just the heal csv dd to file
-        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
-
-        messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        self.userMessageBox.setText(messageText)    
     
+
     def get_heal_csv_dd(self,get_dd_dict):
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, get_dd_dict["FileExplorerOpenMessage"],
-               (QtCore.QDir.homePath()), get_dd_dict["FileExplorerOpenFileExt"])
         
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        print("workingDataPkgDir: ", self.workingDataPkgDir)
+
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, get_dd_dict["FileExplorerOpenMessage"],
+        #        (QtCore.QDir.homePath()), get_dd_dict["FileExplorerOpenFileExt"])
+
+        # this will open file browser in the working data pkg dir - while the file they are looking for
+        # should not be in the working data pkg dir, if user followed best practices and placed their 
+        # working data pkg dir as a direct sub-dir of their overall study folder, then they will be one level
+        # down into their overall study folder and this should be a good starting point from which to browse
+        # to the data or dd file they are looking for as the starting point for creating their heal csv dd
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, get_dd_dict["FileExplorerOpenMessage"],
+               self.workingDataPkgDir, get_dd_dict["FileExplorerOpenFileExt"])
+
+        # error handling for if user does not select a file
+        if not ifileName:
+            messageText = "<br><br>" + "You did not select a file - To proceed, you must: " + get_dd_dict["FileExplorerOpenMessage"] + "<br><br>"
+            self.userMessageBox.append(messageText)
+            return
+
         ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
         
-        messageText = get_dd_dict["GetDDActionStatusMessage"] + ifileName
-        self.userMessageBox.setText(messageText)
+        messageText = "<br><br>" + get_dd_dict["GetDDActionStatusMessage"] + ifileName
+        self.userMessageBox.append(messageText)
 
         mydicts = convert_to_vlmd(
             input_filepath=ifileName,
@@ -236,21 +173,50 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
             output_csv_quoting=True
         )
         
-        messageText = messageText + '\n\n\n' + get_dd_dict["GetDDAction"] + ' - Success!'
-        self.userMessageBox.setText(messageText)
+        messageText = "<br><br>" + get_dd_dict["GetDDAction"] + ' - Success!'
+        self.userMessageBox.append(messageText)
 
-        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + "heal-csv-dd-" + ifname + ".csv"),"CSV Files (*.csv)") 
+        # ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
+        #                (QtCore.QDir.homePath() + "/" + "heal-csv-dd-" + ifname + ".csv"),"CSV Files (*.csv)")
 
-        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        self.userMessageBox.setText(messageText)
+        # by default, save in working data pkg dir with prefix of heal-csv-dd appended to 
+        # originating data/dd file name
+        ofileNameBase = "heal-csv-dd-" + ifname + ".csv"
+        ofileName = os.path.join(self.workingDataPkgDir, ofileNameBase) 
+
+        messageText = "<br><br>" + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
+        self.userMessageBox.append(messageText)
 
         # write just the heal csv dd to file
         pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
 
-        messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        self.userMessageBox.setText(messageText)
+        messageText = "<br><br>" + 'Saved - Success!' + "<br><br>"
+        self.userMessageBox.append(messageText)
 
+    def csv_data_infer_dd(self):
+
+        get_dd_dict = {
+            "FileExplorerOpenMessage" : "Select Input CSV Data file",
+            "FileExplorerOpenFileExt" : "CSV (*.csv *.tsv)",
+            "GetDDAction": "Inferred",
+            "GetDDActionStatusMessage" : "Inferring minimal HEAL CSV Data Dictionary from CSV data file: ",
+            "UtilsInputType" : "csv-data"
+        }
+
+        self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
+
+    def spss_sav_data_extract_dd(self):
+
+        get_dd_dict = {
+            "FileExplorerOpenMessage" : "Select Input SPSS Sav Data file",
+            "FileExplorerOpenFileExt" : "SAV Files (*.sav)",
+            "GetDDAction": "Extracted",
+            "GetDDActionStatusMessage" : "Extracting metadata to populate HEAL CSV Data Dictionary from SPSS Sav data file: ",
+            "UtilsInputType" : "spss"
+        }
+
+        self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
+    
     def stata_dta_data_extract_dd(self):
         
         get_dd_dict = {
@@ -288,45 +254,26 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
         self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
 
     def redcap_csv_dd_convert(self):
+
+        get_dd_dict = {
+            "FileExplorerOpenMessage" : "Select Input Redcap CSV Data Dictionary file",
+            "FileExplorerOpenFileExt" : "CSV (*.csv *.tsv)",
+            "GetDDAction": "Converted",
+            "GetDDActionStatusMessage" : "Converting the Redcap CSV Data Dictionary at this path to HEAL CSV Data Dictionary: ",
+            "UtilsInputType" : "redcap-csv"
+        }
+
+        self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
         
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Input Redcap CSV Data Dictionary file", QtCore.QDir.homePath(), "CSV (*.csv *.tsv)")
-        
-        ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
-
-        messageText = 'Converting the Redcap CSV Data Dictionary at this path to HEAL CSV Data Dictionary: ' + ifileName 
-        self.userMessageBox.setText(messageText)      
-       
-        #outputFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory Where HEAL CSV Data Dictionary Should Be Saved!')
-        
-        mydicts = convert_to_vlmd(
-            input_filepath=ifileName,
-            data_dictionary_props={
-                "title":"my dd title",
-                "description":"my dd description"
-            },
-            inputtype="redcap-csv",
-            output_csv_quoting=True
-        )
-
-        messageText = messageText + '\n\n\n' + 'Converted - Success!'
-        self.userMessageBox.setText(messageText)
-
-        ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save HEAL CSV Data Dictionary File", 
-                       (QtCore.QDir.homePath() + "/" + "heal-csv-dd-" + ifname + ".csv"),"CSV Files (*.csv)") 
-
-        messageText = messageText + '\n\n\n' + 'Your HEAL CSV data dictionary will be saved as: ' + ofileName
-        self.userMessageBox.setText(messageText)
-
-        # write just the heal csv dd to file
-        pd.DataFrame(mydicts['csvtemplate']).to_csv(ofileName, index = False)
-
-        messageText = messageText + '\n\n\n' + 'Saved - Success!'
-        self.userMessageBox.setText(messageText) 
-
     def xlsx_data_infer_dd(self,exceltype):
-        
 
-        inputmess = "Inferring minimal HEAL CSV Data Dictionary(s) from the XLSX data file at this path ({}):"
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        print("workingDataPkgDir: ", self.workingDataPkgDir)
+        
+        inputmess = "Inferring minimal HEAL CSV Data Dictionary(s) from the XLSX data file at this path ({}): "
         
         if exceltype == "multiple":
             text = "one Data Dictionary per tab"
@@ -351,15 +298,34 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
             "UtilsInputType" : "excel-data"
         }
 
-        #self.get_heal_csv_dd(get_dd_dict=get_dd_dict)
-
+        # this will open file browser in the working data pkg dir - while the file they are looking for
+        # should not be in the working data pkg dir, if user followed best practices and placed their 
+        # working data pkg dir as a direct sub-dir of their overall study folder, then they will be one level
+        # down into their overall study folder and this should be a good starting point from which to browse
+        # to the data or dd file they are looking for as the starting point for creating their heal csv dd
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, get_dd_dict["FileExplorerOpenMessage"],
-               (QtCore.QDir.homePath()), get_dd_dict["FileExplorerOpenFileExt"])
+               self.workingDataPkgDir, get_dd_dict["FileExplorerOpenFileExt"])
+
+        print("ifileName: ", ifileName)
+        print(not ifileName)
+        print(ifileName is None)
+        print(ifileName == "")
+
+        # error handling for if user does not select a file
+        if not ifileName:
+            messageText = "<br><br>" + "You did not select a file - To proceed, you must: " + get_dd_dict["FileExplorerOpenMessage"] + "<br><br>"
+            self.userMessageBox.append(messageText)
+            return
+
+        # if os.path.isdir(ifileName):
+        #     messageText = "<br><br>" + "You did not select a file - To proceed, you must: " + get_dd_dict["FileExplorerOpenMessage"] + "<br><br>"
+        #     self.userMessageBox.append(messageText)
+        #     return
         
         ifname = os.path.splitext(str(ifileName))[0].split("/")[-1]
         
-        messageText = get_dd_dict["GetDDActionStatusMessage"] + ifileName
-        self.userMessageBox.setText(messageText)
+        messageText = "<br><br>" + get_dd_dict["GetDDActionStatusMessage"] + ifileName
+        self.userMessageBox.append(messageText)
 
         mydicts = convert_to_vlmd(
             input_filepath=ifileName,
@@ -373,18 +339,17 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
             sheet_name=sheet_name
         )
         
-        messageText = messageText + '\n\n\n' + get_dd_dict["GetDDAction"] + ' - Success!'
-        self.userMessageBox.setText(messageText)
-
+        messageText = "<br><br>" + get_dd_dict["GetDDAction"] + ' - Success!'
+        self.userMessageBox.append(messageText)
 
         if mydicts.get("csvtemplate"):
             mydicts = {"one":mydicts}
 
-        folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select your DSC Folder - your Data Dictionary(s) will be saved there:')
+        #folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select your DSC Folder - your Data Dictionary(s) will be saved there:')
+        folderpath = self.workingDataPkgDir
         baseDDName = "heal-csv-dd-" + ifname 
         
         print(baseDDName)
-        
         
         for name,dictionary in mydicts.items():
 
@@ -395,19 +360,17 @@ class VLMDCreateWindow(QtWidgets.QMainWindow):
             ofileName = os.path.join(folderpath,fullDDName)
             print(ofileName)
             
-            
-            
             # ofileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, f"Save the {name} worksheet to a HEAL CSV Data Dictionary File", 
             #             (QtCore.QDir.homePath() + "/" + ifname +stemsuffix+ ".csv"),"CSV Files (*.csv)") 
 
-            messageText = messageText + '\n\n\n' + 'Your HEAL CSV Data Dictionary will be saved as: ' + ofileName
-            self.userMessageBox.setText(messageText)
+            messageText = "<br><br>" + 'Your HEAL CSV Data Dictionary will be saved as: ' + ofileName
+            self.userMessageBox.append(messageText)
 
             # write just the heal csv dd to file
             pd.DataFrame(dictionary['csvtemplate']).to_csv(ofileName, index = False)
 
-            messageText = messageText + '\n\n\n' + 'Saved - Success!'
-            self.userMessageBox.setText(messageText)
+            messageText = "<br><br>" + 'Saved - Success!'
+            self.userMessageBox.append(messageText)
 
 
 

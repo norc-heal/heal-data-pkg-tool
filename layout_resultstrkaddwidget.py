@@ -35,9 +35,10 @@ import datetime
 
 class ResultsTrkAddWindow(QtWidgets.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, workingDataPkgDirDisplay):
         super().__init__()
         self.w = None  # No external window yet.
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         
         widget = QtWidgets.QWidget()
         
@@ -69,10 +70,31 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-    
+    def getWorkingDataPkgDir(self):
+        testPath = self.workingDataPkgDirDisplay.toPlainText()
+        print("testPath: ",testPath)
+
+        if not os.path.exists(testPath):
+            messageText = "<br>You must set a valid working Data Package Directory to proceed. Navigate to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to either: <br><br>1. <b>Create New Data Package</b>: Create a new Data Package Directory and set it as the working Data Package Directory, or <br>2. <b>Continue Existing Data Package</b>: Set an existing Data Package Directory as the working Data Package Directory."
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return False
+        else:
+            self.workingDataPkgDir = testPath  
+            return True
+             
+
+
+
     def annotate_result(self,checked):
+        
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not self.getWorkingDataPkgDir():
+            return
+        
+        # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
-            self.w = ScrollAnnotateResultWindow()
+            self.w = ScrollAnnotateResultWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add")
             self.w.show()
 
         else:
@@ -80,12 +102,17 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             self.w = None  # Discard reference.
 
     def edit_result(self,checked):
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not self.getWorkingDataPkgDir():
+            return
+
+        # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
             #self.w.editState = True
-            self.w = ScrollAnnotateResultWindow()
+            self.w = ScrollAnnotateResultWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="edit")
             self.w.show()
             self.w.load_file()
-
 
         else:
             self.w.close()  # Close window.
@@ -93,10 +120,12 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
     
     def add_result(self):
 
+        # not updated to use working data package dir as set in data package tab as this function is currently not in use
+            
         # get result file path
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
                (QtCore.QDir.homePath()), "Text (*.txt)")
-        
+
         if ifileName:
             #countFiles = len(ifileName)
 
@@ -184,19 +213,19 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     restrk_m_datetime = datetime.datetime.fromtimestamp(restrk_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
                     print("restrk_m_datetime: ", restrk_m_datetime)
 
-                    add_to_df_dict = {#"result.id":[resource_id],
-                                    "result.id.num": [int(IdNumStr)],  
-                                    #"restrk.create.date.time": [restrk_c_datetime],
-                                    #"restrk.mod.date.time": [restrk_m_datetime],
-                                    "restrk.mod.time.stamp": [restrk_m_timestamp]}
+                    add_to_df_dict = {#"resultId":[resource_id],
+                                    "resultIdNumber": [int(IdNumStr)],  
+                                    #"annotationCreateDateTime": [restrk_c_datetime],
+                                    #"annotationModDateTime": [restrk_m_datetime],
+                                    "annotationModTimeStamp": [restrk_m_timestamp]}
 
                     add_to_df = pd.DataFrame(add_to_df_dict)
 
                     # convert json to pd df
                     df = pd.json_normalize(data) # df is a one row dataframe
                     print(df)
-                    df["restrk.create.date.time"][0] = restrk_c_datetime
-                    df["restrk.mod.date.time"][0] = restrk_m_datetime
+                    df["annotationCreateDateTime"][0] = restrk_c_datetime
+                    df["annotationModDateTime"][0] = restrk_m_datetime
                     print(df)
                     df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
                     print(df)
@@ -241,7 +270,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 #all_df = pd.concat([all_df, df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
                 all_df = pd.concat([all_df, collect_df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
             
-                all_df.sort_values(by = ["result.id.num"], inplace=True)
+                all_df.sort_values(by = ["resultIdNumber"], inplace=True)
                 # drop any exact duplicate rows
                 #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
                 # this current approach does not appear to be working at the moment
@@ -278,11 +307,31 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
 
     def auto_add_result(self):
 
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not self.getWorkingDataPkgDir():
+            return
+
         # get result file path
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
-               (QtCore.QDir.homePath()), "Text (*.txt)")
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
+        #        (QtCore.QDir.homePath()), "Text (*.txt)")
+
+        # open files select file browse to working data package directory
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s) from your working Data Package Directory",
+               self.workingDataPkgDir, "Text (*.txt)")
         
         if ifileName:
+
+            # just for the first annotation file selected for addition to the tracker, check to make sure it is 
+            # in the working data pkg dir - if not return with informative message
+            ifileNameCheckDir = ifileName[0]
+
+            # if user selects a result txt file that is not in the working data pkg dir, return w informative message
+            if Path(self.workingDataPkgDir) != Path(ifileNameCheckDir).parent:
+                messageText = "<br>You selected a result txt file that is not in your working Data Package Directory; You must select a result txt file that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
             #countFiles = len(ifileName)
 
             # initialize lists to collect valid and invalid files
@@ -295,6 +344,8 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             
             for filename in ifileName:
                 print(filename)
+
+                
                 
                 # get result id and filename stem
                 ifileNameStem = Path(filename).stem
@@ -369,11 +420,11 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     restrk_m_datetime = datetime.datetime.fromtimestamp(restrk_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
                     print("restrk_m_datetime: ", restrk_m_datetime)
 
-                    add_to_df_dict = {#"result.id":[resource_id],
-                                    "result.id.num": [int(IdNumStr)],  
-                                    #"restrk.create.date.time": [restrk_c_datetime],
-                                    #"restrk.mod.date.time": [restrk_m_datetime],
-                                    "restrk.mod.time.stamp": [restrk_m_timestamp]}
+                    add_to_df_dict = {#"resultId":[resource_id],
+                                    "resultIdNumber": [int(IdNumStr)],  
+                                    #"annotationCreateDateTime": [restrk_c_datetime],
+                                    #"annotationModDateTime": [restrk_m_datetime],
+                                    "annotationModTimeStamp": [restrk_m_timestamp]}
 
 
                     add_to_df = pd.DataFrame(add_to_df_dict)
@@ -381,8 +432,8 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     # convert json to pd df
                     df = pd.json_normalize(data) # df is a one row dataframe
                     print(df)
-                    df["restrk.create.date.time"][0] = restrk_c_datetime
-                    df["restrk.mod.date.time"][0] = restrk_m_datetime
+                    df["annotationCreateDateTime"][0] = restrk_c_datetime
+                    df["annotationModDateTime"][0] = restrk_m_datetime
                     print(df)
                     df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
                     print(df)
@@ -411,8 +462,10 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         # now get location of dsc pkg dir, check if appropriate results trackers already exist, if not create them, then add
         # results to appropriate results trackers
 
-        dscDirPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your result(s) will be auto-added to appropriate Results Tracker(s) there!')
-        
+        # no longer need to ask user to browse to dsc data package dir - instead use working data package dir set by user in data package tab of tool
+        #dscDirPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your result(s) will be auto-added to appropriate Results Tracker(s) there!')
+        dscDirPath = self.workingDataPkgDir
+
         if not dscDirPath:
             messageText = "You have not selected a directory. Please select your DSC Data Package Directory. If you have not yet created a DSC Data Package Directory, use the \"Create New Data Package\" button on the \"Create\" sub-tab of the \"Data Package\" tab to create a DSC Data Package Directory. You can then come back here and try adding your result file(s) again! <br><br>Exiting \"Add Result\" function now."
             errorFormat = '<span style="color:red;">{}</span>'
@@ -426,7 +479,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             collect_df_cols = list(collect_df.columns)
             print("collect_df_cols: ", collect_df_cols)
 
-            myDummies = collect_df["assoc.multi.result.file"].str.join('|').str.get_dummies()
+            myDummies = collect_df["associatedFileMultiResultFile"].str.join('|').str.get_dummies()
             print(list(myDummies.columns))
 
             collect_df = pd.concat([collect_df, myDummies], axis = 1)
@@ -443,7 +496,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             #else:
             #    resultsTrkFileStemList = []
 
-            multiResultFileList = collect_df["assoc.multi.result.file"].explode().unique().tolist()
+            multiResultFileList = collect_df["associatedFileMultiResultFile"].explode().unique().tolist()
             print("multi result file list: ",multiResultFileList)
             multiResultFileStemList = [Path(filename).stem for filename in multiResultFileList]
             print(multiResultFileStemList)
@@ -494,7 +547,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 print(print_df.shape)
                 print(print_df.columns)
 
-                writeResultsList = print_df["result.id"].tolist()
+                writeResultsList = print_df["resultId"].tolist()
                 writeResultsFileList = ["result-trk-" + r for r in writeResultsList]
                 
                 output_path = t
@@ -502,7 +555,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 #all_df = pd.concat([all_df, df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
                 all_df = pd.concat([all_df, print_df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
             
-                all_df.sort_values(by = ["result.id.num"], inplace=True)
+                all_df.sort_values(by = ["resultIdNumber"], inplace=True)
                 # drop any exact duplicate rows
                 #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
                 # this current approach does not appear to be working at the moment
@@ -510,9 +563,9 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 all_df = all_df[-(all_df.astype('string').duplicated())]
                 print("all_df rows, without dupes: ", all_df.shape[0])
             
-                # before writing to file may want to check for duplicate resource IDs and if duplicate resource IDs, ensure that 
-                # user wants to overwrite the earlier instance of the resource ID in the resource tracker - right now, dup entries 
-                # for a resource are all kept as long as not exact dup (i.e. at least one thing has changed)
+                # before writing to file may want to check for duplicate result IDs and if duplicate result IDs, ensure that 
+                # user wants to overwrite the earlier instance of the result ID in the results tracker - right now, dup entries 
+                # for a result are all kept as long as not exact dup (i.e. at least one thing has changed)
 
                 all_df.to_csv(output_path, mode='w', header=True, index=False)
                 #df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)

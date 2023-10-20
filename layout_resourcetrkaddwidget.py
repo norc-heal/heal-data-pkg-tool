@@ -194,14 +194,14 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
                     res_m_datetime = datetime.datetime.fromtimestamp(res_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
                     print("res_m_datetime: ", res_m_datetime)
 
-                    add_to_df_dict = {#"resource.id":[resource_id],
-                                    "resource.id.num": [int(resIdNumStr)],  
-                                    "resource.create.date.time": [res_c_datetime],
-                                    "resource.mod.date.time": [res_m_datetime],
+                    add_to_df_dict = {#"resourceId":[resource_id],
+                                    "resourceIdNumber": [int(resIdNumStr)],  
+                                    "resourceCreateDateTime": [res_c_datetime],
+                                    "resourceModDateTime": [res_m_datetime],
                                     "resource.mod.time.stamp": [res_m_timestamp],
-                                    "restrk.create.date.time": [restrk_c_datetime],
-                                    "restrk.mod.date.time": [restrk_m_datetime],
-                                    "restrk.mod.time.stamp": [restrk_m_timestamp]}
+                                    "annotationCreateDateTime": [restrk_c_datetime],
+                                    "annotationModDateTime": [restrk_m_datetime],
+                                    "annotationModTimeStamp": [restrk_m_timestamp]}
 
                     add_to_df = pd.DataFrame(add_to_df_dict)
 
@@ -244,7 +244,7 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
             #all_df = pd.concat([all_df, df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
             all_df = pd.concat([all_df, collect_df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
             
-            all_df.sort_values(by = ["resource.id.num", "restrk.mod.time.stamp"], inplace=True)
+            all_df.sort_values(by = ["resourceIdNumber", "annotationModTimeStamp"], inplace=True)
             # drop any exact duplicate rows
             #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
             # this current approach does not appear to be working at the moment

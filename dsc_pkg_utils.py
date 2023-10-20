@@ -19,6 +19,64 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+def get_exp_names(self):
+        
+        getDir = self.workingDataPkgDir
+        getExpTrk = os.path.join(getDir,"heal-csv-experiment-tracker.csv")
+
+        if os.path.isfile(getExpTrk):
+            experimentTrackerDf = pd.read_csv(getExpTrk)
+            #experimentTrackerDf.replace(np.nan, "")
+            experimentTrackerDf.fillna("", inplace = True)
+
+            print(experimentTrackerDf)
+            print(experimentTrackerDf.columns)
+
+            if "experimentName" in experimentTrackerDf.columns:
+                experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
+                print(experimentTrackerDf["experimentName"])                
+                experimentNameList = experimentTrackerDf["experimentName"].unique().tolist()
+                print(experimentNameList,type(experimentNameList))
+                experimentNameList[:] = [x for x in experimentNameList if x] # get rid of emtpy strings as empty strings are not wanted and mess up the sort() function
+                print(experimentNameList,type(experimentNameList))
+
+                #sortedlist = sorted(list, lambda x: x.rsplit('-', 1)[-1])
+                experimentNameList = sorted(experimentNameList, key = lambda x: x.split('-', 1)[0]) # using lambda function to split so can sort on first part of string before a hyphen if a hyphen exists - can't sort on raw strings that include hyphens
+
+                #experimentName = sorted(experimentNameList, lamda x: x.split('-'))
+                print(experimentNameList,type(experimentNameList))
+
+                # if ((len(experimentNameList) == 1) and (experimentNameList[0] == "default-experiment-name")):
+                #     experimentNameList = []
+                #experimentNameList.remove("default-experiment-name")
+                #print(experimentNameList,type(experimentNameList))
+            else:
+                print("no experimentName column in experiment tracker")
+                experimentNameList = []
+        else:
+            print("no experiment tracker in working data pkg dir")
+            # messageText = "<br>Your working Data Package Directory does not contain a properly formatted Experiment Tracker from which to populate unique experiment names for experiments you've already documented. <br><br> The field in this form <b>Experiment Result \"Belongs\" To</b> pulls from this list of experiment names to provide options of study experiments to which you can link your results. Because we cannot populate this list without your experiment tracker, your only option for this field will be the default experiment name: \"default-experiment-name\"." 
+            # errorFormat = '<span style="color:red;">{}</span>'
+            # self.userMessageBox.append(errorFormat.format(messageText)) 
+            experimentNameList = []
+
+        print("experimentNameList: ", experimentNameList)
+        return experimentNameList
+
+def getWorkingDataPkgDir(self):
+        testPath = self.workingDataPkgDirDisplay.toPlainText()
+        print("testPath: ",testPath)
+
+        if not os.path.exists(testPath):
+            messageText = "<br>You must set a valid working Data Package Directory to proceed. Navigate to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to either: <br><br>1. <b>Create New Data Package</b>: Create a new Data Package Directory and set it as the working Data Package Directory, or <br>2. <b>Continue Existing Data Package</b>: Set an existing Data Package Directory as the working Data Package Directory."
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return False
+        else:
+            self.workingDataPkgDir = testPath  
+            return True
+
+
 def heal_metadata_json_schema(metadataType):
 
     print(metadataType)
@@ -175,16 +233,8 @@ def add_dd_to_heal_dd_template(csv_dd_df,required_first=True,save_path=None):
 
 def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path='./resources/'):
     
-    #if not pkg_dir_name:
-    #    pkg_dir_name = 'dsc-pkg'
-
-    #if not dsc_pkg_resource_dir_path:
-    #    dsc_pkg_resource_dir_path = './resources/'
-
     pkg_path = os.path.join(pkg_parent_dir_path,pkg_dir_name)
-    #pkg_resources_path = os.path.join(pkg_path,"resources") # create a subdir in the pkg dir for schema and template resources
-
-    
+            
     # create the new package directory    
     try:
         os.makedirs(pkg_path, exist_ok = False)
@@ -195,51 +245,8 @@ def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path
         return
 
     
-    # add template starter files to new package directory
-    #source_folder = dsc_pkg_resource_dir_path
+    #destination_folder = pkg_path
     
-
-    # fetch all files
-    #results_schemas = []
-    #results_templates = []
-    #results_resources = []
-    #results_use = []
-
-    #results_schemas += [each for each in os.listdir(source_folder) if each.endswith('schema.csv')]
-    #print(results_schemas) 
-    #results_templates += [each for each in os.listdir(source_folder) if each.endswith('template.csv')]
-    #print(results_templates) 
-    #results_resources = results_schemas + results_templates
-    #print(results_resources)
-    
-    #results_use += [each for each in os.listdir(source_folder) if each.endswith('tracker.csv')]
-    #print(results_use)
-
-    #destination_folder = pkg_resources_path
-    #for file_name in os.listdir(source_folder):
-    #for file_name in results_resources:
-    #    # construct full file path
-    #    #source = source_folder + file_name
-    #    #destination = destination_folder + file_name
-    #    source = os.path.join(source_folder,file_name)
-    #    destination = os.path.join(destination_folder,file_name)
-    #    # copy only files
-    #    if os.path.isfile(source):
-    #        shutil.copy(source, destination)
-    #        print('copied', file_name)
-
-    destination_folder = pkg_path
-    #for file_name in os.listdir(source_folder):
-    #for file_name in results_use:
-    #    # construct full file path
-    #    #source = source_folder + file_name
-    #    #destination = destination_folder + file_name
-    #    source = os.path.join(source_folder,file_name)
-    #    destination = os.path.join(destination_folder,file_name)
-    #    # copy only files
-    #    if os.path.isfile(source):
-    #        shutil.copy(source, destination)
-    #        print('copied', file_name)
 
     for metadataType in ["experiment-tracker", "resource-tracker"]:
         props = heal_metadata_json_schema_properties(metadataType=metadataType)

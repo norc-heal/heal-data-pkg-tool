@@ -10,6 +10,7 @@ from pyqtschema.builder import WidgetBuilder
 from schema_results_tracker import schema_results_tracker
 from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions
 import pandas as pd
+import numpy as np
 
 from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, QScrollArea,QApplication,
                              QHBoxLayout, QVBoxLayout, QMainWindow, QGroupBox)
@@ -26,8 +27,11 @@ import re
 from copy import deepcopy
 
 class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add"):
         super().__init__()
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
+        self.workingDataPkgDir = workingDataPkgDir
+        self.mode = mode
         self.initUI()
 
     def initUI(self):
@@ -43,26 +47,37 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         ################################## Create component widgets - form, save button, status message box
         
         # create the form widget 
+        
         self.schema = schema_results_tracker
+        
+        self.experimentNameList = []
+        self.experimentNameList = self.get_exp_names() # gets self.experimentNameList
+
+        print("self.experimentNameList: ",self.experimentNameList)
+        
+        if self.experimentNameList:
+            self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+
         self.ui_schema = {}
         
         self.builder = WidgetBuilder(self.schema)
         self.form = self.builder.create_form(self.ui_schema)
         
         self.formDefaultState = {
-            "result.id": "result-1"
+            "resultId": "result-1",
+            "experimentNameBelongsTo": "default-experiment-name"
         }
 
         self.form.widget.state = deepcopy(self.formDefaultState)
       
-         # create 'add dsc data pkg directory' button
-        self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
-        self.buttonAddDir.clicked.connect(self.add_dir)
+        #  # create 'add dsc data pkg directory' button
+        # self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
+        # self.buttonAddDir.clicked.connect(self.add_dir)
 
-        self.buttonAddDir.setSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
-        )
-        self.buttonAddDir.setStyleSheet("QPushButton{background-color:rgba(10,105,33,100);} QPushButton:hover{background-color:rgba(0,125,0,50);}");
+        # self.buttonAddDir.setSizePolicy(
+        #     QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        # )
+        # self.buttonAddDir.setStyleSheet("QPushButton{background-color:rgba(10,105,33,100);} QPushButton:hover{background-color:rgba(0,125,0,50);}");
                 
 
         # create save button
@@ -116,6 +131,9 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # initialize tool tip for each form field based on the description text for the corresponding schema property
         self.add_tooltip()
         self.add_priority_highlight_and_hide()
+        self.add_dir()
+        if self.mode == "add":
+            self.get_id()
         #self.add_priority_highlight()
         #self.initial_hide()
 
@@ -131,7 +149,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         ################################## Finished creating component widgets
         
 
-        self.vbox.addWidget(self.buttonAddDir)
+        #self.vbox.addWidget(self.buttonAddDir)
         self.vbox.addWidget(self.buttonSaveResult)
         self.vbox.addWidget(self.buttonClearForm)
         self.vbox.addWidget(self.labelUserMessageBox)
@@ -176,6 +194,70 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             self.scroll.verticalScrollBar().setValue(
                 self.scroll.verticalScrollBar().minimum()
             )
+
+    def get_exp_names(self):
+        
+        getDir = self.workingDataPkgDir
+        getExpTrk = os.path.join(getDir,"heal-csv-experiment-tracker.csv")
+
+        if os.path.isfile(getExpTrk):
+            experimentTrackerDf = pd.read_csv(getExpTrk)
+            #experimentTrackerDf.replace(np.nan, "")
+            experimentTrackerDf.fillna("", inplace = True)
+
+            print(experimentTrackerDf)
+            print(experimentTrackerDf.columns)
+
+            if "experimentName" in experimentTrackerDf.columns:
+                experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
+                print(experimentTrackerDf["experimentName"])                
+                experimentNameList = experimentTrackerDf["experimentName"].unique().tolist()
+                print(experimentNameList,type(experimentNameList))
+                experimentNameList[:] = [x for x in experimentNameList if x] # get rid of emtpy strings as empty strings are not wanted and mess up the sort() function
+                print(experimentNameList,type(experimentNameList))
+
+                #sortedlist = sorted(list, lambda x: x.rsplit('-', 1)[-1])
+                experimentNameList = sorted(experimentNameList, key = lambda x: x.split('-', 1)[0])
+
+                #experimentName = sorted(experimentNameList, lamda x: x.split('-'))
+                print(experimentNameList,type(experimentNameList))
+
+                # if ((len(experimentNameList) == 1) and (experimentNameList[0] == "default-experiment-name")):
+                #     experimentNameList = []
+                #experimentNameList.remove("default-experiment-name")
+                #print(experimentNameList,type(experimentNameList))
+            else:
+                print("no experimentName column in experiment tracker")
+                experimentNameList = []
+        else:
+            print("no experiment tracker in working data pkg dir")
+            # messageText = "<br>Your working Data Package Directory does not contain a properly formatted Experiment Tracker from which to populate unique experiment names for experiments you've already documented. <br><br> The field in this form <b>Experiment Result \"Belongs\" To</b> pulls from this list of experiment names to provide options of study experiments to which you can link your results. Because we cannot populate this list without your experiment tracker, your only option for this field will be the default experiment name: \"default-experiment-name\"." 
+            # errorFormat = '<span style="color:red;">{}</span>'
+            # self.userMessageBox.append(errorFormat.format(messageText)) 
+            experimentNameList = []
+
+        print("experimentNameList: ", experimentNameList)
+        return experimentNameList
+            
+    def add_exp_names_to_schema(self):
+
+        schemaOrig = self.schema
+        experimentNameList = self.experimentNameList
+
+        experimentNameListUpdate = {}
+        
+        schemaUpdated = deepcopy(schemaOrig)
+        enumListOrig = schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"]
+        print("enumListOrig: ", enumListOrig)
+        #enumListUpdated = enumListOrig.extend(experimentNameList)
+        enumListUpdated = experimentNameList
+        print("enumListUpdated: ", enumListUpdated)
+
+        schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"] = enumListUpdated
+        print("schemaOrig: ",schemaOrig)
+        print("schemaUpdated: ", schemaUpdated)
+
+        return schemaUpdated
 
     def add_tooltip(self):
         
@@ -327,14 +409,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             self.toggle_widgets(keyText = "figure", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                "figure.number": []
+                "figureNumber": []
             }
 
         if self.form.widget.state["category"] != "table":
             self.toggle_widgets(keyText = "table", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                "table.number": []
+                "tableNumber": []
             }  
             
         ################### show field appropriate to current selection
@@ -347,8 +429,11 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
           
     def add_dir(self):
         
-        self.saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new result will be saved there!')
-        
+        #self.saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new result will be saved there!')
+        self.saveFolderPath = self.workingDataPkgDir
+
+    def get_id(self):
+
         if self.saveFolderPath:
 
             # get new result ID for new result file - get the max id num used for existing result files and add 1; if no result files yet, set id num to 1
@@ -371,8 +456,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
 
-            messageText = "<br>Based on other results already saved in your DSC Package directory, your new result will be saved with the unique ID: " + self.result_id + "<br>Result ID has been added to the result form."
-            messageText = messageText + "<br>Your new result file will be saved in your DSC Package directory as: " + self.saveFilePath + "<br><br>"
+            messageText = "<br>Based on other results already saved in your working DSC Data Package directory, your new result will be saved with the unique ID: " + self.result_id + "<br>Result ID has been added to the result form."
+            messageText = messageText + "<br><br>Your new result file will be saved in your working DSC Data Package directory as: " + self.saveFilePath + "<br><br>"
             self.userMessageBox.append(messageText)
             #self.userMessageBox.moveCursor(QTextCursor.End)
 
@@ -386,9 +471,10 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             #     self.userMessageBox.append(errorFormat.format(messageText))
 
             self.form.widget.state = {
-                "result.id": self.result_id
+                "resultId": self.result_id
             }
 
+        # this should no longer be necessary as the form widget will only be opened if a workingDataPkgDir has been set and the path has been as a string 
         else:
             messageText = "<br>Please select your DSC Package Directory to proceed."
             errorFormat = '<span style="color:red;">{}</span>'
@@ -444,7 +530,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
         self.form.widget.state = {
             #"path": updatePath,
-            "assoc.file.depends.on": updateAssocFileMultiDepend
+            "associatedFileDependsOn": updateAssocFileMultiDepend
         } 
 
         
@@ -467,6 +553,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
     def save_result(self):
         
+        # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
         # check that a dsc data package dir has been added - this is the save folder
         if not self.saveFolderPath:
             messageText = "<br>You must add a DSC Data Package Directory before saving your result file. Please add a DSC Data Package Directory and then try saving again." 
@@ -476,7 +563,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
         # check that file path and at least a minimal description has been added to the form 
         # if not exit with informative error
-        if not ((self.form.widget.state["assoc.multi.result.file"]) and (self.form.widget.state["description"])):
+        if not ((self.form.widget.state["associatedFileMultiResultFile"]) and (self.form.widget.state["description"])):
             messageText = "<br>You must add at least a minimal description of your result and at least one multi-result file in which this result is cited to your result file form before saving your result file. Please add at least a minimal description of your result in the Result Description field in the form, and add at least one multi-result file in which this result appears by browsing to a file path(s) in the Associated Multi-Result File(s) field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
@@ -489,9 +576,9 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # form fields that will be the same), and save again with a new id - in this case the user can modify the 
         # id manually, incrementing the id number by one - if id modified, updated it in memory and regenerate
         # the save file name, save file path, and id number
-        if self.form.widget.state["result.id"] != self.result_id:
+        if self.form.widget.state["resultId"] != self.result_id:
             
-            self.result_id = self.form.widget.state["result.id"]
+            self.result_id = self.form.widget.state["resultId"]
             self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
 
@@ -559,23 +646,29 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             if self.items2:
                 self.items2 = []
 
-
-        messageText = "<br>Your form was successfully cleared and you can start annotating a new resource"
+        
+        messageText = "<br>Your form was successfully cleared and you can start annotating a new result"
         saveFormat = '<span style="color:green;">{}</span>'
         self.userMessageBox.append(saveFormat.format(messageText))
         self.userMessageBox.moveCursor(QTextCursor.End)
 
-        messageText = "<br>NOTE: The Result ID in your form has been re-set to the default value of \n'result-1\n'. If you know which result IDs you've already used, you can change the Result ID in the cleared form manually by adding 1 to the max Result ID you've already used. To generate a unique Result ID automatically, click the Add DSC Package Directory button above the form - this will re-add your DSC Package Directory, search that directory for Result IDs already used, generate a unique Result ID by adding 1 to the max Result ID already in use, and add that Result ID value to the form for you."
-        saveFormat = '<span style="color:blue;">{}</span>'
-        self.userMessageBox.append(saveFormat.format(messageText)) 
+        self.get_id()
+
+        # messageText = "<br>NOTE: The Result ID in your form has been re-set to the default value of \n'result-1\n'. If you know which result IDs you've already used, you can change the Result ID in the cleared form manually by adding 1 to the max Result ID you've already used. To generate a unique Result ID automatically, click the Add DSC Package Directory button above the form - this will re-add your DSC Package Directory, search that directory for Result IDs already used, generate a unique Result ID by adding 1 to the max Result ID already in use, and add that Result ID value to the form for you."
+        # saveFormat = '<span style="color:blue;">{}</span>'
+        # self.userMessageBox.append(saveFormat.format(messageText)) 
         self.userMessageBox.moveCursor(QTextCursor.End)           
 
     def load_file(self):
         #_json_filter = 'json (*.json)'
         #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
         print("in load_file fx")
+
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
+        #        (QtCore.QDir.homePath()), "Text (*.txt)")
+
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
-               (QtCore.QDir.homePath()), "Text (*.txt)")
+               self.saveFolderPath, "Text (*.txt)")
 
         if not ifileName: 
             messageText = "<br>You have not selected a file; returning."
@@ -586,13 +679,23 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                      
             self.saveFilePath = ifileName
             print("saveFilePath: ", self.saveFilePath)
-            self.saveFolderPath = Path(ifileName).parent
+            print(Path(ifileName).parent)
+            print(Path(self.saveFolderPath))
+
+            # if user selects a result txt file that is not in the working data pkg dir, return w informative message
+            if Path(self.saveFolderPath) != Path(ifileName).parent:
+                messageText = "<br>You selected a result txt file that is not in your working Data Package Directory; You must select a result txt file that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            #self.saveFolderPath = Path(ifileName).parent
             print("saveFolderPath: ", self.saveFolderPath)
             
             with open(ifileName, 'r') as stream:
                 data = load(stream)
 
-            self.result_id = data["result.id"]
+            self.result_id = data["resultId"]
             self.resIdNum = int(self.result_id.split("-")[1])
             self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
             #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
@@ -609,8 +712,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
             self.form.widget.state = data
 
-            if len(data["assoc.file.depends.on"]) > 2: 
-                self.lstbox_view2.addItems(data["assoc.file.depends.on"])
+            if len(data["associatedFileDependsOn"]) > 2: 
+                self.lstbox_view2.addItems(data["associatedFileDependsOn"])
                 self.add_multi_depend()         
 
         

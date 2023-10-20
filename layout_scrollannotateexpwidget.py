@@ -317,7 +317,11 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         print("self.experimentNameList: ",self.experimentNameList)
         currentExperimentName = self.formWidgetList[self.formWidgetNameList.index("experimentName")].text()
 
-        if currentExperimentName in self.experimentNameList:
+        if currentExperimentName == "default-experiment-name":
+            messageText = "<br>You've re-set the experiment name to the default value of \"default-experiment-name\". This is the equivalent of NOT naming your experiment. If you wish to name your experiment, please enter a unique experiment name that is NOT equal to \"default-experiment-name\". Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+        elif currentExperimentName in self.experimentNameList:
             messageText = "<br>You've used this experiment name before, and experiment name must be unique - Please enter a unique experiment name. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
@@ -325,15 +329,6 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             messageText = "<br>Your experiment name is unique! <br><br>" 
             errorFormat = '<span style="color:green;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText)) 
-
-            
-
-        
-
-
-
-
-        
 
     def toggle_widgets(self, keyText, desiredToggleState):
 

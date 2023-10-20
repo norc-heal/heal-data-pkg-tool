@@ -19,6 +19,50 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+def get_exp_names(self):
+        
+        getDir = self.workingDataPkgDir
+        getExpTrk = os.path.join(getDir,"heal-csv-experiment-tracker.csv")
+
+        if os.path.isfile(getExpTrk):
+            experimentTrackerDf = pd.read_csv(getExpTrk)
+            #experimentTrackerDf.replace(np.nan, "")
+            experimentTrackerDf.fillna("", inplace = True)
+
+            print(experimentTrackerDf)
+            print(experimentTrackerDf.columns)
+
+            if "experimentName" in experimentTrackerDf.columns:
+                experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
+                print(experimentTrackerDf["experimentName"])                
+                experimentNameList = experimentTrackerDf["experimentName"].unique().tolist()
+                print(experimentNameList,type(experimentNameList))
+                experimentNameList[:] = [x for x in experimentNameList if x] # get rid of emtpy strings as empty strings are not wanted and mess up the sort() function
+                print(experimentNameList,type(experimentNameList))
+
+                #sortedlist = sorted(list, lambda x: x.rsplit('-', 1)[-1])
+                experimentNameList = sorted(experimentNameList, key = lambda x: x.split('-', 1)[0]) # using lambda function to split so can sort on first part of string before a hyphen if a hyphen exists - can't sort on raw strings that include hyphens
+
+                #experimentName = sorted(experimentNameList, lamda x: x.split('-'))
+                print(experimentNameList,type(experimentNameList))
+
+                # if ((len(experimentNameList) == 1) and (experimentNameList[0] == "default-experiment-name")):
+                #     experimentNameList = []
+                #experimentNameList.remove("default-experiment-name")
+                #print(experimentNameList,type(experimentNameList))
+            else:
+                print("no experimentName column in experiment tracker")
+                experimentNameList = []
+        else:
+            print("no experiment tracker in working data pkg dir")
+            # messageText = "<br>Your working Data Package Directory does not contain a properly formatted Experiment Tracker from which to populate unique experiment names for experiments you've already documented. <br><br> The field in this form <b>Experiment Result \"Belongs\" To</b> pulls from this list of experiment names to provide options of study experiments to which you can link your results. Because we cannot populate this list without your experiment tracker, your only option for this field will be the default experiment name: \"default-experiment-name\"." 
+            # errorFormat = '<span style="color:red;">{}</span>'
+            # self.userMessageBox.append(errorFormat.format(messageText)) 
+            experimentNameList = []
+
+        print("experimentNameList: ", experimentNameList)
+        return experimentNameList
+
 def getWorkingDataPkgDir(self):
         testPath = self.workingDataPkgDirDisplay.toPlainText()
         print("testPath: ",testPath)

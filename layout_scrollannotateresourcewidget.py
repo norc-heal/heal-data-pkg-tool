@@ -9,7 +9,7 @@ from pyqtschema.builder import WidgetBuilder
 
 #from schema_resource_tracker import schema_resource_tracker
 #from form_schema_resource_tracker import form_schema_resource_tracker
-from schema_resource_tracker import form_schema_resource_tracker
+from schema_resource_tracker import form_schema_resource_tracker, schema_resource_tracker
 from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions
 import pandas as pd
 
@@ -47,7 +47,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         ################################## Create component widgets - form, save button, status message box
         
         # create the form widget 
-        self.schema = form_schema_resource_tracker
+        #self.schema = form_schema_resource_tracker
+        self.schema = schema_resource_tracker
         self.ui_schema = {}
         
         self.builder = WidgetBuilder(self.schema)
@@ -55,7 +56,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         
         self.formDefaultState = {
             "resourceId": "resource-1",
-            "expBelongsTo": "exp-999",
+            "experimentNameBelongsTo": "default-experiment-name",
+            #"expBelongsTo": "exp-999",
             "accessDate": "2099-01-01"
         }
 

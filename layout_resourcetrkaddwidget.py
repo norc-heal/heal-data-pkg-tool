@@ -72,7 +72,7 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
     def annotate_resource(self,checked):
 
         # check if user has set a working data package dir - if not exit gracefully with informative message
-        if not dsc_pkg_utils.getWorkingDataPkgDir():
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
         
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
@@ -88,7 +88,7 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
     def edit_resource(self,checked):
 
         # check if user has set a working data package dir - if not exit gracefully with informative message
-        if not dsc_pkg_utils.getWorkingDataPkgDir():
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
         
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
@@ -106,7 +106,7 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
     def add_resource(self):
 
         # check if user has set a working data package dir - if not exit gracefully with informative message
-        if not dsc_pkg_utils.getWorkingDataPkgDir():
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
         
         # get resource(s) file path

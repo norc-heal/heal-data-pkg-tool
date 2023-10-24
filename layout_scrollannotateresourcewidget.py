@@ -76,14 +76,14 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         self.form.widget.state = deepcopy(self.formDefaultState)
       
-        # create 'add dsc data pkg directory' button
-        self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
-        self.buttonAddDir.clicked.connect(self.add_dir)
+        # # create 'add dsc data pkg directory' button
+        # self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
+        # self.buttonAddDir.clicked.connect(self.add_dir)
 
-        self.buttonAddDir.setSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
-        )
-        self.buttonAddDir.setStyleSheet("QPushButton{background-color:rgba(10,105,33,100);} QPushButton:hover{background-color:rgba(0,125,0,50);}");
+        # self.buttonAddDir.setSizePolicy(
+        #     QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        # )
+        # self.buttonAddDir.setStyleSheet("QPushButton{background-color:rgba(10,105,33,100);} QPushButton:hover{background-color:rgba(0,125,0,50);}");
                 
 
         # create save button

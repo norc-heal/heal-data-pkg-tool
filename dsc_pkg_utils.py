@@ -11,6 +11,7 @@ import jsonschema
 from jsonschema import validate
 import re
 import itertools
+from copy import deepcopy
 
 from healdata_utils.schemas import healjsonschema, healcsvschema
 from healdata_utils.transforms.frictionless import conversion
@@ -33,10 +34,22 @@ def get_exp_names(self):
             print(experimentTrackerDf.columns)
 
             if "experimentName" in experimentTrackerDf.columns:
-                experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
-                print(experimentTrackerDf["experimentName"])                
-                experimentNameList = experimentTrackerDf["experimentName"].unique().tolist()
+               
+                #experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
+                experimentNameSeries = experimentTrackerDf["experimentName"].astype(str)
+                print(experimentNameSeries,type(experimentNameSeries))
+                
+                experimentNameDefaultSeries = pd.Series(["default-experiment-name"])
+                
+                # add default value to list so that default value is always part of the enum for results and resource tracker experimentNameBelongsTo fields - this allows 
+                # default value to be set as the default on drop down for this field 
+                experimentNameSeries = pd.concat([experimentNameDefaultSeries,ExperimentNameSeries], ignore_index=True)
+                print(experimentNameSeries,type(experimentNameSeries))
+                
+                #experimentNameList = experimentTrackerDf["experimentName"].unique().tolist()
+                experimentNameList = experimentNameSeries.unique().tolist()
                 print(experimentNameList,type(experimentNameList))
+                
                 experimentNameList[:] = [x for x in experimentNameList if x] # get rid of emtpy strings as empty strings are not wanted and mess up the sort() function
                 print(experimentNameList,type(experimentNameList))
 
@@ -62,6 +75,26 @@ def get_exp_names(self):
 
         print("experimentNameList: ", experimentNameList)
         return experimentNameList
+
+def add_exp_names_to_schema(self):
+
+        schemaOrig = self.schema
+        experimentNameList = self.experimentNameList
+
+        experimentNameListUpdate = {}
+        
+        schemaUpdated = deepcopy(schemaOrig)
+        enumListOrig = schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"]
+        print("enumListOrig: ", enumListOrig)
+        #enumListUpdated = enumListOrig.extend(experimentNameList)
+        enumListUpdated = experimentNameList
+        print("enumListUpdated: ", enumListUpdated)
+
+        schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"] = enumListUpdated
+        print("schemaOrig: ",schemaOrig)
+        print("schemaUpdated: ", schemaUpdated)
+
+        return schemaUpdated
 
 def getWorkingDataPkgDir(self):
         testPath = self.workingDataPkgDirDisplay.toPlainText()

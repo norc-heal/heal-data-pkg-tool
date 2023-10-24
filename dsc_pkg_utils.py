@@ -20,97 +20,129 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+def get_id(self, prefix, fileExt, folderPath):
+
+    if folderPath:
+
+        # get new result ID for new result file - get the max id num used for existing result files and add 1; if no result files yet, set id num to 1
+    
+        fileList = [filename for filename in os.listdir(folderPath) if filename.startswith(prefix)]
+        print(fileList)
+
+        if fileList: # if the list is not empty
+            fileStemList = [Path(filename).stem for filename in fileList]
+            print(fileStemList)
+            #idNumList = [int(filename.rsplit('-',1)[1]) for filename in fileStemList]
+            idNumList = [int(filename.split(prefix)[1]) for filename in fileStemList]
+            print(resIdNumList)
+            idNum = max(idNumList) + 1
+            print(max(idNumList),idNum)
+        else:
+            idNum = 1
+
+        #self.resIdNum = resIdNum
+        #self.result_id = 'result-'+ str(self.resIdNum)
+        #self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
+        fileName = prefix + str(idNum) + fileExt
+        #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
+        saveFilePath = os.path.join(folderPath,fileName)
+
+       
+
 def get_exp_names(self):
         
-        getDir = self.workingDataPkgDir
-        getExpTrk = os.path.join(getDir,"heal-csv-experiment-tracker.csv")
+    getDir = self.workingDataPkgDir
+    getExpTrk = os.path.join(getDir,"heal-csv-experiment-tracker.csv")
 
-        if os.path.isfile(getExpTrk):
-            experimentTrackerDf = pd.read_csv(getExpTrk)
-            #experimentTrackerDf.replace(np.nan, "")
-            experimentTrackerDf.fillna("", inplace = True)
+    if os.path.isfile(getExpTrk):
+        experimentTrackerDf = pd.read_csv(getExpTrk)
+        #experimentTrackerDf.replace(np.nan, "")
+        experimentTrackerDf.fillna("", inplace = True)
 
-            print(experimentTrackerDf)
-            print(experimentTrackerDf.columns)
+        print(experimentTrackerDf)
+        print(experimentTrackerDf.columns)
 
-            if "experimentName" in experimentTrackerDf.columns:
-               
-                #experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
-                experimentNameSeries = experimentTrackerDf["experimentName"].astype(str)
-                print(experimentNameSeries,type(experimentNameSeries))
-                
-                experimentNameDefaultSeries = pd.Series(["default-experiment-name"])
-                
-                # add default value to list so that default value is always part of the enum for results and resource tracker experimentNameBelongsTo fields - this allows 
-                # default value to be set as the default on drop down for this field 
-                experimentNameSeries = pd.concat([experimentNameDefaultSeries,ExperimentNameSeries], ignore_index=True)
-                print(experimentNameSeries,type(experimentNameSeries))
-                
-                #experimentNameList = experimentTrackerDf["experimentName"].unique().tolist()
-                experimentNameList = experimentNameSeries.unique().tolist()
-                print(experimentNameList,type(experimentNameList))
-                
-                experimentNameList[:] = [x for x in experimentNameList if x] # get rid of emtpy strings as empty strings are not wanted and mess up the sort() function
-                print(experimentNameList,type(experimentNameList))
+        if "experimentName" in experimentTrackerDf.columns:
+            
+            #experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
+            experimentNameSeries = experimentTrackerDf["experimentName"].astype(str)
+            print(experimentNameSeries,type(experimentNameSeries))
+            
+            experimentNameDefaultSeries = pd.Series(["default-experiment-name"])
+            
+            # add default value to list so that default value is always part of the enum for results and resource tracker experimentNameBelongsTo fields - this allows 
+            # default value to be set as the default on drop down for this field 
+            experimentNameSeries = pd.concat([experimentNameDefaultSeries,ExperimentNameSeries], ignore_index=True)
+            print(experimentNameSeries,type(experimentNameSeries))
+            
+            #experimentNameList = experimentTrackerDf["experimentName"].unique().tolist()
+            experimentNameList = experimentNameSeries.unique().tolist()
+            print(experimentNameList,type(experimentNameList))
+            
+            experimentNameList[:] = [x for x in experimentNameList if x] # get rid of emtpy strings as empty strings are not wanted and mess up the sort() function
+            print(experimentNameList,type(experimentNameList))
 
-                #sortedlist = sorted(list, lambda x: x.rsplit('-', 1)[-1])
-                experimentNameList = sorted(experimentNameList, key = lambda x: x.split('-', 1)[0]) # using lambda function to split so can sort on first part of string before a hyphen if a hyphen exists - can't sort on raw strings that include hyphens
+            #sortedlist = sorted(list, lambda x: x.rsplit('-', 1)[-1])
+            experimentNameList = sorted(experimentNameList, key = lambda x: x.split('-', 1)[0]) # using lambda function to split so can sort on first part of string before a hyphen if a hyphen exists - can't sort on raw strings that include hyphens
 
-                #experimentName = sorted(experimentNameList, lamda x: x.split('-'))
-                print(experimentNameList,type(experimentNameList))
+            #experimentName = sorted(experimentNameList, lamda x: x.split('-'))
+            print(experimentNameList,type(experimentNameList))
 
-                # if ((len(experimentNameList) == 1) and (experimentNameList[0] == "default-experiment-name")):
-                #     experimentNameList = []
-                #experimentNameList.remove("default-experiment-name")
-                #print(experimentNameList,type(experimentNameList))
-            else:
-                print("no experimentName column in experiment tracker")
-                experimentNameList = []
+            # if ((len(experimentNameList) == 1) and (experimentNameList[0] == "default-experiment-name")):
+            #     experimentNameList = []
+            #experimentNameList.remove("default-experiment-name")
+            #print(experimentNameList,type(experimentNameList))
         else:
-            print("no experiment tracker in working data pkg dir")
-            # messageText = "<br>Your working Data Package Directory does not contain a properly formatted Experiment Tracker from which to populate unique experiment names for experiments you've already documented. <br><br> The field in this form <b>Experiment Result \"Belongs\" To</b> pulls from this list of experiment names to provide options of study experiments to which you can link your results. Because we cannot populate this list without your experiment tracker, your only option for this field will be the default experiment name: \"default-experiment-name\"." 
-            # errorFormat = '<span style="color:red;">{}</span>'
-            # self.userMessageBox.append(errorFormat.format(messageText)) 
+            print("no experimentName column in experiment tracker")
             experimentNameList = []
+    else:
+        print("no experiment tracker in working data pkg dir")
+        # messageText = "<br>Your working Data Package Directory does not contain a properly formatted Experiment Tracker from which to populate unique experiment names for experiments you've already documented. <br><br> The field in this form <b>Experiment Result \"Belongs\" To</b> pulls from this list of experiment names to provide options of study experiments to which you can link your results. Because we cannot populate this list without your experiment tracker, your only option for this field will be the default experiment name: \"default-experiment-name\"." 
+        # errorFormat = '<span style="color:red;">{}</span>'
+        # self.userMessageBox.append(errorFormat.format(messageText)) 
+        experimentNameList = []
 
-        print("experimentNameList: ", experimentNameList)
-        return experimentNameList
+    print("experimentNameList: ", experimentNameList)
+    return experimentNameList
 
 def add_exp_names_to_schema(self):
 
-        schemaOrig = self.schema
-        experimentNameList = self.experimentNameList
 
-        experimentNameListUpdate = {}
-        
-        schemaUpdated = deepcopy(schemaOrig)
-        enumListOrig = schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"]
-        print("enumListOrig: ", enumListOrig)
-        #enumListUpdated = enumListOrig.extend(experimentNameList)
-        enumListUpdated = experimentNameList
-        print("enumListUpdated: ", enumListUpdated)
+    schemaOrig = self.schema
+    experimentNameList = self.experimentNameList
 
-        schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"] = enumListUpdated
-        print("schemaOrig: ",schemaOrig)
-        print("schemaUpdated: ", schemaUpdated)
+    experimentNameListUpdate = {}
+    
+    schemaUpdated = deepcopy(schemaOrig)
+    enumListOrig = schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"]
+    print("enumListOrig: ", enumListOrig)
+    #enumListUpdated = enumListOrig.extend(experimentNameList)
+    enumListUpdated = experimentNameList
+    print("enumListUpdated: ", enumListUpdated)
 
-        return schemaUpdated
+    schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"] = enumListUpdated
+    print("schemaOrig: ",schemaOrig)
+    print("schemaUpdated: ", schemaUpdated)
+
+    return schemaUpdated
 
 def getWorkingDataPkgDir(self):
-        testPath = self.workingDataPkgDirDisplay.toPlainText()
-        print("testPath: ",testPath)
 
-        if not os.path.exists(testPath):
-            messageText = "<br>You must set a valid working Data Package Directory to proceed. Navigate to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to either: <br><br>1. <b>Create New Data Package</b>: Create a new Data Package Directory and set it as the working Data Package Directory, or <br>2. <b>Continue Existing Data Package</b>: Set an existing Data Package Directory as the working Data Package Directory."
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
-            return False
-        else:
-            self.workingDataPkgDir = testPath  
-            return True
+    testPath = self.workingDataPkgDirDisplay.toPlainText()
+    print("testPath: ",testPath)
+
+    if not os.path.exists(testPath):
+        messageText = "<br>You must set a valid working Data Package Directory to proceed. Navigate to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to either: <br><br>1. <b>Create New Data Package</b>: Create a new Data Package Directory and set it as the working Data Package Directory, or <br>2. <b>Continue Existing Data Package</b>: Set an existing Data Package Directory as the working Data Package Directory."
+        errorFormat = '<span style="color:red;">{}</span>'
+        self.userMessageBox.append(errorFormat.format(messageText))
+        return False
+    else:
+        self.workingDataPkgDir = testPath  
+        return True
 
 
 def heal_metadata_json_schema(metadataType):
+
 
     print(metadataType)
 

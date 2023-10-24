@@ -70,6 +70,12 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
 
     
     def annotate_resource(self,checked):
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir():
+            return
+        
+        # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
             #self.w.editState = False
             self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add")
@@ -80,6 +86,12 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
             self.w = None  # Discard reference.
 
     def edit_resource(self,checked):
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir():
+            return
+        
+        # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
             #self.w.editState = True
             self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="edit")
@@ -93,11 +105,60 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
 
     def add_resource(self):
 
-        # get resource file path
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir():
+            return
+        
+        # get resource(s) file path
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Resource Txt Data file(s)",
+        #        (QtCore.QDir.homePath()), "Text (*.txt)")
+
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Resource Txt Data file(s)",
-               (QtCore.QDir.homePath()), "Text (*.txt)")
+               self.workingDataPkgDir, "Text (*.txt)")
         
         if ifileName:
+
+            # check that resource tracker exists in working data pkg dir, if not, return
+            if "heal-csv-resource-tracker.csv" not in self.workingDataPkgDir:
+                messageText = "<br>There is not Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+            
+            # check that resource tracker is closed (user doesn't have it open in excel for example)
+            try: 
+                with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
+                    print("file is closed, proceed!!")
+            except PermissionError:
+                    messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, close the file, and try again. <br><br>"
+                    saveFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(saveFormat.format(messageText))
+                    return
+
+            
+            # check that all files are resource annotation files, if not, return
+            fileStemList = [Path(filename).stem for filename in ifileName]
+            print(fileStemList)
+            checkFileStemList = [stem.startswith("resource-trk-resource-") for stem in fileStemList]
+            print(checkFileStemList)
+            
+            if not all(checkFileStemList):
+                messageText = "<br>The files you selected may not all be resource txt files. Resource txt files must start with the prefix \"resource-trk-resource-\". <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            # just for the first annotation file selected for addition to the tracker, check to make sure it is 
+            # in the working data pkg dir - if not return with informative message
+            ifileNameCheckDir = ifileName[0]
+
+            # if user selects a resource txt file that is not in the working data pkg dir, return w informative message
+            if Path(self.workingDataPkgDir) != Path(ifileNameCheckDir).parent:
+                messageText = "<br>You selected a resource txt file(s) that is not in your working Data Package Directory; You must select a resource txt file(s) that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
             #countFiles = len(ifileName)
 
             # initialize lists to collect valid and invalid files
@@ -197,11 +258,11 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
 
                     add_to_df_dict = {#"resourceId":[resource_id],
                                     "resourceIdNumber": [int(resIdNumStr)],  
-                                    "resourceCreateDateTime": [res_c_datetime],
-                                    "resourceModDateTime": [res_m_datetime],
+                                    #"resourceCreateDateTime": [res_c_datetime],
+                                    #"resourceModDateTime": [res_m_datetime],
                                     "resource.mod.time.stamp": [res_m_timestamp],
-                                    "annotationCreateDateTime": [restrk_c_datetime],
-                                    "annotationModDateTime": [restrk_m_datetime],
+                                    #"annotationCreateDateTime": [restrk_c_datetime],
+                                    #"annotationModDateTime": [restrk_m_datetime],
                                     "annotationModTimeStamp": [restrk_m_timestamp]}
 
                     add_to_df = pd.DataFrame(add_to_df_dict)
@@ -209,6 +270,10 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
                     # convert json to pd df
                     df = pd.json_normalize(data) # df is a one row dataframe
                     print(df)
+                    df["annotationCreateDateTime"][0] = restrk_c_datetime
+                    df["annotationModDateTime"][0] = restrk_m_datetime
+                    df["resourceCreateDateTime"][0] = res_c_datetime
+                    df["resourceModDateTime"][0] = res_m_datetime
                     df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
                     print(df)
 
@@ -232,9 +297,12 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         # now get location of resource tracker, read in existing data in tracker, concat new data, sort, deduplicate and 
         # rewrite to file
 
+        # no longer need to ask for this
         # get data package directory path
-        parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your Data Package Directory - Your Resource Tracker File lives here!')
-        
+        #parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your Data Package Directory - Your Resource Tracker File lives here!')
+        parentFolderPath = self.workingDataPkgDir
+
+
         # check if resource tracker file exists
         # if exists, append the pd data object from the experiment file as a new row in the experiment tracker file
         # if doesn't exist, print error/info message and exit

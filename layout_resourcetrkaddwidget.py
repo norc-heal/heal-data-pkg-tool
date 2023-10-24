@@ -72,7 +72,7 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
     def annotate_resource(self,checked):
         if self.w is None:
             #self.w.editState = False
-            self.w = ScrollAnnotateResourceWindow()
+            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add")
             self.w.show()
 
         else:
@@ -82,7 +82,7 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
     def edit_resource(self,checked):
         if self.w is None:
             #self.w.editState = True
-            self.w = ScrollAnnotateResourceWindow()
+            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="edit")
             self.w.show()
             self.w.load_file()
 

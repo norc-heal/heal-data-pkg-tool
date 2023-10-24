@@ -12,6 +12,7 @@ from pyqtschema.builder import WidgetBuilder
 from schema_resource_tracker import form_schema_resource_tracker, schema_resource_tracker
 from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions
 import pandas as pd
+import dsc_pkg_utils
 
 from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, QScrollArea,QApplication,
                              QHBoxLayout, QVBoxLayout, QMainWindow, QGroupBox)
@@ -28,9 +29,11 @@ import re
 from copy import deepcopy
 
 class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add", *args, **kwargs):
         super().__init__(*args, **kwargs)
         #self.setWindowTitle("Annotate Resource")
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
+        self.workingDataPkgDir = workingDataPkgDir
         self.initUI()
         #self.load_file()
 
@@ -49,6 +52,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # create the form widget 
         #self.schema = form_schema_resource_tracker
         self.schema = schema_resource_tracker
+
+        self.experimentNameList = []
+        self.experimentNameList = dsc_pkg_utils.get_exp_names() # gets self.experimentNameList
+
+        print("self.experimentNameList: ",self.experimentNameList)
+        
+        if self.experimentNameList:
+            #self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+            self.schema = dsc_pkg_utils.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+
         self.ui_schema = {}
         
         self.builder = WidgetBuilder(self.schema)

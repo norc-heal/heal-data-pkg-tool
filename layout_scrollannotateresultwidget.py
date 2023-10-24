@@ -11,6 +11,7 @@ from schema_results_tracker import schema_results_tracker
 from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions
 import pandas as pd
 import numpy as np
+import dsc_pkg_utils
 
 from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, QScrollArea,QApplication,
                              QHBoxLayout, QVBoxLayout, QMainWindow, QGroupBox)
@@ -51,12 +52,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         self.schema = schema_results_tracker
         
         self.experimentNameList = []
-        self.experimentNameList = self.get_exp_names() # gets self.experimentNameList
+        #self.experimentNameList = self.get_exp_names() # gets self.experimentNameList
+        self.experimentNameList = dsc_pkg_utils.get_exp_names() # gets self.experimentNameList
 
         print("self.experimentNameList: ",self.experimentNameList)
         
         if self.experimentNameList:
-            self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+            #self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+            self.schema = dsc_pkg_utils.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
 
         self.ui_schema = {}
         
@@ -65,7 +68,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         
         self.formDefaultState = {
             "resultId": "result-1",
-            #"experimentNameBelongsTo": "default-experiment-name"
+            "experimentNameBelongsTo": "default-experiment-name"
         }
 
         self.form.widget.state = deepcopy(self.formDefaultState)
@@ -195,69 +198,69 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 self.scroll.verticalScrollBar().minimum()
             )
 
-    def get_exp_names(self):
+    # def get_exp_names(self):
         
-        getDir = self.workingDataPkgDir
-        getExpTrk = os.path.join(getDir,"heal-csv-experiment-tracker.csv")
+    #     getDir = self.workingDataPkgDir
+    #     getExpTrk = os.path.join(getDir,"heal-csv-experiment-tracker.csv")
 
-        if os.path.isfile(getExpTrk):
-            experimentTrackerDf = pd.read_csv(getExpTrk)
-            #experimentTrackerDf.replace(np.nan, "")
-            experimentTrackerDf.fillna("", inplace = True)
+    #     if os.path.isfile(getExpTrk):
+    #         experimentTrackerDf = pd.read_csv(getExpTrk)
+    #         #experimentTrackerDf.replace(np.nan, "")
+    #         experimentTrackerDf.fillna("", inplace = True)
 
-            print(experimentTrackerDf)
-            print(experimentTrackerDf.columns)
+    #         print(experimentTrackerDf)
+    #         print(experimentTrackerDf.columns)
 
-            if "experimentName" in experimentTrackerDf.columns:
-                experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
-                print(experimentTrackerDf["experimentName"])                
-                experimentNameList = experimentTrackerDf["experimentName"].unique().tolist()
-                print(experimentNameList,type(experimentNameList))
-                experimentNameList[:] = [x for x in experimentNameList if x] # get rid of emtpy strings as empty strings are not wanted and mess up the sort() function
-                print(experimentNameList,type(experimentNameList))
+    #         if "experimentName" in experimentTrackerDf.columns:
+    #             experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
+    #             print(experimentTrackerDf["experimentName"])                
+    #             experimentNameList = experimentTrackerDf["experimentName"].unique().tolist()
+    #             print(experimentNameList,type(experimentNameList))
+    #             experimentNameList[:] = [x for x in experimentNameList if x] # get rid of emtpy strings as empty strings are not wanted and mess up the sort() function
+    #             print(experimentNameList,type(experimentNameList))
 
-                #sortedlist = sorted(list, lambda x: x.rsplit('-', 1)[-1])
-                experimentNameList = sorted(experimentNameList, key = lambda x: x.split('-', 1)[0])
+    #             #sortedlist = sorted(list, lambda x: x.rsplit('-', 1)[-1])
+    #             experimentNameList = sorted(experimentNameList, key = lambda x: x.split('-', 1)[0])
 
-                #experimentName = sorted(experimentNameList, lamda x: x.split('-'))
-                print(experimentNameList,type(experimentNameList))
+    #             #experimentName = sorted(experimentNameList, lamda x: x.split('-'))
+    #             print(experimentNameList,type(experimentNameList))
 
-                # if ((len(experimentNameList) == 1) and (experimentNameList[0] == "default-experiment-name")):
-                #     experimentNameList = []
-                #experimentNameList.remove("default-experiment-name")
-                #print(experimentNameList,type(experimentNameList))
-            else:
-                print("no experimentName column in experiment tracker")
-                experimentNameList = []
-        else:
-            print("no experiment tracker in working data pkg dir")
-            # messageText = "<br>Your working Data Package Directory does not contain a properly formatted Experiment Tracker from which to populate unique experiment names for experiments you've already documented. <br><br> The field in this form <b>Experiment Result \"Belongs\" To</b> pulls from this list of experiment names to provide options of study experiments to which you can link your results. Because we cannot populate this list without your experiment tracker, your only option for this field will be the default experiment name: \"default-experiment-name\"." 
-            # errorFormat = '<span style="color:red;">{}</span>'
-            # self.userMessageBox.append(errorFormat.format(messageText)) 
-            experimentNameList = []
+    #             # if ((len(experimentNameList) == 1) and (experimentNameList[0] == "default-experiment-name")):
+    #             #     experimentNameList = []
+    #             #experimentNameList.remove("default-experiment-name")
+    #             #print(experimentNameList,type(experimentNameList))
+    #         else:
+    #             print("no experimentName column in experiment tracker")
+    #             experimentNameList = []
+    #     else:
+    #         print("no experiment tracker in working data pkg dir")
+    #         # messageText = "<br>Your working Data Package Directory does not contain a properly formatted Experiment Tracker from which to populate unique experiment names for experiments you've already documented. <br><br> The field in this form <b>Experiment Result \"Belongs\" To</b> pulls from this list of experiment names to provide options of study experiments to which you can link your results. Because we cannot populate this list without your experiment tracker, your only option for this field will be the default experiment name: \"default-experiment-name\"." 
+    #         # errorFormat = '<span style="color:red;">{}</span>'
+    #         # self.userMessageBox.append(errorFormat.format(messageText)) 
+    #         experimentNameList = []
 
-        print("experimentNameList: ", experimentNameList)
-        return experimentNameList
+    #     print("experimentNameList: ", experimentNameList)
+    #     return experimentNameList
             
-    def add_exp_names_to_schema(self):
+    # def add_exp_names_to_schema(self):
 
-        schemaOrig = self.schema
-        experimentNameList = self.experimentNameList
+    #     schemaOrig = self.schema
+    #     experimentNameList = self.experimentNameList
 
-        experimentNameListUpdate = {}
+    #     experimentNameListUpdate = {}
         
-        schemaUpdated = deepcopy(schemaOrig)
-        enumListOrig = schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"]
-        print("enumListOrig: ", enumListOrig)
-        #enumListUpdated = enumListOrig.extend(experimentNameList)
-        enumListUpdated = experimentNameList
-        print("enumListUpdated: ", enumListUpdated)
+    #     schemaUpdated = deepcopy(schemaOrig)
+    #     enumListOrig = schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"]
+    #     print("enumListOrig: ", enumListOrig)
+    #     #enumListUpdated = enumListOrig.extend(experimentNameList)
+    #     enumListUpdated = experimentNameList
+    #     print("enumListUpdated: ", enumListUpdated)
 
-        schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"] = enumListUpdated
-        print("schemaOrig: ",schemaOrig)
-        print("schemaUpdated: ", schemaUpdated)
+    #     schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"] = enumListUpdated
+    #     print("schemaOrig: ",schemaOrig)
+    #     print("schemaUpdated: ", schemaUpdated)
 
-        return schemaUpdated
+    #     return schemaUpdated
 
     def add_tooltip(self):
         

@@ -65,7 +65,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         
         self.formDefaultState = {
             "resultId": "result-1",
-            "experimentNameBelongsTo": "default-experiment-name"
+            #"experimentNameBelongsTo": "default-experiment-name"
         }
 
         self.form.widget.state = deepcopy(self.formDefaultState)

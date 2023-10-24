@@ -72,7 +72,7 @@ def get_exp_names(self):
             
             # add default value to list so that default value is always part of the enum for results and resource tracker experimentNameBelongsTo fields - this allows 
             # default value to be set as the default on drop down for this field 
-            experimentNameSeries = pd.concat([experimentNameDefaultSeries,ExperimentNameSeries], ignore_index=True)
+            experimentNameSeries = pd.concat([experimentNameDefaultSeries,experimentNameSeries], ignore_index=True)
             print(experimentNameSeries,type(experimentNameSeries))
             
             #experimentNameList = experimentTrackerDf["experimentName"].unique().tolist()

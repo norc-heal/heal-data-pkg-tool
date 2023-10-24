@@ -34,6 +34,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #self.setWindowTitle("Annotate Resource")
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         self.workingDataPkgDir = workingDataPkgDir
+        self.mode = mode
         self.initUI()
         #self.load_file()
 

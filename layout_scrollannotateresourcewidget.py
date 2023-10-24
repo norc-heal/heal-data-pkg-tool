@@ -192,7 +192,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #self.mfilehbox.addWidget(self.buttonAddMultiResource)
         #self.mfilehbox.addWidget(self.buttonApplyNameConvention)
 
-        self.vbox.addWidget(self.buttonAddDir)
+        #self.vbox.addWidget(self.buttonAddDir)
         self.vbox.addWidget(self.buttonSaveResource)
         self.vbox.addWidget(self.buttonClearForm)
         self.vbox.addWidget(self.labelUserMessageBox)

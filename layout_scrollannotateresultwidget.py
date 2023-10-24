@@ -53,13 +53,13 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         
         self.experimentNameList = []
         #self.experimentNameList = self.get_exp_names() # gets self.experimentNameList
-        self.experimentNameList = dsc_pkg_utils.get_exp_names() # gets self.experimentNameList
+        self.experimentNameList = dsc_pkg_utils.get_exp_names(self=self) # gets self.experimentNameList
 
         print("self.experimentNameList: ",self.experimentNameList)
         
         if self.experimentNameList:
             #self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
-            self.schema = dsc_pkg_utils.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+            self.schema = dsc_pkg_utils.add_exp_names_to_schema(self=self) # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
 
         self.ui_schema = {}
         

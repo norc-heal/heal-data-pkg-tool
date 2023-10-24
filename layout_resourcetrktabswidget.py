@@ -33,7 +33,7 @@ class ResourceTrkTabsWindow(QWidget):
         # Create the tab widget with two tabs
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(self.infoText), "Info")
-        tabs.addTab(ResourceTrkAddWindow(), "Add Resource")
+        tabs.addTab(ResourceTrkAddWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Add Resource")
         tabs.addTab(CSVViewPushToLoadWindow(), "View Tracker")
         
         

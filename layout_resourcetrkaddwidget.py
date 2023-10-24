@@ -35,9 +35,10 @@ import datetime
 
 class ResourceTrkAddWindow(QtWidgets.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, workingDataPkgDirDisplay):
         super().__init__()
         self.w = None  # No external window yet.
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         
         widget = QtWidgets.QWidget()
         

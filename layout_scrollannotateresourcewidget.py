@@ -1118,6 +1118,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
 
+            QApplication.processEvents() # print accumulated user status messages 
+            self.add_exp() # add resource file(s) to resource tracker
+
 
 
             #saveFormat = '<span style="color:green;">{}</span>'

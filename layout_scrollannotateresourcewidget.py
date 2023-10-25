@@ -1124,7 +1124,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.userMessageBox.append(saveFormat.format(messageText))
 
             QApplication.processEvents() # print accumulated user status messages 
-            self.add_exp() # add resource file(s) to resource tracker
+            self.add_resource() # add resource file(s) to resource tracker
 
 
 
@@ -1163,9 +1163,10 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Resource Txt Data file(s)",
         #        self.workingDataPkgDir, "Text (*.txt)")
 
-        ifileName = [self.saveFilePathList]
+        ifileName = self.saveFilePathList
         
         if ifileName:
+            print("ifileName: ",ifileName)
 
             # # check that resource tracker exists in working data pkg dir, if not, return
             # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
@@ -1186,9 +1187,10 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
             # this check shouldn't be necessary in this context 
             # check that all files are resource annotation files, if not, return
-            fileStemList = [Path(filename).stem for filename in ifileName]
+            [print(f) for f in ifileName]
+            fileStemList = [Path(f).stem for f in ifileName]
             print(fileStemList)
-            checkFileStemList = [stem.startswith("resource-trk-resource-") for stem in fileStemList]
+            checkFileStemList = [s.startswith("resource-trk-resource-") for s in fileStemList]
             print(checkFileStemList)
             
             if not all(checkFileStemList):

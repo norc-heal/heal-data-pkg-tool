@@ -1133,6 +1133,261 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             #self.userMessageBox.setText(self.messageText)
             self.userMessageBox.moveCursor(QTextCursor.End)
 
+    def add_resource(self):
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        # check that resource tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+            messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that resource tracker is closed (user doesn't have it open in excel for example)
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+                messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, and close the file. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+        
+        # get resource(s) file path
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Resource Txt Data file(s)",
+        #        (QtCore.QDir.homePath()), "Text (*.txt)")
+
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Resource Txt Data file(s)",
+        #        self.workingDataPkgDir, "Text (*.txt)")
+
+        ifileName = [self.saveFilePathList]
+        
+        if ifileName:
+
+            # # check that resource tracker exists in working data pkg dir, if not, return
+            # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+            #     messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+            #     saveFormat = '<span style="color:red;">{}</span>'
+            #     self.userMessageBox.append(saveFormat.format(messageText))
+            #     return
+            
+            # # check that resource tracker is closed (user doesn't have it open in excel for example)
+            # try: 
+            #     with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
+            #         print("file is closed, proceed!!")
+            # except PermissionError:
+            #         messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, close the file, and try again. <br><br>"
+            #         saveFormat = '<span style="color:red;">{}</span>'
+            #         self.userMessageBox.append(saveFormat.format(messageText))
+            #         return
+
+            
+            # check that all files are resource annotation files, if not, return
+            fileStemList = [Path(filename).stem for filename in ifileName]
+            print(fileStemList)
+            checkFileStemList = [stem.startswith("resource-trk-resource-") for stem in fileStemList]
+            print(checkFileStemList)
+            
+            if not all(checkFileStemList):
+                messageText = "<br>The files you selected may not all be resource txt files. Resource txt files must start with the prefix \"resource-trk-resource-\". <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            # just for the first annotation file selected for addition to the tracker, check to make sure it is 
+            # in the working data pkg dir - if not return with informative message
+            ifileNameCheckDir = ifileName[0]
+
+            # if user selects a resource txt file that is not in the working data pkg dir, return w informative message
+            if Path(self.workingDataPkgDir) != Path(ifileNameCheckDir).parent:
+                messageText = "<br>You selected a resource txt file(s) that is not in your working Data Package Directory; You must select a resource txt file(s) that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            #countFiles = len(ifileName)
+
+            # initialize lists to collect valid and invalid files
+            validFiles = []
+            invalidFiles = []
+            
+            # initialize an empty dataframe to collect data from each file in ifileName
+            # one row will be added to collect_df for each valid file in ifileName
+            collect_df = pd.DataFrame([])
+            
+            for filename in ifileName:
+                print(filename)
+                
+                # get resource id and filename stem
+                ifileNameStem = Path(filename).stem
+                resIdNumStr = ifileNameStem.rsplit('-',1)[1]
+                resource_id = "resource-" + resIdNumStr
+                print("resource-id: ", resource_id)
+                
+                # load data from resource file and convert to python object
+                #path = ifileName
+                path = filename
+                data = json.loads(Path(path).read_text())
+                print(data)
+
+                # validate experiment file json content against experiment tracker json schema
+                out = validate_against_jsonschema(data, schema_resource_tracker)
+                print(out["valid"])
+                print(out["errors"])
+                print(type(out["errors"]))
+
+                
+                # if not valid, print validation errors and exit 
+                if not out["valid"]:
+
+                    # add file to list of invalid files
+                    invalidFiles.append(ifileNameStem)
+                    
+                    # get validation errors to print
+                    printErrListSingle = []
+                    # initialize the final full validation error message for this file to start with the filename
+                    printErrListAll = [ifileNameStem]
+                
+                    for e in out["errors"]:
+                        printErrListSingle.append(''.join(e["absolute_path"]))
+                        printErrListSingle.append(e["validator"])
+                        printErrListSingle.append(e["validator_value"])
+                        printErrListSingle.append(e["message"])
+
+                        print(printErrListSingle)
+                        printErrSingle = '\n'.join(printErrListSingle)
+                        printErrListAll.append(printErrSingle)
+
+                        printErrListSingle = []
+                        printErrSingle = ""
+                    
+                    printErrAll = '\n\n'.join(printErrListAll)
+                
+                    #messageText = "The following resource file is NOT valid and will not be added to your Resource Tracker file: " + ifileName + "\n\n\n" + "Validation errors are as follows: " + "\n\n\n" + ', '.join(out["errors"]) + "\n\n\n" + "Exiting \"Add Resource\" function now."
+                    messageText = "The following resource file is NOT valid and will not be added to your Resource Tracker file: " + filename + "\n\n\n" + "Validation errors are as follows: " + "\n\n\n" + printErrAll + "\n\n\n"
+                    
+                    self.userMessageBox.append(messageText)
+                    #return
+                    # switch from return to break so that if user selects more than one file, and one is not valid, can skip to next file and continue instead of returning fully out of the function
+                    #break
+                    continue 
+
+                # if valid, continue:
+                else:
+                    #messageText = "The following resource file is valid: " + ifileName
+                    messageText = "The following resource file is valid: " + filename
+                    self.userMessageBox.append(messageText)
+
+                    # add file to list of invalid files
+                    validFiles.append(ifileNameStem)
+                    print("valid files:", validFiles)
+
+                    # get resource tracker resource file creation and last modification datetime
+                    #restrk_c_timestamp = os.path.getctime(ifileName)
+                    restrk_c_timestamp = os.path.getctime(filename)
+                    restrk_c_datetime = datetime.datetime.fromtimestamp(restrk_c_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("restrk_c_datetime: ", restrk_c_datetime)
+        
+                    #restrk_m_timestamp = os.path.getmtime(ifileName)
+                    restrk_m_timestamp = os.path.getmtime(filename)
+                    restrk_m_datetime = datetime.datetime.fromtimestamp(restrk_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("restrk_m_datetime: ", restrk_m_datetime)
+
+                    # get resource creation and last modification datetime
+                    res_c_timestamp = os.path.getctime(data["path"])
+                    res_c_datetime = datetime.datetime.fromtimestamp(res_c_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("res_c_datetime: ", res_c_datetime)
+
+                    res_m_timestamp = os.path.getmtime(data["path"])
+                    res_m_datetime = datetime.datetime.fromtimestamp(res_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("res_m_datetime: ", res_m_datetime)
+
+                    add_to_df_dict = {#"resourceId":[resource_id],
+                                    "resourceIdNumber": [int(resIdNumStr)],  
+                                    #"resourceCreateDateTime": [res_c_datetime],
+                                    #"resourceModDateTime": [res_m_datetime],
+                                    "resource.mod.time.stamp": [res_m_timestamp],
+                                    #"annotationCreateDateTime": [restrk_c_datetime],
+                                    #"annotationModDateTime": [restrk_m_datetime],
+                                    "annotationModTimeStamp": [restrk_m_timestamp]}
+
+                    add_to_df = pd.DataFrame(add_to_df_dict)
+
+                    # convert json to pd df
+                    df = pd.json_normalize(data) # df is a one row dataframe
+                    print(df)
+                    df["annotationCreateDateTime"][0] = restrk_c_datetime
+                    df["annotationModDateTime"][0] = restrk_m_datetime
+                    df["resourceCreateDateTime"][0] = res_c_datetime
+                    df["resourceModDateTime"][0] = res_m_datetime
+                    df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
+                    print(df)
+
+                    collect_df = pd.concat([collect_df,df], axis=0) # add this files data to the dataframe that will collect data across all valid data files
+                    print("collect_df rows: ", collect_df.shape[0])
+        else: 
+            print("you have not selected any files; returning")
+            messageText = "<br>You have not selected any files; returning."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText)) 
+            return
+
+        # once you've looped through all selected files, if none are valid, print an informative message for the user listing
+        # which files did not pass validation and exit
+        if not validFiles:
+            messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(invalidFiles) + "\n\n\n" + "cannot be added to a Resource Tracker file because they did not pass validation. Please review the validation errors for the file(s) printed above." + "Exiting \"Add Resource\" function now." 
+            self.userMessageBox.append(messageText)
+            return
+
+        # you should now have collected one row of data from each valid data file and collected it into collect_df dataframe
+        # now get location of resource tracker, read in existing data in tracker, concat new data, sort, deduplicate and 
+        # rewrite to file
+
+        # no longer need to ask for this
+        # get data package directory path
+        #parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your Data Package Directory - Your Resource Tracker File lives here!')
+        parentFolderPath = self.workingDataPkgDir
+
+
+        # check if resource tracker file exists
+        # if exists, append the pd data object from the experiment file as a new row in the experiment tracker file
+        # if doesn't exist, print error/info message and exit
+        if "heal-csv-resource-tracker.csv" in os.listdir(parentFolderPath):
+            
+            output_path=os.path.join(parentFolderPath,"heal-csv-resource-tracker.csv")
+            all_df = pd.read_csv(output_path)
+            #all_df = pd.concat([all_df, df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
+            all_df = pd.concat([all_df, collect_df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
+            
+            all_df.sort_values(by = ["resourceIdNumber", "annotationModTimeStamp"], inplace=True)
+            # drop any exact duplicate rows
+            #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
+            # this current approach does not appear to be working at the moment
+            print("all_df rows, with dupes: ", all_df.shape[0])
+            all_df = all_df[-(all_df.astype('string').duplicated())]
+            print("all_df rows, without dupes: ", all_df.shape[0])
+            
+            # before writing to file may want to check for duplicate resource IDs and if duplicate resource IDs, ensure that 
+            # user wants to overwrite the earlier instance of the resource ID in the resource tracker - right now, dup entries 
+            # for a resource are all kept as long as not exact dup (i.e. at least one thing has changed)
+
+            all_df.to_csv(output_path, mode='w', header=True, index=False)
+            #df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
+
+            if invalidFiles:
+                messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(invalidFiles) + "\n\n\n" + "cannot be added to a Resource Tracker file because they did not pass validation. Please review the validation errors printed above." 
+                self.userMessageBox.append(messageText)
+            
+            messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(validFiles) + "\n\n\n" + "were added as a resource(s) to the Resource Tracker file: " + "\n\n\n" + output_path
+            self.userMessageBox.append(messageText)
+        else:
+            messageText = "No Resource Tracker file exists at the designated directory. Are you sure this is a Data Package Directory? If you haven't yet created a Data Package Directory for your work, please head to the \"Data Package\" tab and use the \"Create new Data Package\" button to create your Data Package Directory. Your new Data Package Directory will contain your Resource Tracker file. You can then come back here and try adding your resource file again!" + "\n\n\n" + "Exiting \"Add Resource\" function now."
+            self.userMessageBox.append(messageText)
+            return
+        
     def clear_form(self):
 
         self.popFormField = []

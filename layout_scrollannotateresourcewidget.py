@@ -1084,7 +1084,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 myString2 = self.saveFilePathList[0]
 
             #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
-            messageText = "<br>Your resource " + myString1 + " successfully written at: " + myString2 + "<br><br>You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
+            messageText = "<br>Your resource " + myString1 + " successfully written at: " + myString2 + "<br><br>Starting to add your resource(s) to the Resource Tracker now! See below for some final information about your saved resource(s) and then for updates on adding resource(s) to tracker: <br>"
             saveFormat = '<span style="color:green;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
 

@@ -431,6 +431,17 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             # initialize lists to collect valid and invalid files
             validFiles = []
             invalidFiles = []
+
+            # dynamically update schema
+            self.schema = schema_results_tracker
+
+            self.experimentNameList = []
+            self.experimentNameList = dsc_pkg_utils.get_exp_names(self=self) # gets self.experimentNameList
+            print("self.experimentNameList: ",self.experimentNameList)
+            if self.experimentNameList:
+                #self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+                self.schema = dsc_pkg_utils.add_exp_names_to_schema(self=self) # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+
             
             # initialize an empty dataframe to collect data from each file in ifileName
             # one row will be added to collect_df for each valid file in ifileName
@@ -454,7 +465,8 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                 print(data)
 
                 # validate experiment file json content against experiment tracker json schema
-                out = validate_against_jsonschema(data, schema_results_tracker)
+                #out = validate_against_jsonschema(data, schema_results_tracker)
+                out = validate_against_jsonschema(data, self.schema)
                 print(out["valid"])
                 print(out["errors"])
                 print(type(out["errors"]))

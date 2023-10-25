@@ -311,6 +311,30 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         if not self.getWorkingDataPkgDir():
             return
 
+        # don't check for results tracker exists as this function checks for appropriate trackers already existing and creates the needed results tracker(s) if they don't already exist
+        # # check that resource tracker exists in working data pkg dir, if not, return
+        # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+        #     messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+        #     saveFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(saveFormat.format(messageText))
+        #     return
+        
+        # check that all results trackers are closed (user doesn't have it open in excel for example)
+        resultsTrackersList = [filename for filename in os.listdir(self.workingDataPkgDir) if filename.startswith("heal-csv-results-tracker-")]
+        print("results trackers: ", resultsTrackersList)
+        
+        if resultsTrackersList:
+            for tracker in resultsTrackersList:
+
+                try: 
+                    with open(tracker,'r+') as f:
+                        print("file is closed, proceed!!")
+                except PermissionError:
+                        messageText = "<br>At least one Results Tracker file that already exists in your working Data Package Directory is open in another application, and must be closed to proceed; Check if any Results Tracker files are open in Excel or similar application, close the file(s), and try again. <br><br>"
+                        saveFormat = '<span style="color:red;">{}</span>'
+                        self.userMessageBox.append(saveFormat.format(messageText))
+                        return
+
         # get result file path
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
         #        (QtCore.QDir.homePath()), "Text (*.txt)")

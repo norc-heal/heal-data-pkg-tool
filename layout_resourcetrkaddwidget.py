@@ -108,6 +108,23 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         # check if user has set a working data package dir - if not exit gracefully with informative message
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
+
+        # check that resource tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+            messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that resource tracker is closed (user doesn't have it open in excel for example)
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+                messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, close the file, and try again. <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
         
         # get resource(s) file path
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Resource Txt Data file(s)",
@@ -118,22 +135,22 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         
         if ifileName:
 
-            # check that resource tracker exists in working data pkg dir, if not, return
-            if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
-                messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
-                saveFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
-                return
+            # # check that resource tracker exists in working data pkg dir, if not, return
+            # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+            #     messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+            #     saveFormat = '<span style="color:red;">{}</span>'
+            #     self.userMessageBox.append(saveFormat.format(messageText))
+            #     return
             
-            # check that resource tracker is closed (user doesn't have it open in excel for example)
-            try: 
-                with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
-                    print("file is closed, proceed!!")
-            except PermissionError:
-                    messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, close the file, and try again. <br><br>"
-                    saveFormat = '<span style="color:red;">{}</span>'
-                    self.userMessageBox.append(saveFormat.format(messageText))
-                    return
+            # # check that resource tracker is closed (user doesn't have it open in excel for example)
+            # try: 
+            #     with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
+            #         print("file is closed, proceed!!")
+            # except PermissionError:
+            #         messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, close the file, and try again. <br><br>"
+            #         saveFormat = '<span style="color:red;">{}</span>'
+            #         self.userMessageBox.append(saveFormat.format(messageText))
+            #         return
 
             
             # check that all files are resource annotation files, if not, return

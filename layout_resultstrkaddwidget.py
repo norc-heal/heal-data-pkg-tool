@@ -384,7 +384,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             for tracker in resultsTrackersList:
 
                 try: 
-                    with open(tracker,'r+') as f:
+                    with open(os.path.join(self.workingDataPkgDir,tracker),'r+') as f:
                         print("file is closed, proceed!!")
                 except PermissionError:
                         messageText = "<br>At least one Results Tracker file that already exists in your working Data Package Directory is open in another application, and must be closed to proceed; Check if any Results Tracker files are open in Excel or similar application, close the file(s), and try again. <br><br>"

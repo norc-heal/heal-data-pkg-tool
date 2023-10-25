@@ -1184,7 +1184,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             #         self.userMessageBox.append(saveFormat.format(messageText))
             #         return
 
-            
+            # this check shouldn't be necessary in this context 
             # check that all files are resource annotation files, if not, return
             fileStemList = [Path(filename).stem for filename in ifileName]
             print(fileStemList)
@@ -1197,6 +1197,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return
 
+            # this check shouldn't be necessary in this context 
             # just for the first annotation file selected for addition to the tracker, check to make sure it is 
             # in the working data pkg dir - if not return with informative message
             ifileNameCheckDir = ifileName[0]
@@ -1234,7 +1235,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 print(data)
 
                 # validate experiment file json content against experiment tracker json schema
-                out = validate_against_jsonschema(data, schema_resource_tracker)
+                #out = validate_against_jsonschema(data, schema_resource_tracker)
+                out = validate_against_jsonschema(data, self.schema) # this should be the dynamically created schema with experimentNameBelongsTo enum populated with experiment names from experiment tracker
                 print(out["valid"])
                 print(out["errors"])
                 print(type(out["errors"]))

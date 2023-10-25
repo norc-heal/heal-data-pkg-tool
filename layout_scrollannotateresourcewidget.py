@@ -23,10 +23,15 @@ import sys
 
 from pathlib import Path
 
-
 from layout_fileurladdwidget import ListboxWidget
 import re
 from copy import deepcopy
+
+import json
+import datetime
+import jsonschema
+from jsonschema import validate
+from healdata_utils.validators.jsonschema import validate_against_jsonschema
 
 class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
     def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add", *args, **kwargs):

@@ -119,8 +119,8 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         if ifileName:
 
             # check that resource tracker exists in working data pkg dir, if not, return
-            if "heal-csv-resource-tracker.csv" not in self.workingDataPkgDir:
-                messageText = "<br>There is not Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+            if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+                messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return

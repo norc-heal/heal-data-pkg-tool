@@ -211,9 +211,9 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
 
             
             # check that all files are resource annotation files, if not, return
-            fileStemList = [Path(filename).stem for filename in ifileName]
+            fileStemList = [Path(f).stem for f in ifileName]
             print(fileStemList)
-            checkFileStemList = [stem.startswith("resource-trk-resource-") for stem in fileStemList]
+            checkFileStemList = [s.startswith("resource-trk-resource-") for s in fileStemList]
             print(checkFileStemList)
             
             if not all(checkFileStemList):
@@ -258,8 +258,20 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
                 data = json.loads(Path(path).read_text())
                 print(data)
 
+                # dynamically update schema
+                self.schema = schema_resource_tracker
+
+                self.experimentNameList = []
+                self.experimentNameList = dsc_pkg_utils.get_exp_names(self=self) # gets self.experimentNameList
+                print("self.experimentNameList: ",self.experimentNameList)
+                if self.experimentNameList:
+                    #self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+                    self.schema = dsc_pkg_utils.add_exp_names_to_schema(self=self) # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+
+
                 # validate experiment file json content against experiment tracker json schema
-                out = validate_against_jsonschema(data, schema_resource_tracker)
+                # out = validate_against_jsonschema(data, schema_resource_tracker)
+                out = validate_against_jsonschema(data, self.schema)
                 print(out["valid"])
                 print(out["errors"])
                 print(type(out["errors"]))

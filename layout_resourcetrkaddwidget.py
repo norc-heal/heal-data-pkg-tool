@@ -42,13 +42,13 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         
         widget = QtWidgets.QWidget()
         
-        self.buttonAnnotateResource = QtWidgets.QPushButton(text="Annotate a new resource",parent=self)
+        self.buttonAnnotateResource = QtWidgets.QPushButton(text="Add a new resource",parent=self)
         self.buttonAnnotateResource.clicked.connect(self.annotate_resource)
 
-        self.buttonEditResource = QtWidgets.QPushButton(text="Edit existing resource",parent=self)
+        self.buttonEditResource = QtWidgets.QPushButton(text="Edit an existing resource",parent=self)
         self.buttonEditResource.clicked.connect(self.edit_resource)
 
-        self.buttonAddResource = QtWidgets.QPushButton(text="Add resource to tracker",parent=self)
+        self.buttonAddResource = QtWidgets.QPushButton(text="Batch add existing resource(s) to tracker",parent=self)
         self.buttonAddResource.clicked.connect(self.add_resource)
 
         
@@ -59,10 +59,16 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setReadOnly(True)
         
         layout = QtWidgets.QVBoxLayout()
+
+        advanced_layout = QtWidgets.QVBoxLayout()
+        advanced_layout.addWidget(self.buttonAddResource)
+        advanced_groupbox = QtWidgets.QGroupBox("Advanced")
+        advanced_groupbox.setLayout(advanced_layout)
         
         layout.addWidget(self.buttonAnnotateResource)
         layout.addWidget(self.buttonEditResource)
-        layout.addWidget(self.buttonAddResource)
+        #layout.addWidget(self.buttonAddResource)
+        layout.addWidget(advanced_groupbox)
         layout.addWidget(self.userMessageBox)
 
         widget.setLayout(layout)

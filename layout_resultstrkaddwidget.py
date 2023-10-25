@@ -70,18 +70,18 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-    def getWorkingDataPkgDir(self):
-        testPath = self.workingDataPkgDirDisplay.toPlainText()
-        print("testPath: ",testPath)
+    # def getWorkingDataPkgDir(self):
+    #     testPath = self.workingDataPkgDirDisplay.toPlainText()
+    #     print("testPath: ",testPath)
 
-        if not os.path.exists(testPath):
-            messageText = "<br>You must set a valid working Data Package Directory to proceed. Navigate to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to either: <br><br>1. <b>Create New Data Package</b>: Create a new Data Package Directory and set it as the working Data Package Directory, or <br>2. <b>Continue Existing Data Package</b>: Set an existing Data Package Directory as the working Data Package Directory."
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
-            return False
-        else:
-            self.workingDataPkgDir = testPath  
-            return True
+    #     if not os.path.exists(testPath):
+    #         messageText = "<br>You must set a valid working Data Package Directory to proceed. Navigate to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to either: <br><br>1. <b>Create New Data Package</b>: Create a new Data Package Directory and set it as the working Data Package Directory, or <br>2. <b>Continue Existing Data Package</b>: Set an existing Data Package Directory as the working Data Package Directory."
+    #         errorFormat = '<span style="color:red;">{}</span>'
+    #         self.userMessageBox.append(errorFormat.format(messageText))
+    #         return False
+    #     else:
+    #         self.workingDataPkgDir = testPath  
+    #         return True
              
 
 
@@ -89,7 +89,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
     def annotate_result(self,checked):
         
         # check if user has set a working data package dir - if not exit gracefully with informative message
-        if not self.getWorkingDataPkgDir():
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
         
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
@@ -104,7 +104,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
     def edit_result(self,checked):
 
         # check if user has set a working data package dir - if not exit gracefully with informative message
-        if not self.getWorkingDataPkgDir():
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
 
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
@@ -308,7 +308,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
     def auto_add_result(self):
 
         # check if user has set a working data package dir - if not exit gracefully with informative message
-        if not self.getWorkingDataPkgDir():
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
 
         # don't check for results tracker exists as this function checks for appropriate trackers already existing and creates the needed results tracker(s) if they don't already exist

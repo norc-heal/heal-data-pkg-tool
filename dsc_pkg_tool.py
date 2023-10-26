@@ -97,6 +97,8 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.workingDataPkgDirLabel)
         self.layout.addWidget(self.workingDataPkgDirDisplay)
         self.layout.addWidget(tabs)
+
+        self.showMaximized()
         
         #self.setCentralWidget(self.layout)
 

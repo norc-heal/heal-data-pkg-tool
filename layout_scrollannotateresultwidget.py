@@ -609,10 +609,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             f.close()
                 
             #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
-            messageText = "<br>Your result was successfully written at: " + self.saveFilePath + "<br><br>You'll want to head back to the \'Add Result\' tab and use the \'Add Result\' button to add this result file to your result tracker file(s)! You can do this now, or later - You can add result files to a result tracker file one at a time, or you can add multiple result files all at once, so you may choose to create result files for several/all of your results and then add them in one go to your result tracker file(s)."
+            messageText = "<br>Your result was successfully written at: " + self.saveFilePath + "<br><br> Starting to add your result to Results Tracker now! See below for updates: <br>" 
             saveFormat = '<span style="color:green;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
             self.userMessageBox.moveCursor(QTextCursor.End)
+
+            QApplication.processEvents() # print accumulated user status messages 
+
+            self.auto_add_result() # add experiment file to experiment tracker
 
     def auto_add_result(self):
 
@@ -624,7 +628,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
         # check that experiment tracker exists in working data pkg dir, if not, return
         if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
-            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br>"
+            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
             return
@@ -634,7 +638,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
                 print("file is closed, proceed!!")
         except PermissionError:
-                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br>"
+                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added"
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return
@@ -655,10 +659,10 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             for tracker in resultsTrackersList:
 
                 try: 
-                    with open(tracker,'r+') as f:
+                    with open(os.path.join(self.workingDataPkgDir,tracker),'r+') as f:
                         print("file is closed, proceed!!")
                 except PermissionError:
-                        messageText = "<br>At least one Results Tracker file that already exists in your working Data Package Directory is open in another application, and must be closed to proceed; Check if any Results Tracker files are open in Excel or similar application, close the file(s), and try again. <br><br>"
+                        messageText = "<br>At least one Results Tracker file that already exists in your working Data Package Directory is open in another application, and must be closed to proceed; Check if any Results Tracker files are open in Excel or similar application, and close the file(s). <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
                         saveFormat = '<span style="color:red;">{}</span>'
                         self.userMessageBox.append(saveFormat.format(messageText))
                         return
@@ -668,8 +672,9 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         #        (QtCore.QDir.homePath()), "Text (*.txt)")
 
         # open files select file browse to working data package directory
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s) from your working Data Package Directory",
-               self.workingDataPkgDir, "Text (*.txt)")
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s) from your working Data Package Directory",
+        #        self.workingDataPkgDir, "Text (*.txt)")
+        ifileName = [self.saveFilePath]
         
         if ifileName:
 
@@ -703,15 +708,16 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             validFiles = []
             invalidFiles = []
 
-            # dynamically update schema
-            self.schema = schema_results_tracker
+            # don't need to do this in this context as schema has already been dynamically updated (don't need a lot of the above checks either - should clean the auto add function in this widget up..)
+            # # dynamically update schema
+            # self.schema = schema_results_tracker
 
-            self.experimentNameList = []
-            self.experimentNameList = dsc_pkg_utils.get_exp_names(self=self) # gets self.experimentNameList
-            print("self.experimentNameList: ",self.experimentNameList)
-            if self.experimentNameList:
-                #self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
-                self.schema = dsc_pkg_utils.add_exp_names_to_schema(self=self) # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+            # self.experimentNameList = []
+            # self.experimentNameList = dsc_pkg_utils.get_exp_names(self=self) # gets self.experimentNameList
+            # print("self.experimentNameList: ",self.experimentNameList)
+            # if self.experimentNameList:
+            #     #self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+            #     self.schema = dsc_pkg_utils.add_exp_names_to_schema(self=self) # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
 
             
             # initialize an empty dataframe to collect data from each file in ifileName

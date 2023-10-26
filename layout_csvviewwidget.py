@@ -128,17 +128,18 @@ class CSVViewWindow(QtWidgets.QWidget):
             if self.fname:
 
                 if self.fileStartsWith:
-                    fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open " + fname + " CSV file - File name should start with " + self.fileStartsWith ,
+                    fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open " + self.fname + " CSV file - File name should start with " + self.fileStartsWith ,
                         self.fileName, "CSV (*.csv *.tsv)")
 
                     if fileName:
-                        if not fileName.startswith(self.fileStartsWith): # do i need to check the file stem here?
+                        stemName = Path(fileName).stem
+                        if not stemName.startswith(self.fileStartsWith): # do i need to check the file stem here?
                             print("you must select a file that starts with ", self.fileStartsWith)
                             # would be good to output an informative message here but need to implement a user status message box in order to do that
                             return
                 
                 else:     
-                    fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open " + fname + " CSV file",
+                    fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open " + self.fname + " CSV file",
                         self.fileName, "CSV (*.csv *.tsv)")
             else: 
 
@@ -147,10 +148,11 @@ class CSVViewWindow(QtWidgets.QWidget):
                         self.fileName, "CSV (*.csv *.tsv)")
 
                     if fileName:
-                            if not fileName.startswith(self.fileStartsWith):
-                                print("you must select a file that starts with ", self.fileStartsWith)
-                                # would be good to output an informative message here but need to implement a user status message box in order to do that
-                                return
+                        stemName = Path(fileName).stem
+                        if not stemName.startswith(self.fileStartsWith):
+                            print("you must select a file that starts with ", self.fileStartsWith)
+                            # would be good to output an informative message here but need to implement a user status message box in order to do that
+                            return
                 else:     
                     fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV file",
                         self.fileName, "CSV (*.csv *.tsv)")

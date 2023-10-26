@@ -1097,6 +1097,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
                 # add timestamp at which time resource was added to the resources to add to tracker list
                 resourceDependAllDf["date-time"] = pd.Timestamp("now")
+                resourceDependAllDf["parent-resource-id"] = self.resource_id_list[0]
 
                 if os.path.isfile(resourcesToAddOutputPath):
 

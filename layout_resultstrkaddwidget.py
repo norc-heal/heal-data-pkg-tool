@@ -42,16 +42,16 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         
         widget = QtWidgets.QWidget()
         
-        self.buttonAnnotateResult = QtWidgets.QPushButton(text="Annotate a new result",parent=self)
+        self.buttonAnnotateResult = QtWidgets.QPushButton(text="Add a new result",parent=self)
         self.buttonAnnotateResult.clicked.connect(self.annotate_result)
 
-        self.buttonEditResult = QtWidgets.QPushButton(text="Edit existing result",parent=self)
+        self.buttonEditResult = QtWidgets.QPushButton(text="Edit an existing result",parent=self)
         self.buttonEditResult.clicked.connect(self.edit_result)
 
         # self.buttonAddResult = QtWidgets.QPushButton(text="Add result to tracker",parent=self)
         # self.buttonAddResult.clicked.connect(self.add_result)
 
-        self.buttonAutoAddResult = QtWidgets.QPushButton(text="Add result to tracker",parent=self)
+        self.buttonAutoAddResult = QtWidgets.QPushButton(text="Batch add existing result(s) to tracker",parent=self)
         self.buttonAutoAddResult.clicked.connect(self.auto_add_result)
 
         # maybe switch Line edit to this: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QPlainTextEdit.html#more
@@ -60,11 +60,17 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setReadOnly(True)
         
         layout = QtWidgets.QVBoxLayout()
+
+        advanced_layout = QtWidgets.QVBoxLayout()
+        advanced_layout.addWidget(self.buttonAutoAddResult)
+        advanced_groupbox = QtWidgets.QGroupBox("Advanced")
+        advanced_groupbox.setLayout(advanced_layout)
         
         layout.addWidget(self.buttonAnnotateResult)
         layout.addWidget(self.buttonEditResult)
         # layout.addWidget(self.buttonAddResult)
-        layout.addWidget(self.buttonAutoAddResult)
+        #layout.addWidget(self.buttonAutoAddResult)
+        layout.addWidget(advanced_groupbox)
         layout.addWidget(self.userMessageBox)
 
         widget.setLayout(layout)

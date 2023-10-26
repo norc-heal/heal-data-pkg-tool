@@ -1054,6 +1054,25 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             #print(self.form.widget.state)
             resource = deepcopy(self.form.widget.state)
 
+            resourceDependDataDict = resource["associatedFileDataDict"]
+            resourceDependDataDictType = ["associatedFileDataDict"] * len(resourceDependDataDict)
+            resourceDependDataDictDf = pd.DataFrame(list(zip(resourceDependDataDict,resourceDependDataDictType)), columns=["path","dependency-type"])
+            
+            resourceDependProtocol = resource["associatedFileProtocol"]
+            resourceDependProtocolType = ["associatedFileProtocol"] * len(resourceDependProtocol)
+            resourceDependProtocolDf = pd.DataFrame(list(zip(resourceDependProtocol,resourceDependProtocolType)), columns=["path","dependency-type"])
+            
+            resourceDependResultsTracker = resource["associatedFileResultsTracker"]
+            resourceDependResultsTrackerType = ["associatedFileResultsTracker"] * len(resourceDependResultsTracker)
+            resourceDependResultsTrackerDf = pd.DataFrame(list(zip(resourceDependResultsTracker,resourceDependResultsTrackerType)), columns=["path","dependency-type"])
+            
+            resourceDependOther = resource["associatedFileDependsOn"]
+            resourceDependOtherType = ["associatedFileDependsOn"] * len(resourceDependOther)
+            resourceDependOtherDf = pd.DataFrame(list(zip(resourceDependOther,resourceDependOtherType)), columns=["path","dependency-type"])
+            
+            resourceDependAllDf = pd.concat([resourceDependDataDictDf,resourceDependProtocolDf,resourceDependResultsTrackerDf,resourceDependOtherDf])
+            resourceDependResultDepend = []
+
             resourceDepend = resource["associatedFileDataDict"] + resource["associatedFileProtocol"] + resource["associatedFileResultsTracker"] + resource["associatedFileDependsOn"]
             
             if self.popFormField:
@@ -1061,6 +1080,54 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
                 for item in resource["associatedFileResultsDependOn"]:
                     resourceDepend.extend(item["resultIdDependsOn"])
+                    resourceDependResultDepend.extend(item["resultIdDependsOn"])
+
+                resourceDependResultDependType = ["associatedFileResultDepend"] * len(resourceDependResultDepend)
+                resourceDependResultDependDf = pd.DataFrame(list(zip(resourceDependResultDepend,resourceDependResultDependType)), columns=["path","dependency-type"])
+                
+                resourceDependAllDf = pd.concat([resourceDependAllDf,resourceDependResultDependDf])
+
+            resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"resources-to-add.csv")
+
+            # if not os.path.isfile(resourcesToAddOutputPath):
+            #     f=open(resourcesToAddOutputPath,'w')
+            #     f.close()
+
+            if not resourceDependAllDf.empty:
+
+                # add timestamp at which time resource was added to the resources to add to tracker list
+                resourceDependAllDf["date-time"] = pd.Timestamp("now")
+
+                if os.path.isfile(resourcesToAddOutputPath):
+
+                    # check that file is closed (user doesn't have it open in excel for example)
+                    try: 
+                        with open(resourcesToAddOutputPath,'r+') as f:
+                            print("file is closed, proceed!!")
+                    except PermissionError:
+                        messageText = "<br>A crucial file in your working Data Package Directory called <b>" + Path(resourcesToAddOutputPath).stem + ".csv</b> is open in another application, and must be closed to proceed; Check if this is open in Excel or similar application, and close the file. Then try saving this resource again<br><br>."
+                        saveFormat = '<span style="color:red;">{}</span>'
+                        self.userMessageBox.append(saveFormat.format(messageText))
+                        return
+
+                    # if a file already exists then read it in, append new dependencies of the current resource that are now resources that need to be added to the resource tracker, deduplicate, and write result back to file
+                    all_to_add_df = pd.read_csv(resourcesToAddOutputPath)
+                    all_to_add_df["date-time"] = pd.to_datetime(all_to_add_df["date-time"])
+                    all_to_add_df = pd.concat([all_to_add_df, resourceDependAllDf], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
+                    all_to_add_df.sort_values(by = ["date-time"], inplace=True)
+                    # drop any exact duplicate rows
+                    #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
+                    # this current approach does not appear to be working at the moment
+                    print("all_to_add_df rows, with dupes: ", all_to_add_df.shape[0])
+                    all_to_add_df = all_to_add_df[-(all_to_add_df.astype('string').duplicated())]
+                    print("all_to_add_df rows, without dupes: ", all_to_add_df.shape[0])
+                    all_to_add_df.to_csv(resourcesToAddOutputPath, mode='w', header=True, index=False)
+                else: 
+                    # if a file doesn't already exist then write current df to file, creating the file in the process
+                    resourceDependAllDf.to_csv(resourcesToAddOutputPath, mode='w', header=True, index=False)
+                
+
+            
 
  
             for idx, p in enumerate(self.saveFilePathList):

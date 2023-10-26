@@ -36,7 +36,7 @@ class ResultsTrkTabsWindow(QWidget):
         tabs.addTab(InfoTextWindow(self.infoText), "Info")
         #tabs.addTab(ResultsTrkCreateWindow(), "Create Result Tracker")
         tabs.addTab(ResultsTrkAddWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Add Result")
-        tabs.addTab(CSVViewPushToLoadWindow(), "View Tracker")
+        tabs.addTab(CSVViewPushToLoadWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay,fileBaseName="",fileStartsWith="heal-csv-results-tracker-", fileTypeTitle="Results Tracker"), "View Tracker")
         
         
                 

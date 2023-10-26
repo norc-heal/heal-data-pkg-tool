@@ -34,7 +34,7 @@ class ResourceTrkTabsWindow(QWidget):
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(self.infoText), "Info")
         tabs.addTab(ResourceTrkAddWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Add Resource")
-        tabs.addTab(CSVViewPushToLoadWindow(), "View Tracker")
+        tabs.addTab(CSVViewPushToLoadWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay,fileBaseName="heal-csv-resource-tracker.csv",fileStartsWith="", fileTypeTitle="Resource Tracker"), "View Tracker")
         
         
                 

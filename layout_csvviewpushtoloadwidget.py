@@ -28,9 +28,13 @@ from layout_csvviewwidget import CSVViewWindow
 
 class CSVViewPushToLoadWindow(QtWidgets.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, workingDataPkgDirDisplay, fileBaseName, fileStartsWith, fileTypeTitle):
         super().__init__()
         self.w = None  # No external window yet.
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
+        self.fileBaseName = fileBaseName
+        self.fileStartsWith = fileStartsWith
+        self.fileTypeTitle = fileTypeTitle
         
         widget = QtWidgets.QWidget()
         
@@ -52,8 +56,18 @@ class CSVViewPushToLoadWindow(QtWidgets.QMainWindow):
 
     
     def view_csv(self,checked):
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        if self.fileBaseName:
+            self.fileName = os.path.join(self.workingDataPkgDir,self.fileBaseName)
+        else:
+            self.fileName = self.workingDataPkgDir
+
         if self.w is None:
-            self.w = CSVViewWindow('')
+            self.w = CSVViewWindow(fileName=self.fileName,fileStartsWith=self.fileStartsWith,fileTypeTitle=self.fileTypeTitle)
             self.w.show()
 
         else:

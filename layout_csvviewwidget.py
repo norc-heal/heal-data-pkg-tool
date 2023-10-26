@@ -45,10 +45,15 @@ class CSVViewWindow(QtWidgets.QWidget):
        #self.model.dataChanged.connect(self.finishedEdit)
  
        self.pushButtonLoad = QtWidgets.QPushButton(self)
-       self.pushButtonLoad.setText("Load CSV")
+       self.pushButtonLoad.setText("Load " + self.fname)
        self.pushButtonLoad.clicked.connect(self.loadCsv)
-       self.pushButtonLoad.setFixedWidth(80)
+       #self.pushButtonLoad.setFixedWidth(80)
        self.pushButtonLoad.setStyleSheet(stylesheet(self))
+    #    self.pushButtonLoad.setSizePolicy(
+    #     QtWidgets.QSizePolicy.Preferred,
+    #     QtWidgets.QSizePolicy.Expanding)
+
+        
  
     #    self.pushButtonWrite = QtWidgets.QPushButton(self)
     #    self.pushButtonWrite.setText("Save CSV")
@@ -427,7 +432,8 @@ QPushButton
 font-size: 11px;
 border: 1px inset grey;
 height: 24px;
-width: 80px;
+padding-left: 12px;
+padding-right: 12px;
 color: black;
 background-color: #e8e8e8;
 background-position: bottom-left;

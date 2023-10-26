@@ -33,6 +33,7 @@ class CSVViewWindow(QtWidgets.QWidget):
        self.fname = fileTypeTitle
        if not self.fname:
         self.fname = "My File"
+       self.setWindowTitle("View " + self.fname) 
        self.myColNames = []
        self.model =  QtGui.QStandardItemModel(self)
  

@@ -60,7 +60,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.schema = schema_resource_tracker
 
         self.experimentNameList = []
-        self.experimentNameList, _ = dsc_pkg_utils.get_exp_names(self=self) # gets self.experimentNameList
+        self.experimentNameList, _ = dsc_pkg_utils.get_exp_names(self=self, perResource=False) # gets self.experimentNameList
 
         print("self.experimentNameList: ",self.experimentNameList)
         

@@ -9,10 +9,11 @@ from pyqtschema.builder import WidgetBuilder
 
 #from schema_results_tracker import schema_results_tracker
 from schema_experiment_tracker import schema_experiment_tracker
-from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions, get_exp_names
+from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions
 import dsc_pkg_utils
 import pandas as pd
 import json
+import dsc_pkg_utils
 
 from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, QScrollArea,QApplication,
                              QHBoxLayout, QVBoxLayout, QMainWindow, QGroupBox)
@@ -322,10 +323,11 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             self.uniqueExpNameOnSave = True
         
         self.experimentNameList = []
-        self.experimentNameList = get_exp_names(self=self) # gets self.experimentNameList
+        self.experimentNameList, self.experimentNameDf = dsc_pkg_utils.get_exp_names(self=self, perResource=True) # gets self.experimentNameList
 
         print("self.experimentNameList: ",self.experimentNameList)
         currentExperimentName = self.formWidgetList[self.formWidgetNameList.index("experimentName")].text()
+        currentExperimentId = self.formWidgetList[self.formWidgetNameList.index("experimentId")].text()
         print("currentExperimentName: ",currentExperimentName)
 
         if currentExperimentName == "default-experiment-name":
@@ -340,16 +342,26 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
                 self.userMessageBox.append(errorFormat.format(messageText))
 
         elif currentExperimentName in self.experimentNameList:
-            if saveStatus != "save":
-                messageText = "<br>You've used this experiment name before, and experiment name must be unique - Please enter a unique experiment name. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
-                errorFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(errorFormat.format(messageText))
+            # if this experiment name has been used before, check to see if it's been used for another entry in the exp tracker that is for this exp id
+            # this may happen if for example user is editing an existing experiment
+            # if this is the case, do not throw an error
 
-            if saveStatus == "save":
-                messageText = "<br>Your experiment cannot be saved because the experiment name you entered in the Experiment Name form field is not unique. If you want to assign an experiment name to your experiment you must choose a unique experiment name and enter it into the Experiment Name form field, then try saving again. If you do not want to assign an experiment name to your experiment, re-set the value of the Experiment Name form field to \"default-experiment-name\" and try saving again. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
-                errorFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(errorFormat.format(messageText))
-                self.uniqueExpNameOnSave = False
+            currentExperimentNameDf = self.experimentNameDf[self.experimentNameDf["experimentName"] == currentExperimentName]
+            currentAssociatedExperimentId = currentExperimentNameDf["experimentId"].tolist()[0]
+            print(currentAssociatedExperimentId)
+
+            if currentExperimentId != currentAssociatedExperimentId:
+
+                if saveStatus != "save":
+                    messageText = "<br>You've used this experiment name before, and experiment name must be unique - Please enter a unique experiment name. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
+                    errorFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(errorFormat.format(messageText))
+
+                if saveStatus == "save":
+                    messageText = "<br>Your experiment cannot be saved because the experiment name you entered in the Experiment Name form field is not unique. If you want to assign an experiment name to your experiment you must choose a unique experiment name and enter it into the Experiment Name form field, then try saving again. If you do not want to assign an experiment name to your experiment, re-set the value of the Experiment Name form field to \"default-experiment-name\" and try saving again. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
+                    errorFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(errorFormat.format(messageText))
+                    self.uniqueExpNameOnSave = False
 
         else: 
             if saveStatus != "save": 
@@ -598,6 +610,23 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
 
+        # check that experiment tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
+            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that experiment tracker is closed (user doesn't have it open in excel for example)
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
         # get result file path
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
         #        (QtCore.QDir.homePath()), "Text (*.txt)")
@@ -609,7 +638,8 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         ifileName = [self.saveFilePath]
         
         if ifileName:
-
+            
+            # this check shouldn't be required here anymore  
             # just for the first annotation file selected for addition to the tracker, check to make sure it is 
             # in the working data pkg dir - if not return with informative message
             ifileNameCheckDir = ifileName[0]

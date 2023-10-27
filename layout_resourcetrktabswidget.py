@@ -18,10 +18,11 @@ from layout_csvviewpushtoloadwidget import CSVViewPushToLoadWindow
 #from layout_csvpushtoloadwidget import CSVPushToLoadWindow
 
 class ResourceTrkTabsWindow(QWidget):
-    def __init__(self):
+    def __init__(self, workingDataPkgDirDisplay):
         super().__init__()
         self.setWindowTitle("Resource Tracker")
         #self.resize(270, 110)
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         
         # Create a top-level layout
         layout = QVBoxLayout()
@@ -32,30 +33,14 @@ class ResourceTrkTabsWindow(QWidget):
         # Create the tab widget with two tabs
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(self.infoText), "Info")
-        tabs.addTab(ResourceTrkAddWindow(), "Add Resource")
-        tabs.addTab(CSVViewPushToLoadWindow(), "View Tracker")
+        tabs.addTab(ResourceTrkAddWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Add Resource")
+        tabs.addTab(CSVViewPushToLoadWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay,fileBaseName="heal-csv-resource-tracker.csv",fileStartsWith="", fileTypeTitle="Resource Tracker"), "View Tracker")
         
         
                 
         layout.addWidget(tabs)
 
-    # def generalTabUI(self):
-    #     """Create the General page UI."""
-    #     generalTab = QWidget()
-    #     layout = QVBoxLayout()
-    #     layout.addWidget(QCheckBox("General Option 1"))
-    #     layout.addWidget(QCheckBox("General Option 2"))
-    #     generalTab.setLayout(layout)
-    #     return generalTab
-
-    # def networkTabUI(self):
-    #     """Create the Network page UI."""
-    #     networkTab = QWidget()
-    #     layout = QVBoxLayout()
-    #     layout.addWidget(QCheckBox("Network Option 1"))
-    #     layout.addWidget(QCheckBox("Network Option 2"))
-    #     networkTab.setLayout(layout)
-    #     return networkTab
+    
 
 
 if __name__ == "__main__":

@@ -115,6 +115,23 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
 
+        # check that experiment tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
+            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that experiment tracker is closed (user doesn't have it open in excel for example)
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, close the file, and try again. <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
         # get result file path
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
         #        (QtCore.QDir.homePath()), "Text (*.txt)")
@@ -124,6 +141,35 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
                self.workingDataPkgDir, "Text (*.txt)")
         
         if ifileName:
+          
+            # # check that experiment tracker exists in working data pkg dir, if not, return
+            # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
+            #     messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+            #     saveFormat = '<span style="color:red;">{}</span>'
+            #     self.userMessageBox.append(saveFormat.format(messageText))
+            #     return
+            
+            # # check that experiment tracker is closed (user doesn't have it open in excel for example)
+            # try: 
+            #     with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
+            #         print("file is closed, proceed!!")
+            # except PermissionError:
+            #         messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, close the file, and try again. <br><br>"
+            #         saveFormat = '<span style="color:red;">{}</span>'
+            #         self.userMessageBox.append(saveFormat.format(messageText))
+            #         return
+
+            # check that all files are experiment annotation files, if not, return
+            fileStemList = [Path(filename).stem for filename in ifileName]
+            print(fileStemList)
+            checkFileStemList = [stem.startswith("exp-trk-exp-") for stem in fileStemList]
+            print(checkFileStemList)
+            
+            if not all(checkFileStemList):
+                messageText = "<br>The files you selected may not all be experiment txt files. Experiment txt files must start with the prefix \"exp-trk-exp-\". <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
 
             # just for the first annotation file selected for addition to the tracker, check to make sure it is 
             # in the working data pkg dir - if not return with informative message

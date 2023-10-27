@@ -25,10 +25,15 @@ import pipe
 import dsc_pkg_utils # local module, no pip install needed
 
 class CSVViewWindow(QtWidgets.QWidget):
-   def __init__(self, fileName, parent=None):
+   def __init__(self, fileName, fileStartsWith, fileTypeTitle, parent=None):
        super(CSVViewWindow, self).__init__(parent)
-       self.fileName = ""
-       self.fname = "Liste"
+       #self.fileName = ""
+       self.fileName = fileName
+       self.fileStartsWith = fileStartsWith
+       self.fname = fileTypeTitle
+       if not self.fname:
+        self.fname = "My File"
+       self.setWindowTitle("View " + self.fname) 
        self.myColNames = []
        self.model =  QtGui.QStandardItemModel(self)
  
@@ -41,10 +46,15 @@ class CSVViewWindow(QtWidgets.QWidget):
        #self.model.dataChanged.connect(self.finishedEdit)
  
        self.pushButtonLoad = QtWidgets.QPushButton(self)
-       self.pushButtonLoad.setText("Load CSV")
+       self.pushButtonLoad.setText("Load " + self.fname)
        self.pushButtonLoad.clicked.connect(self.loadCsv)
-       self.pushButtonLoad.setFixedWidth(80)
+       #self.pushButtonLoad.setFixedWidth(80)
        self.pushButtonLoad.setStyleSheet(stylesheet(self))
+    #    self.pushButtonLoad.setSizePolicy(
+    #     QtWidgets.QSizePolicy.Preferred,
+    #     QtWidgets.QSizePolicy.Expanding)
+
+        
  
     #    self.pushButtonWrite = QtWidgets.QPushButton(self)
     #    self.pushButtonWrite.setText("Save CSV")
@@ -114,51 +124,95 @@ class CSVViewWindow(QtWidgets.QWidget):
        #self.tableView.resizeColumnsToContents()
  
    def loadCsv(self, fileName):
-       fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",
+    
+    # if the widget is passed a filename param, it may be a file or a dir
+    # if it is a dir, open file browser in that dir to allow user to select file
+    # if it is a file, set file to the passed file
+    # if no filename param passed then open file browser generally at home path to allow user to select file
+    if self.fileName:
+        if os.path.isdir(self.fileName):
+            if self.fname:
+
+                if self.fileStartsWith:
+                    fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open " + self.fname + " CSV file - File name should start with " + self.fileStartsWith ,
+                        self.fileName, "CSV (*.csv *.tsv)")
+
+                    if fileName:
+                        stemName = Path(fileName).stem
+                        if not stemName.startswith(self.fileStartsWith): # do i need to check the file stem here?
+                            print("you must select a file that starts with ", self.fileStartsWith)
+                            # would be good to output an informative message here but need to implement a user status message box in order to do that
+                            return
+                
+                else:     
+                    fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open " + self.fname + " CSV file",
+                        self.fileName, "CSV (*.csv *.tsv)")
+            else: 
+
+                if self.fileStartsWith:
+                    fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV file - File name should start with " + self.fileStartsWith ,
+                        self.fileName, "CSV (*.csv *.tsv)")
+
+                    if fileName:
+                        stemName = Path(fileName).stem
+                        if not stemName.startswith(self.fileStartsWith):
+                            print("you must select a file that starts with ", self.fileStartsWith)
+                            # would be good to output an informative message here but need to implement a user status message box in order to do that
+                            return
+                else:     
+                    fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV file",
+                        self.fileName, "CSV (*.csv *.tsv)")
+
+
+        else:
+            fileName = self.fileName
+    else: 
+       fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV file",
                (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
  
-       if fileName:
-           print(fileName)
-           #ff = open(fileName, 'r')
-           #mytext = ff.read()
+    if fileName:
+        print(fileName)
+        #ff = open(fileName, 'r')
+        #mytext = ff.read()
 #            print(mytext)
-           #ff.close()
-           f = open(fileName, 'r',newline='')
-           with f:
-                self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
-                self.setWindowTitle(self.fname)
+        #ff.close()
+        f = open(fileName, 'r',newline='')
+        with f:
+            self.fnameAdd = os.path.splitext(str(fileName))[0].split("/")[-1]
+            self.fname = self.fname + ": " + self.fnameAdd
+            self.setWindowTitle(self.fname)
 
-                reader = csv.reader(f, delimiter = ',')
-                self.model.clear()
+            reader = csv.reader(f, delimiter = ',')
+            self.model.clear()
 
-                # list to store the names of columns
-                list_of_column_names = []
-                # row counter; set to zero
-                i=0
+            # list to store the names of columns
+            list_of_column_names = []
+            # row counter; set to zero
+            i=0
 
-                for row in reader:
-                    if i==0:
-                        # adding the first row to list of column names
-                        list_of_column_names.append(row)
-                        print(list_of_column_names)
-                        print(list_of_column_names[0])
-                        # iterate the counter so no longer zero
-                        i+=1
-                    else:
-                        # adding all rows except first row as rows to model
-                        items = [QtGui.QStandardItem(field) for field in row]
-                        self.model.appendRow(items)
+            for row in reader:
+                if i==0:
+                    # adding the first row to list of column names
+                    list_of_column_names.append(row)
+                    print(list_of_column_names)
+                    print(list_of_column_names[0])
+                    # iterate the counter so no longer zero
+                    i+=1
+                else:
+                    # adding all rows except first row as rows to model
+                    items = [QtGui.QStandardItem(field) for field in row]
+                    self.model.appendRow(items)
 
-                i=0 # reset counter back to zero 
+            i=0 # reset counter back to zero 
 
-                self.myColNames = list_of_column_names[0] 
-                self.model.setHorizontalHeaderLabels(self.myColNames)  
-                #self.model.setHorizontalHeaderLabels(list_of_column_names[0])
-                
-                header = self.tableView.horizontalHeader()
-                header.setDefaultAlignment(Qt.AlignHCenter)
-                #self.tableView.setModel(self.model)
-                #self.tableView.resizeColumnsToContents()
+            self.myColNames = list_of_column_names[0] 
+            self.model.setHorizontalHeaderLabels(self.myColNames)  
+            #self.model.setHorizontalHeaderLabels(list_of_column_names[0])
+            
+            header = self.tableView.horizontalHeader()
+            header.setDefaultAlignment(Qt.AlignHCenter)
+            #self.tableView.setModel(self.model)
+            #self.tableView.resizeColumnsToContents()
 
 
 
@@ -379,7 +433,8 @@ QPushButton
 font-size: 11px;
 border: 1px inset grey;
 height: 24px;
-width: 80px;
+padding-left: 12px;
+padding-right: 12px;
 color: black;
 background-color: #e8e8e8;
 background-position: bottom-left;

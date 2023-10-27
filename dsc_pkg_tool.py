@@ -87,15 +87,18 @@ class MainWindow(QMainWindow):
 
         tabs.addTab(PkgTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Data Package")
         tabs.addTab(ExpTrkTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Experiment Tracker")
-        tabs.addTab(ResourceTrkTabsWindow(), "Resource Tracker")
-        tabs.addTab(VLMDTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Data Dictionary")
+        tabs.addTab(ResourceTrkTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Resource Tracker")
         tabs.addTab(ResultsTrkTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Results Tracker")
+        tabs.addTab(VLMDTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Data Dictionary")
+        
         
         #for n, color in enumerate(["red", "green", "blue", "yellow"]):
         #    tabs.addTab(Color(color), color)
         self.layout.addWidget(self.workingDataPkgDirLabel)
         self.layout.addWidget(self.workingDataPkgDirDisplay)
         self.layout.addWidget(tabs)
+
+        self.showMaximized()
         
         #self.setCentralWidget(self.layout)
 

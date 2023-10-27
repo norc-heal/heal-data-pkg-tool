@@ -12,6 +12,7 @@ from pyqtschema.builder import WidgetBuilder
 from schema_resource_tracker import form_schema_resource_tracker, schema_resource_tracker
 from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions
 import pandas as pd
+import dsc_pkg_utils
 
 from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, QScrollArea,QApplication,
                              QHBoxLayout, QVBoxLayout, QMainWindow, QGroupBox)
@@ -22,15 +23,23 @@ import sys
 
 from pathlib import Path
 
-
 from layout_fileurladdwidget import ListboxWidget
 import re
 from copy import deepcopy
 
+import json
+import datetime
+import jsonschema
+from jsonschema import validate
+from healdata_utils.validators.jsonschema import validate_against_jsonschema
+
 class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add", *args, **kwargs):
         super().__init__(*args, **kwargs)
         #self.setWindowTitle("Annotate Resource")
+        self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
+        self.workingDataPkgDir = workingDataPkgDir
+        self.mode = mode
         self.initUI()
         #self.load_file()
 
@@ -49,6 +58,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # create the form widget 
         #self.schema = form_schema_resource_tracker
         self.schema = schema_resource_tracker
+
+        self.experimentNameList = []
+        self.experimentNameList, _ = dsc_pkg_utils.get_exp_names(self=self, perResource=False) # gets self.experimentNameList
+
+        print("self.experimentNameList: ",self.experimentNameList)
+        
+        if self.experimentNameList:
+            #self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+            self.schema = dsc_pkg_utils.add_exp_names_to_schema(self=self) # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+
         self.ui_schema = {}
         
         self.builder = WidgetBuilder(self.schema)
@@ -63,14 +82,14 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         self.form.widget.state = deepcopy(self.formDefaultState)
       
-        # create 'add dsc data pkg directory' button
-        self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
-        self.buttonAddDir.clicked.connect(self.add_dir)
+        # # create 'add dsc data pkg directory' button
+        # self.buttonAddDir = QtWidgets.QPushButton(text="Add DSC Package Directory",parent=self)
+        # self.buttonAddDir.clicked.connect(self.add_dir)
 
-        self.buttonAddDir.setSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
-        )
-        self.buttonAddDir.setStyleSheet("QPushButton{background-color:rgba(10,105,33,100);} QPushButton:hover{background-color:rgba(0,125,0,50);}");
+        # self.buttonAddDir.setSizePolicy(
+        #     QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        # )
+        # self.buttonAddDir.setStyleSheet("QPushButton{background-color:rgba(10,105,33,100);} QPushButton:hover{background-color:rgba(0,125,0,50);}");
                 
 
         # create save button
@@ -152,6 +171,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # initialize tool tip for each form field based on the description text for the corresponding schema property
         self.add_tooltip()
         self.add_priority_highlight_and_hide()
+        self.add_dir()
+        if self.mode == "add":
+            self.get_id()
         #self.add_priority_highlight()
         #self.initial_hide()
         self.popFormField = []
@@ -175,7 +197,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #self.mfilehbox.addWidget(self.buttonAddMultiResource)
         #self.mfilehbox.addWidget(self.buttonApplyNameConvention)
 
-        self.vbox.addWidget(self.buttonAddDir)
+        #self.vbox.addWidget(self.buttonAddDir)
         self.vbox.addWidget(self.buttonSaveResource)
         self.vbox.addWidget(self.buttonClearForm)
         self.vbox.addWidget(self.labelUserMessageBox)
@@ -582,8 +604,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
     def add_dir(self):
         
-        self.saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')
-        
+        #self.saveFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your new resource will be saved there!')
+        self.saveFolderPath = self.workingDataPkgDir
+
+    def get_id(self):
+
         if self.saveFolderPath:
 
             # get new resource ID for new resource file - get the max id num used for existing resource files and add 1; if no resource files yet, set id num to 1
@@ -623,7 +648,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             }
 
         else:
-            messageText = "<br>Please select your DSC Package Directory to proceed."
+            messageText = "<br>Please set your working DSC Data Package Directory to proceed."
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
@@ -919,6 +944,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
     def save_resource(self):
         
+        # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
         # check that a dsc data package dir has been added - this is the save folder - if not exit with informative error
         if not self.saveFolderPath:
             messageText = "<br>You must add a DSC Data Package Directory before saving your resource file. Please add a DSC Data Package Directory and then try saving again." 
@@ -1020,13 +1046,32 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # if any of the potential resource id/resource id annotation files already exist - exit with informative message about checking/updating resource id        
         if failResIdList:
             #print("something went wrong - check the resource id in your form - do you already have a resource file saved for a resource with this resource id? if not, did you add multiple like resource files? resource ids will be autogenerated for all of the resource files you added - IDs will be generated by adding 1 to the resource id in your form for each file in turn - do you already have a resource file saved for a resource with one of the resource ids that may have been autogenerated based on this approach? the safest thing to do is to check the resource files you have saved in your dsc package folder, find the highest resource id number for which you have created/saved a resource file, and enter your resource id in the form as having an id number one higher than the max resource id number you identified - then try saving again - if you add your dsc package directory using the push button at the top of the form window, a resource id will be autogenerated for you using this approach automatically.")
-            messageText = "<br>WARNING: Your resource(s) were not written to file because something went wrong - Check the Resource ID in your form - Do you already have a resource file saved for a resource with this resource id? if not, did you add multiple like resource files? resource ids will be autogenerated for all of the resource files you added - IDs will be generated by adding 1 to the resource id in your form for each file in turn - do you already have a resource file saved for a resource with one of the resource ids that may have been autogenerated based on this approach? the safest thing to do is to check the resource files you have saved in your dsc package folder, find the highest resource id number for which you have created/saved a resource file, and enter your resource id in the form as having an id number one higher than the max resource id number you identified - then try saving again - if you add your dsc package directory using the push button at the top of the form window, a resource id will be autogenerated for you using this approach automatically."
+            messageText = "<br>WARNING: Your resource(s) were not written to file because something went wrong - Check the Resource ID in your form - Do you already have a resource file saved for a resource with this resource id? if not, did you add multiple like resource files? Resource IDs will be autogenerated for all of the resource files you added - IDs will be generated by adding 1 to the resource id in your form for each file in turn - do you already have a resource file saved for a resource with one of the resource ids that may have been autogenerated based on this approach? the safest thing to do is to check the resource files you have saved in your dsc package folder, find the highest resource id number for which you have created/saved a resource file, and enter your resource id in the form as having an id number one higher than the max resource id number you identified - then try saving again."
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
             return
         else:
             #print(self.form.widget.state)
             resource = deepcopy(self.form.widget.state)
+
+            resourceDependDataDict = resource["associatedFileDataDict"]
+            resourceDependDataDictType = ["associatedFileDataDict"] * len(resourceDependDataDict)
+            resourceDependDataDictDf = pd.DataFrame(list(zip(resourceDependDataDict,resourceDependDataDictType)), columns=["path","dependency-type"])
+            
+            resourceDependProtocol = resource["associatedFileProtocol"]
+            resourceDependProtocolType = ["associatedFileProtocol"] * len(resourceDependProtocol)
+            resourceDependProtocolDf = pd.DataFrame(list(zip(resourceDependProtocol,resourceDependProtocolType)), columns=["path","dependency-type"])
+            
+            resourceDependResultsTracker = resource["associatedFileResultsTracker"]
+            resourceDependResultsTrackerType = ["associatedFileResultsTracker"] * len(resourceDependResultsTracker)
+            resourceDependResultsTrackerDf = pd.DataFrame(list(zip(resourceDependResultsTracker,resourceDependResultsTrackerType)), columns=["path","dependency-type"])
+            
+            resourceDependOther = resource["associatedFileDependsOn"]
+            resourceDependOtherType = ["associatedFileDependsOn"] * len(resourceDependOther)
+            resourceDependOtherDf = pd.DataFrame(list(zip(resourceDependOther,resourceDependOtherType)), columns=["path","dependency-type"])
+            
+            resourceDependAllDf = pd.concat([resourceDependDataDictDf,resourceDependProtocolDf,resourceDependResultsTrackerDf,resourceDependOtherDf])
+            resourceDependResultDepend = []
 
             resourceDepend = resource["associatedFileDataDict"] + resource["associatedFileProtocol"] + resource["associatedFileResultsTracker"] + resource["associatedFileDependsOn"]
             
@@ -1035,6 +1080,55 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
                 for item in resource["associatedFileResultsDependOn"]:
                     resourceDepend.extend(item["resultIdDependsOn"])
+                    resourceDependResultDepend.extend(item["resultIdDependsOn"])
+
+                resourceDependResultDependType = ["associatedFileResultDepend"] * len(resourceDependResultDepend)
+                resourceDependResultDependDf = pd.DataFrame(list(zip(resourceDependResultDepend,resourceDependResultDependType)), columns=["path","dependency-type"])
+                
+                resourceDependAllDf = pd.concat([resourceDependAllDf,resourceDependResultDependDf])
+
+            resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"resources-to-add.csv")
+
+            # if not os.path.isfile(resourcesToAddOutputPath):
+            #     f=open(resourcesToAddOutputPath,'w')
+            #     f.close()
+
+            if not resourceDependAllDf.empty:
+
+                # add timestamp at which time resource was added to the resources to add to tracker list
+                resourceDependAllDf["date-time"] = pd.Timestamp("now")
+                resourceDependAllDf["parent-resource-id"] = self.resource_id_list[0]
+
+                if os.path.isfile(resourcesToAddOutputPath):
+
+                    # check that file is closed (user doesn't have it open in excel for example)
+                    try: 
+                        with open(resourcesToAddOutputPath,'r+') as f:
+                            print("file is closed, proceed!!")
+                    except PermissionError:
+                        messageText = "<br>A crucial file in your working Data Package Directory called <b>" + Path(resourcesToAddOutputPath).stem + ".csv</b> is open in another application, and must be closed to proceed; Check if this is open in Excel or similar application, and close the file. Then try saving this resource again<br><br>."
+                        saveFormat = '<span style="color:red;">{}</span>'
+                        self.userMessageBox.append(saveFormat.format(messageText))
+                        return
+
+                    # if a file already exists then read it in, append new dependencies of the current resource that are now resources that need to be added to the resource tracker, deduplicate, and write result back to file
+                    all_to_add_df = pd.read_csv(resourcesToAddOutputPath)
+                    all_to_add_df["date-time"] = pd.to_datetime(all_to_add_df["date-time"])
+                    all_to_add_df = pd.concat([all_to_add_df, resourceDependAllDf], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
+                    all_to_add_df.sort_values(by = ["date-time"], inplace=True)
+                    # drop any exact duplicate rows
+                    #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
+                    # this current approach does not appear to be working at the moment
+                    print("all_to_add_df rows, with dupes: ", all_to_add_df.shape[0])
+                    all_to_add_df = all_to_add_df[-(all_to_add_df.astype('string').duplicated())]
+                    print("all_to_add_df rows, without dupes: ", all_to_add_df.shape[0])
+                    all_to_add_df.to_csv(resourcesToAddOutputPath, mode='w', header=True, index=False)
+                else: 
+                    # if a file doesn't already exist then write current df to file, creating the file in the process
+                    resourceDependAllDf.to_csv(resourcesToAddOutputPath, mode='w', header=True, index=False)
+                
+
+            
 
  
             for idx, p in enumerate(self.saveFilePathList):
@@ -1058,7 +1152,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 myString2 = self.saveFilePathList[0]
 
             #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
-            messageText = "<br>Your resource " + myString1 + " successfully written at: " + myString2 + "<br><br>You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
+            messageText = "<br>Your resource " + myString1 + " successfully written at: " + myString2 + "<br><br>Starting to add your resource(s) to the Resource Tracker now! See below for some final information about your saved resource(s) and then for updates on adding resource(s) to tracker: <br>"
             saveFormat = '<span style="color:green;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
 
@@ -1097,6 +1191,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
 
+            QApplication.processEvents() # print accumulated user status messages 
+            self.add_resource() # add resource file(s) to resource tracker
+
 
 
             #saveFormat = '<span style="color:green;">{}</span>'
@@ -1104,6 +1201,265 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             #self.userMessageBox.setText(self.messageText)
             self.userMessageBox.moveCursor(QTextCursor.End)
 
+    def add_resource(self):
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        # check that resource tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+            messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that resource tracker is closed (user doesn't have it open in excel for example)
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+                messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, and close the file. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+        
+        # get resource(s) file path
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Resource Txt Data file(s)",
+        #        (QtCore.QDir.homePath()), "Text (*.txt)")
+
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Resource Txt Data file(s)",
+        #        self.workingDataPkgDir, "Text (*.txt)")
+
+        ifileName = self.saveFilePathList
+        
+        if ifileName:
+            print("ifileName: ",ifileName)
+
+            # # check that resource tracker exists in working data pkg dir, if not, return
+            # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+            #     messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+            #     saveFormat = '<span style="color:red;">{}</span>'
+            #     self.userMessageBox.append(saveFormat.format(messageText))
+            #     return
+            
+            # # check that resource tracker is closed (user doesn't have it open in excel for example)
+            # try: 
+            #     with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
+            #         print("file is closed, proceed!!")
+            # except PermissionError:
+            #         messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, close the file, and try again. <br><br>"
+            #         saveFormat = '<span style="color:red;">{}</span>'
+            #         self.userMessageBox.append(saveFormat.format(messageText))
+            #         return
+
+            # this check shouldn't be necessary in this context 
+            # check that all files are resource annotation files, if not, return
+            [print(f) for f in ifileName]
+            fileStemList = [Path(f).stem for f in ifileName]
+            print(fileStemList)
+            checkFileStemList = [s.startswith("resource-trk-resource-") for s in fileStemList]
+            print(checkFileStemList)
+            
+            if not all(checkFileStemList):
+                messageText = "<br>The files you selected may not all be resource txt files. Resource txt files must start with the prefix \"resource-trk-resource-\". <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            # this check shouldn't be necessary in this context 
+            # just for the first annotation file selected for addition to the tracker, check to make sure it is 
+            # in the working data pkg dir - if not return with informative message
+            ifileNameCheckDir = ifileName[0]
+
+            # if user selects a resource txt file that is not in the working data pkg dir, return w informative message
+            if Path(self.workingDataPkgDir) != Path(ifileNameCheckDir).parent:
+                messageText = "<br>You selected a resource txt file(s) that is not in your working Data Package Directory; You must select a resource txt file(s) that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            #countFiles = len(ifileName)
+
+            # initialize lists to collect valid and invalid files
+            validFiles = []
+            invalidFiles = []
+            
+            # initialize an empty dataframe to collect data from each file in ifileName
+            # one row will be added to collect_df for each valid file in ifileName
+            collect_df = pd.DataFrame([])
+            
+            for filename in ifileName:
+                print(filename)
+                
+                # get resource id and filename stem
+                ifileNameStem = Path(filename).stem
+                resIdNumStr = ifileNameStem.rsplit('-',1)[1]
+                resource_id = "resource-" + resIdNumStr
+                print("resource-id: ", resource_id)
+                
+                # load data from resource file and convert to python object
+                #path = ifileName
+                path = filename
+                data = json.loads(Path(path).read_text())
+                print(data)
+
+                # validate experiment file json content against experiment tracker json schema
+                #out = validate_against_jsonschema(data, schema_resource_tracker)
+                out = validate_against_jsonschema(data, self.schema) # this should be the dynamically created schema with experimentNameBelongsTo enum populated with experiment names from experiment tracker
+                print(out["valid"])
+                print(out["errors"])
+                print(type(out["errors"]))
+
+                
+                # if not valid, print validation errors and exit 
+                if not out["valid"]:
+
+                    # add file to list of invalid files
+                    invalidFiles.append(ifileNameStem)
+                    
+                    # get validation errors to print
+                    printErrListSingle = []
+                    # initialize the final full validation error message for this file to start with the filename
+                    printErrListAll = [ifileNameStem]
+                
+                    for e in out["errors"]:
+                        printErrListSingle.append(''.join(e["absolute_path"]))
+                        printErrListSingle.append(e["validator"])
+                        printErrListSingle.append(e["validator_value"])
+                        printErrListSingle.append(e["message"])
+
+                        print(printErrListSingle)
+                        printErrSingle = '\n'.join(printErrListSingle)
+                        printErrListAll.append(printErrSingle)
+
+                        printErrListSingle = []
+                        printErrSingle = ""
+                    
+                    printErrAll = '\n\n'.join(printErrListAll)
+                
+                    #messageText = "The following resource file is NOT valid and will not be added to your Resource Tracker file: " + ifileName + "\n\n\n" + "Validation errors are as follows: " + "\n\n\n" + ', '.join(out["errors"]) + "\n\n\n" + "Exiting \"Add Resource\" function now."
+                    messageText = "The following resource file is NOT valid and will not be added to your Resource Tracker file: " + filename + "\n\n\n" + "Validation errors are as follows: " + "\n\n\n" + printErrAll + "\n\n\n"
+                    
+                    self.userMessageBox.append(messageText)
+                    #return
+                    # switch from return to break so that if user selects more than one file, and one is not valid, can skip to next file and continue instead of returning fully out of the function
+                    #break
+                    continue 
+
+                # if valid, continue:
+                else:
+                    #messageText = "The following resource file is valid: " + ifileName
+                    messageText = "The following resource file is valid: " + filename
+                    self.userMessageBox.append(messageText)
+
+                    # add file to list of invalid files
+                    validFiles.append(ifileNameStem)
+                    print("valid files:", validFiles)
+
+                    # get resource tracker resource file creation and last modification datetime
+                    #restrk_c_timestamp = os.path.getctime(ifileName)
+                    restrk_c_timestamp = os.path.getctime(filename)
+                    restrk_c_datetime = datetime.datetime.fromtimestamp(restrk_c_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("restrk_c_datetime: ", restrk_c_datetime)
+        
+                    #restrk_m_timestamp = os.path.getmtime(ifileName)
+                    restrk_m_timestamp = os.path.getmtime(filename)
+                    restrk_m_datetime = datetime.datetime.fromtimestamp(restrk_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("restrk_m_datetime: ", restrk_m_datetime)
+
+                    # get resource creation and last modification datetime
+                    res_c_timestamp = os.path.getctime(data["path"])
+                    res_c_datetime = datetime.datetime.fromtimestamp(res_c_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("res_c_datetime: ", res_c_datetime)
+
+                    res_m_timestamp = os.path.getmtime(data["path"])
+                    res_m_datetime = datetime.datetime.fromtimestamp(res_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("res_m_datetime: ", res_m_datetime)
+
+                    add_to_df_dict = {#"resourceId":[resource_id],
+                                    "resourceIdNumber": [int(resIdNumStr)],  
+                                    #"resourceCreateDateTime": [res_c_datetime],
+                                    #"resourceModDateTime": [res_m_datetime],
+                                    "resource.mod.time.stamp": [res_m_timestamp],
+                                    #"annotationCreateDateTime": [restrk_c_datetime],
+                                    #"annotationModDateTime": [restrk_m_datetime],
+                                    "annotationModTimeStamp": [restrk_m_timestamp]}
+
+                    add_to_df = pd.DataFrame(add_to_df_dict)
+
+                    # convert json to pd df
+                    df = pd.json_normalize(data) # df is a one row dataframe
+                    print(df)
+                    df["annotationCreateDateTime"][0] = restrk_c_datetime
+                    df["annotationModDateTime"][0] = restrk_m_datetime
+                    df["resourceCreateDateTime"][0] = res_c_datetime
+                    df["resourceModDateTime"][0] = res_m_datetime
+                    df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
+                    print(df)
+
+                    collect_df = pd.concat([collect_df,df], axis=0) # add this files data to the dataframe that will collect data across all valid data files
+                    print("collect_df rows: ", collect_df.shape[0])
+        else: 
+            print("you have not selected any files; returning")
+            messageText = "<br>You have not selected any files; returning."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText)) 
+            return
+
+        # once you've looped through all selected files, if none are valid, print an informative message for the user listing
+        # which files did not pass validation and exit
+        if not validFiles:
+            messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(invalidFiles) + "\n\n\n" + "cannot be added to a Resource Tracker file because they did not pass validation. Please review the validation errors for the file(s) printed above." + "Exiting \"Add Resource\" function now." 
+            self.userMessageBox.append(messageText)
+            return
+
+        # you should now have collected one row of data from each valid data file and collected it into collect_df dataframe
+        # now get location of resource tracker, read in existing data in tracker, concat new data, sort, deduplicate and 
+        # rewrite to file
+
+        # no longer need to ask for this
+        # get data package directory path
+        #parentFolderPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your Data Package Directory - Your Resource Tracker File lives here!')
+        parentFolderPath = self.workingDataPkgDir
+
+
+        # check if resource tracker file exists
+        # if exists, append the pd data object from the experiment file as a new row in the experiment tracker file
+        # if doesn't exist, print error/info message and exit
+        if "heal-csv-resource-tracker.csv" in os.listdir(parentFolderPath):
+            
+            output_path=os.path.join(parentFolderPath,"heal-csv-resource-tracker.csv")
+            all_df = pd.read_csv(output_path)
+            #all_df = pd.concat([all_df, df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
+            all_df = pd.concat([all_df, collect_df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
+            
+            all_df.sort_values(by = ["resourceIdNumber", "annotationModTimeStamp"], inplace=True)
+            # drop any exact duplicate rows
+            #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
+            # this current approach does not appear to be working at the moment
+            print("all_df rows, with dupes: ", all_df.shape[0])
+            all_df = all_df[-(all_df.astype('string').duplicated())]
+            print("all_df rows, without dupes: ", all_df.shape[0])
+            
+            # before writing to file may want to check for duplicate resource IDs and if duplicate resource IDs, ensure that 
+            # user wants to overwrite the earlier instance of the resource ID in the resource tracker - right now, dup entries 
+            # for a resource are all kept as long as not exact dup (i.e. at least one thing has changed)
+
+            all_df.to_csv(output_path, mode='w', header=True, index=False)
+            #df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
+
+            if invalidFiles:
+                messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(invalidFiles) + "\n\n\n" + "cannot be added to a Resource Tracker file because they did not pass validation. Please review the validation errors printed above." 
+                self.userMessageBox.append(messageText)
+            
+            messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(validFiles) + "\n\n\n" + "were added as a resource(s) to the Resource Tracker file: " + "\n\n\n" + output_path
+            self.userMessageBox.append(messageText)
+        else:
+            messageText = "No Resource Tracker file exists at the designated directory. Are you sure this is a Data Package Directory? If you haven't yet created a Data Package Directory for your work, please head to the \"Data Package\" tab and use the \"Create new Data Package\" button to create your Data Package Directory. Your new Data Package Directory will contain your Resource Tracker file. You can then come back here and try adding your resource file again!" + "\n\n\n" + "Exiting \"Add Resource\" function now."
+            self.userMessageBox.append(messageText)
+            return
+        
     def clear_form(self):
 
         self.popFormField = []
@@ -1165,17 +1521,22 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.userMessageBox.append(saveFormat.format(messageText))
         self.userMessageBox.moveCursor(QTextCursor.End)
 
-        messageText = "<br>NOTE: The Resource ID in your form has been re-set to the default value of \n'resource-1\n'. If you know which resource IDs you've already used, you can change the Resource ID in the cleared form manually by adding 1 to the max Resource ID you've already used. To generate a unique Resource ID automatically, click the Add DSC Package Directory button above the form - this will re-add your DSC Package Directory, search that directory for Resource IDs already used, generate a unique Resource ID by adding 1 to the max Resource ID already in use, and add that Resource ID value to the form for you."
-        saveFormat = '<span style="color:blue;">{}</span>'
-        self.userMessageBox.append(saveFormat.format(messageText)) 
+        self.get_id()
+
+        # messageText = "<br>NOTE: The Resource ID in your form has been re-set to the default value of \n'resource-1\n'. If you know which resource IDs you've already used, you can change the Resource ID in the cleared form manually by adding 1 to the max Resource ID you've already used. To generate a unique Resource ID automatically, click the Add DSC Package Directory button above the form - this will re-add your DSC Package Directory, search that directory for Resource IDs already used, generate a unique Resource ID by adding 1 to the max Resource ID already in use, and add that Resource ID value to the form for you."
+        # saveFormat = '<span style="color:blue;">{}</span>'
+        # self.userMessageBox.append(saveFormat.format(messageText)) 
         self.userMessageBox.moveCursor(QTextCursor.End)           
 
     def load_file(self):
         #_json_filter = 'json (*.json)'
         #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
         print("in load_file fx")
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Resource Txt Data file you want to edit",
+        #        (QtCore.QDir.homePath()), "Text (*.txt)")
+
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Resource Txt Data file you want to edit",
-               (QtCore.QDir.homePath()), "Text (*.txt)")
+               self.saveFolderPath, "Text (*.txt)")
 
         if not ifileName: 
             messageText = "<br>You have not selected a file; returning."
@@ -1186,6 +1547,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                      
             self.saveFilePath = ifileName
             print("saveFilePath: ", self.saveFilePath)
+            print(Path(ifileName).parent)
+            print(Path(self.saveFolderPath))
+
+            # if user selects a resource txt file that is not in the working data pkg dir, return w informative message
+            if Path(self.saveFolderPath) != Path(ifileName).parent:
+                messageText = "<br>You selected a resource txt file that is not in your working Data Package Directory; You must select a resource txt file that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
             self.saveFolderPath = Path(ifileName).parent
             print("saveFolderPath: ", self.saveFolderPath)
             
@@ -1223,7 +1594,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
     def take_inputs(self):
 
-        editOptions =["<b>Single file</b> within multi \'like\' file resource", "<b>All files</b> within multi \'like\' file resource"]
+        editOptions =["Single file within multi \'like\' file resource", "All files within multi \'like\' file resource"]
         editOption, done = QtWidgets.QInputDialog.getItem(
           self, 'Edit Mode', 'You have selected a resource file that was originally annotated as part of a multi \'like\' file resource. Would you like to edit the annotation for just this one single resource file, or would you like to use this form to edit the annotation for all resource files that are part of the multi \'like\' file resource?', editOptions)
 

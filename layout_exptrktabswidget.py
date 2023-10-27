@@ -33,7 +33,7 @@ class ExpTrkTabsWindow(QWidget):
         tabs = QTabWidget()
         tabs.addTab(InfoTextWindow(self.infoText), "Info")
         tabs.addTab(ExpTrkAddWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Add Experiment")
-        tabs.addTab(CSVViewPushToLoadWindow(), "View Tracker")
+        tabs.addTab(CSVViewPushToLoadWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay,fileBaseName="heal-csv-experiment-tracker.csv",fileStartsWith="", fileTypeTitle="Experiment Tracker"), "View Tracker")
         
                 
         layout.addWidget(tabs)

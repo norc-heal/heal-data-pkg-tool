@@ -11,6 +11,7 @@ from schema_results_tracker import schema_results_tracker
 from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions
 import pandas as pd
 import numpy as np
+import dsc_pkg_utils
 
 from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, QScrollArea,QApplication,
                              QHBoxLayout, QVBoxLayout, QMainWindow, QGroupBox)
@@ -25,6 +26,12 @@ from pathlib import Path
 from layout_fileurladdwidget import ListboxWidget
 import re
 from copy import deepcopy
+
+import json
+import datetime
+import jsonschema
+from jsonschema import validate
+from healdata_utils.validators.jsonschema import validate_against_jsonschema
 
 class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
     def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add"):
@@ -51,12 +58,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         self.schema = schema_results_tracker
         
         self.experimentNameList = []
-        self.experimentNameList = self.get_exp_names() # gets self.experimentNameList
+        #self.experimentNameList = self.get_exp_names() # gets self.experimentNameList
+        self.experimentNameList, _ = dsc_pkg_utils.get_exp_names(self=self, perResource=False) # gets self.experimentNameList
 
         print("self.experimentNameList: ",self.experimentNameList)
         
         if self.experimentNameList:
-            self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+            #self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+            self.schema = dsc_pkg_utils.add_exp_names_to_schema(self=self) # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
 
         self.ui_schema = {}
         
@@ -195,69 +204,69 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 self.scroll.verticalScrollBar().minimum()
             )
 
-    def get_exp_names(self):
+    # def get_exp_names(self):
         
-        getDir = self.workingDataPkgDir
-        getExpTrk = os.path.join(getDir,"heal-csv-experiment-tracker.csv")
+    #     getDir = self.workingDataPkgDir
+    #     getExpTrk = os.path.join(getDir,"heal-csv-experiment-tracker.csv")
 
-        if os.path.isfile(getExpTrk):
-            experimentTrackerDf = pd.read_csv(getExpTrk)
-            #experimentTrackerDf.replace(np.nan, "")
-            experimentTrackerDf.fillna("", inplace = True)
+    #     if os.path.isfile(getExpTrk):
+    #         experimentTrackerDf = pd.read_csv(getExpTrk)
+    #         #experimentTrackerDf.replace(np.nan, "")
+    #         experimentTrackerDf.fillna("", inplace = True)
 
-            print(experimentTrackerDf)
-            print(experimentTrackerDf.columns)
+    #         print(experimentTrackerDf)
+    #         print(experimentTrackerDf.columns)
 
-            if "experimentName" in experimentTrackerDf.columns:
-                experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
-                print(experimentTrackerDf["experimentName"])                
-                experimentNameList = experimentTrackerDf["experimentName"].unique().tolist()
-                print(experimentNameList,type(experimentNameList))
-                experimentNameList[:] = [x for x in experimentNameList if x] # get rid of emtpy strings as empty strings are not wanted and mess up the sort() function
-                print(experimentNameList,type(experimentNameList))
+    #         if "experimentName" in experimentTrackerDf.columns:
+    #             experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
+    #             print(experimentTrackerDf["experimentName"])                
+    #             experimentNameList = experimentTrackerDf["experimentName"].unique().tolist()
+    #             print(experimentNameList,type(experimentNameList))
+    #             experimentNameList[:] = [x for x in experimentNameList if x] # get rid of emtpy strings as empty strings are not wanted and mess up the sort() function
+    #             print(experimentNameList,type(experimentNameList))
 
-                #sortedlist = sorted(list, lambda x: x.rsplit('-', 1)[-1])
-                experimentNameList = sorted(experimentNameList, key = lambda x: x.split('-', 1)[0])
+    #             #sortedlist = sorted(list, lambda x: x.rsplit('-', 1)[-1])
+    #             experimentNameList = sorted(experimentNameList, key = lambda x: x.split('-', 1)[0])
 
-                #experimentName = sorted(experimentNameList, lamda x: x.split('-'))
-                print(experimentNameList,type(experimentNameList))
+    #             #experimentName = sorted(experimentNameList, lamda x: x.split('-'))
+    #             print(experimentNameList,type(experimentNameList))
 
-                # if ((len(experimentNameList) == 1) and (experimentNameList[0] == "default-experiment-name")):
-                #     experimentNameList = []
-                #experimentNameList.remove("default-experiment-name")
-                #print(experimentNameList,type(experimentNameList))
-            else:
-                print("no experimentName column in experiment tracker")
-                experimentNameList = []
-        else:
-            print("no experiment tracker in working data pkg dir")
-            # messageText = "<br>Your working Data Package Directory does not contain a properly formatted Experiment Tracker from which to populate unique experiment names for experiments you've already documented. <br><br> The field in this form <b>Experiment Result \"Belongs\" To</b> pulls from this list of experiment names to provide options of study experiments to which you can link your results. Because we cannot populate this list without your experiment tracker, your only option for this field will be the default experiment name: \"default-experiment-name\"." 
-            # errorFormat = '<span style="color:red;">{}</span>'
-            # self.userMessageBox.append(errorFormat.format(messageText)) 
-            experimentNameList = []
+    #             # if ((len(experimentNameList) == 1) and (experimentNameList[0] == "default-experiment-name")):
+    #             #     experimentNameList = []
+    #             #experimentNameList.remove("default-experiment-name")
+    #             #print(experimentNameList,type(experimentNameList))
+    #         else:
+    #             print("no experimentName column in experiment tracker")
+    #             experimentNameList = []
+    #     else:
+    #         print("no experiment tracker in working data pkg dir")
+    #         # messageText = "<br>Your working Data Package Directory does not contain a properly formatted Experiment Tracker from which to populate unique experiment names for experiments you've already documented. <br><br> The field in this form <b>Experiment Result \"Belongs\" To</b> pulls from this list of experiment names to provide options of study experiments to which you can link your results. Because we cannot populate this list without your experiment tracker, your only option for this field will be the default experiment name: \"default-experiment-name\"." 
+    #         # errorFormat = '<span style="color:red;">{}</span>'
+    #         # self.userMessageBox.append(errorFormat.format(messageText)) 
+    #         experimentNameList = []
 
-        print("experimentNameList: ", experimentNameList)
-        return experimentNameList
+    #     print("experimentNameList: ", experimentNameList)
+    #     return experimentNameList
             
-    def add_exp_names_to_schema(self):
+    # def add_exp_names_to_schema(self):
 
-        schemaOrig = self.schema
-        experimentNameList = self.experimentNameList
+    #     schemaOrig = self.schema
+    #     experimentNameList = self.experimentNameList
 
-        experimentNameListUpdate = {}
+    #     experimentNameListUpdate = {}
         
-        schemaUpdated = deepcopy(schemaOrig)
-        enumListOrig = schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"]
-        print("enumListOrig: ", enumListOrig)
-        #enumListUpdated = enumListOrig.extend(experimentNameList)
-        enumListUpdated = experimentNameList
-        print("enumListUpdated: ", enumListUpdated)
+    #     schemaUpdated = deepcopy(schemaOrig)
+    #     enumListOrig = schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"]
+    #     print("enumListOrig: ", enumListOrig)
+    #     #enumListUpdated = enumListOrig.extend(experimentNameList)
+    #     enumListUpdated = experimentNameList
+    #     print("enumListUpdated: ", enumListUpdated)
 
-        schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"] = enumListUpdated
-        print("schemaOrig: ",schemaOrig)
-        print("schemaUpdated: ", schemaUpdated)
+    #     schemaUpdated["properties"]["experimentNameBelongsTo"]["enum"] = enumListUpdated
+    #     print("schemaOrig: ",schemaOrig)
+    #     print("schemaUpdated: ", schemaUpdated)
 
-        return schemaUpdated
+    #     return schemaUpdated
 
     def add_tooltip(self):
         
@@ -600,11 +609,360 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             f.close()
                 
             #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
-            messageText = "<br>Your result was successfully written at: " + self.saveFilePath + "<br><br>You'll want to head back to the \'Add Result\' tab and use the \'Add Result\' button to add this result file to your result tracker file(s)! You can do this now, or later - You can add result files to a result tracker file one at a time, or you can add multiple result files all at once, so you may choose to create result files for several/all of your results and then add them in one go to your result tracker file(s)."
+            messageText = "<br>Your result was successfully written at: " + self.saveFilePath + "<br><br> Starting to add your result to Results Tracker now! See below for updates: <br>" 
             saveFormat = '<span style="color:green;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
             self.userMessageBox.moveCursor(QTextCursor.End)
 
+            QApplication.processEvents() # print accumulated user status messages 
+
+            self.auto_add_result() # add experiment file to experiment tracker
+
+    def auto_add_result(self):
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property (in this case for validation purposes) so perform some checks
+
+        # check that experiment tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
+            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that experiment tracker is closed (user doesn't have it open in excel for example)
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+        # don't check for results tracker exists as this function checks for appropriate trackers already existing and creates the needed results tracker(s) if they don't already exist
+        # # check that resource tracker exists in working data pkg dir, if not, return
+        # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+        #     messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+        #     saveFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(saveFormat.format(messageText))
+        #     return
+        
+        # check that all results trackers are closed (user doesn't have it open in excel for example)
+        resultsTrackersList = [filename for filename in os.listdir(self.workingDataPkgDir) if filename.startswith("heal-csv-results-tracker-")]
+        print("results trackers: ", resultsTrackersList)
+        
+        if resultsTrackersList:
+            for tracker in resultsTrackersList:
+
+                try: 
+                    with open(os.path.join(self.workingDataPkgDir,tracker),'r+') as f:
+                        print("file is closed, proceed!!")
+                except PermissionError:
+                        messageText = "<br>At least one Results Tracker file that already exists in your working Data Package Directory is open in another application, and must be closed to proceed; Check if any Results Tracker files are open in Excel or similar application, and close the file(s). <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
+                        saveFormat = '<span style="color:red;">{}</span>'
+                        self.userMessageBox.append(saveFormat.format(messageText))
+                        return
+
+        # get result file path
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
+        #        (QtCore.QDir.homePath()), "Text (*.txt)")
+
+        # open files select file browse to working data package directory
+        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s) from your working Data Package Directory",
+        #        self.workingDataPkgDir, "Text (*.txt)")
+        ifileName = [self.saveFilePath]
+        
+        if ifileName:
+
+            
+            # check that all files are result annotation files, if not, return
+            fileStemList = [Path(filename).stem for filename in ifileName]
+            print(fileStemList)
+            checkFileStemList = [stem.startswith("result-trk-result-") for stem in fileStemList]
+            print(checkFileStemList)
+            
+            if not all(checkFileStemList):
+                messageText = "<br>The files you selected may not all be result txt files. Result txt files must start with the prefix \"result-trk-result-\". <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            # just for the first annotation file selected for addition to the tracker, check to make sure it is 
+            # in the working data pkg dir - if not return with informative message
+            ifileNameCheckDir = ifileName[0]
+
+            # if user selects a result txt file that is not in the working data pkg dir, return w informative message
+            if Path(self.workingDataPkgDir) != Path(ifileNameCheckDir).parent:
+                messageText = "<br>You selected a result txt file that is not in your working Data Package Directory; You must select a result txt file that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            #countFiles = len(ifileName)
+
+            # initialize lists to collect valid and invalid files
+            validFiles = []
+            invalidFiles = []
+
+            # don't need to do this in this context as schema has already been dynamically updated (don't need a lot of the above checks either - should clean the auto add function in this widget up..)
+            # # dynamically update schema
+            # self.schema = schema_results_tracker
+
+            # self.experimentNameList = []
+            # self.experimentNameList = dsc_pkg_utils.get_exp_names(self=self) # gets self.experimentNameList
+            # print("self.experimentNameList: ",self.experimentNameList)
+            # if self.experimentNameList:
+            #     #self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+            #     self.schema = dsc_pkg_utils.add_exp_names_to_schema(self=self) # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+
+            
+            # initialize an empty dataframe to collect data from each file in ifileName
+            # one row will be added to collect_df for each valid file in ifileName
+            collect_df = pd.DataFrame([])
+            
+            for filename in ifileName:
+                print(filename)
+
+                
+                
+                # get result id and filename stem
+                ifileNameStem = Path(filename).stem
+                IdNumStr = ifileNameStem.rsplit('-',1)[1]
+                result_id = "result-" + IdNumStr
+                print("result-id: ", result_id)
+                
+                # load data from result file and convert to python object
+                #path = ifileName
+                path = filename
+                data = json.loads(Path(path).read_text())
+                print(data)
+
+                # validate experiment file json content against experiment tracker json schema
+                #out = validate_against_jsonschema(data, schema_results_tracker)
+                out = validate_against_jsonschema(data, self.schema)
+                print(out["valid"])
+                print(out["errors"])
+                print(type(out["errors"]))
+
+                
+                # if not valid, print validation errors and exit 
+                if not out["valid"]:
+
+                    # add file to list of invalid files
+                    invalidFiles.append(ifileNameStem)
+                    
+                    # get validation errors to print
+                    printErrListSingle = []
+                    # initialize the final full validation error message for this file to start with the filename
+                    printErrListAll = [ifileNameStem]
+                
+                    for e in out["errors"]:
+                        printErrListSingle.append(''.join(e["absolute_path"]))
+                        printErrListSingle.append(e["validator"])
+                        printErrListSingle.append(e["validator_value"])
+                        printErrListSingle.append(e["message"])
+
+                        print(printErrListSingle)
+                        printErrSingle = '\n'.join(printErrListSingle)
+                        printErrListAll.append(printErrSingle)
+
+                        printErrListSingle = []
+                        printErrSingle = ""
+                    
+                    printErrAll = '\n\n'.join(printErrListAll)
+                
+                    #messageText = "The following resource file is NOT valid and will not be added to your Resource Tracker file: " + ifileName + "\n\n\n" + "Validation errors are as follows: " + "\n\n\n" + ', '.join(out["errors"]) + "\n\n\n" + "Exiting \"Add Resource\" function now."
+                    messageText = "The following result file is NOT valid and will not be added to a Results Tracker file: " + filename + "\n\n\n" + "Validation errors are as follows: " + "\n\n\n" + printErrAll + "\n\n\n"
+                    
+                    self.userMessageBox.append(messageText)
+                    #return
+                    # switch from return to break so that if user selects more than one file, and one is not valid, can skip to next file and continue instead of returning fully out of the function
+                    #break
+                    continue 
+
+                # if valid, continue:
+                else:
+                    #messageText = "The following resource file is valid: " + ifileName
+                    messageText = "The following result file is valid: " + filename
+                    self.userMessageBox.append(messageText)
+
+                    # add file to list of valid files
+                    validFiles.append(ifileNameStem)
+                    print("valid files:", validFiles)
+
+                    # get result annotation file creation and last modification datetime
+                    restrk_c_timestamp = os.path.getctime(filename)
+                    restrk_c_datetime = datetime.datetime.fromtimestamp(restrk_c_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("restrk_c_datetime: ", restrk_c_datetime)
+        
+                    restrk_m_timestamp = os.path.getmtime(filename)
+                    restrk_m_datetime = datetime.datetime.fromtimestamp(restrk_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
+                    print("restrk_m_datetime: ", restrk_m_datetime)
+
+                    add_to_df_dict = {#"resultId":[resource_id],
+                                    "resultIdNumber": [int(IdNumStr)],  
+                                    #"annotationCreateDateTime": [restrk_c_datetime],
+                                    #"annotationModDateTime": [restrk_m_datetime],
+                                    "annotationModTimeStamp": [restrk_m_timestamp]}
+
+
+                    add_to_df = pd.DataFrame(add_to_df_dict)
+
+                    # convert json to pd df
+                    df = pd.json_normalize(data) # df is a one row dataframe
+                    print(df)
+                    df["annotationCreateDateTime"][0] = restrk_c_datetime
+                    df["annotationModDateTime"][0] = restrk_m_datetime
+                    print(df)
+                    df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
+                    print(df)
+
+                    collect_df = pd.concat([collect_df,df], axis=0) # add this files data to the dataframe that will collect data across all valid data files
+                    print("collect_df rows: ", collect_df.shape[0])
+
+                    
+        else: 
+            print("you have not selected any files; returning")
+            messageText = "<br>You have not selected any result files to add to the results tracker. Please select at least one result file to add."
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return
+
+        # once you've looped through all selected files, if none are valid, print an informative message for the user listing
+        # which files did not pass validation and exit
+        if not validFiles:
+            messageText = "The contents of the Result file(s): " + "\n\n\n" + ', '.join(invalidFiles) + "\n\n\n" + "cannot be added to a Results Tracker file because they did not pass validation. Please review the validation errors for the file(s) printed above." + "Exiting \"Add Result\" function now." 
+            self.userMessageBox.append(messageText)
+            return
+
+        
+        
+        # you should now have collected one row of data from each valid data file and collected it into collect_df dataframe
+        # now get location of dsc pkg dir, check if appropriate results trackers already exist, if not create them, then add
+        # results to appropriate results trackers
+
+        # no longer need to ask user to browse to dsc data package dir - instead use working data package dir set by user in data package tab of tool
+        #dscDirPath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Your DSC Data Package Directory - Your result(s) will be auto-added to appropriate Results Tracker(s) there!')
+        dscDirPath = self.workingDataPkgDir
+
+        if not dscDirPath:
+            messageText = "You have not selected a directory. Please select your DSC Data Package Directory. If you have not yet created a DSC Data Package Directory, use the \"Create New Data Package\" button on the \"Create\" sub-tab of the \"Data Package\" tab to create a DSC Data Package Directory. You can then come back here and try adding your result file(s) again! <br><br>Exiting \"Add Result\" function now."
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return
+        else:
+
+            # add dummies for whether or not each result is associated with any of the unique multiresult files listed in any of the results files
+            # this will allow filtering to the df that should be written to each result tracker file (each result tracker file is named after a specific unique multi result file)
+            # if a result tracker does not yet exist in the dsc pkg dir for each unique multiresult file listed across all result files, this fx will create the appropriate results tracker file
+            collect_df_cols = list(collect_df.columns)
+            print("collect_df_cols: ", collect_df_cols)
+
+            myDummies = collect_df["associatedFileMultiResultFile"].str.join('|').str.get_dummies()
+            print(list(myDummies.columns))
+
+            collect_df = pd.concat([collect_df, myDummies], axis = 1)
+
+            # get a list of any results trackers that already exist in dsc pkg dir
+            resultsTrkFileList = [filename for filename in os.listdir(dscDirPath) if filename.startswith("heal-csv-results-tracker")]
+            print(resultsTrkFileList)
+            resultsTrkFileList = [os.path.join(dscDirPath,filename) for filename in resultsTrkFileList]
+
+            #if resultsTrkFileList: # if the list is not empty
+            #    resultsTrkFileStemList = [Path(filename).stem for filename in resultsTrkFileList]
+            #    print(resultsTrkFileStemList)
+            #    
+            #else:
+            #    resultsTrkFileStemList = []
+
+            multiResultFileList = collect_df["associatedFileMultiResultFile"].explode().unique().tolist()
+            print("multi result file list: ",multiResultFileList)
+            multiResultFileStemList = [Path(filename).stem for filename in multiResultFileList]
+            print(multiResultFileStemList)
+            finalResultsTrkFileStemList = ["heal-csv-results-tracker-"+ filename + ".csv" for filename in multiResultFileStemList]
+            finalResultsTrkFileList = [os.path.join(dscDirPath,filename) for filename in finalResultsTrkFileStemList]
+            print("result tracker file list: ", resultsTrkFileList)
+            print("final result tracker file list: ", finalResultsTrkFileList)
+
+            if resultsTrkFileList:
+                trkExist = [filename for filename in finalResultsTrkFileList if filename in resultsTrkFileList]
+                print(trkExist)
+                #trkExist = [os.path.join(dscDirPath,filename) for filename in trkExist]
+                #print(trkExist)
+
+                for t in trkExist:
+                    messageText = "Required results tracker already exists - new added results will be appended: <br>" + t
+                    #errorFormat = '<span style="color:red;">{}</span>'
+                    #self.userMessageBox.append(errorFormat.format(messageText))
+                    self.userMessageBox.append(messageText)
+            else: 
+                trkExist = []
+
+
+            trkCreate = [filename for filename in finalResultsTrkFileList if filename not in resultsTrkFileList]
+            print(trkCreate)
+            #trkCreate = [os.path.join(dscDirPath,filename) for filename in trkCreate]
+            #print(trkCreate)
+
+            if trkCreate:
+                df, _ = dsc_pkg_utils.new_results_trk()
+
+                for t in trkCreate:
+                    df.to_csv(t, index = False) 
+                    messageText = "A new results tracker has been created - added results will be the first content: <br>" + t
+                    #errorFormat = '<span style="color:red;">{}</span>'
+                    #self.userMessageBox.append(errorFormat.format(messageText))
+                    self.userMessageBox.append(messageText)
+
+            else: 
+                trkCreate = []
+
+            for m, t in zip(multiResultFileList, finalResultsTrkFileList):
+                print(m,"; ",t)
+                print_df = collect_df[collect_df[m] == 1]
+                print(print_df.shape)
+                print(print_df.columns)
+                print_df = print_df[collect_df_cols]
+                print(print_df.shape)
+                print(print_df.columns)
+
+                writeResultsList = print_df["resultId"].tolist()
+                writeResultsFileList = ["result-trk-" + r for r in writeResultsList]
+                
+                output_path = t
+                all_df = pd.read_csv(output_path)
+                #all_df = pd.concat([all_df, df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
+                all_df = pd.concat([all_df, print_df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
+            
+                all_df.sort_values(by = ["resultIdNumber"], inplace=True)
+                # drop any exact duplicate rows
+                #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
+                # this current approach does not appear to be working at the moment
+                print("all_df rows, with dupes: ", all_df.shape[0])
+                all_df = all_df[-(all_df.astype('string').duplicated())]
+                print("all_df rows, without dupes: ", all_df.shape[0])
+            
+                # before writing to file may want to check for duplicate result IDs and if duplicate result IDs, ensure that 
+                # user wants to overwrite the earlier instance of the result ID in the results tracker - right now, dup entries 
+                # for a result are all kept as long as not exact dup (i.e. at least one thing has changed)
+
+                all_df.to_csv(output_path, mode='w', header=True, index=False)
+                #df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
+
+                messageText = "The contents of the Result file(s): <br><br>" + ', '.join(writeResultsFileList) + "<br><br>were added as a result(s) to the Results Tracker file: <br><br>" + output_path + "<br><br>"
+                errorFormat = '<span style="color:green;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+
+            if invalidFiles:
+                messageText = "The contents of the Result file(s): <br><br>" + ', '.join(invalidFiles) + "<br><br>cannot be added to a Results Tracker file because they did not pass validation. Please review the validation errors printed above." 
+                errorFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+            
+    
     def clear_form(self):
 
         clearState = deepcopy(self.form.widget.state)

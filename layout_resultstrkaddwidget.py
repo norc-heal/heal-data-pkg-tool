@@ -442,7 +442,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
             self.schema = schema_results_tracker
 
             self.experimentNameList = []
-            self.experimentNameList = dsc_pkg_utils.get_exp_names(self=self) # gets self.experimentNameList
+            self.experimentNameList, _ = dsc_pkg_utils.get_exp_names(self=self) # gets self.experimentNameList
             print("self.experimentNameList: ",self.experimentNameList)
             if self.experimentNameList:
                 #self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList

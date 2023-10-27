@@ -59,7 +59,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         
         self.experimentNameList = []
         #self.experimentNameList = self.get_exp_names() # gets self.experimentNameList
-        self.experimentNameList = dsc_pkg_utils.get_exp_names(self=self) # gets self.experimentNameList
+        self.experimentNameList, _ = dsc_pkg_utils.get_exp_names(self=self) # gets self.experimentNameList
 
         print("self.experimentNameList: ",self.experimentNameList)
         

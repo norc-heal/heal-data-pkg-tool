@@ -49,7 +49,7 @@ def get_id(self, prefix, fileExt, folderPath):
 
        
 
-def get_exp_names(self):
+def get_exp_names(self, perResource):
         
     getDir = self.workingDataPkgDir
     getExpTrk = os.path.join(getDir,"heal-csv-experiment-tracker.csv")
@@ -63,7 +63,7 @@ def get_exp_names(self):
         print(experimentTrackerDf.columns)
 
         if "experimentName" in experimentTrackerDf.columns:
-            
+
             #experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
             experimentNameSeries = experimentTrackerDf["experimentName"].astype(str)
             print(experimentNameSeries,type(experimentNameSeries))
@@ -92,18 +92,37 @@ def get_exp_names(self):
             #     experimentNameList = []
             #experimentNameList.remove("default-experiment-name")
             #print(experimentNameList,type(experimentNameList))
+            
+            if perResource:  
+
+                experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
+                experimentTrackerDf["experimentId"] = experimentTrackerDf["experimentId"].astype(str)
+                
+                experimentNameDf = experimentTrackerDf[["experimentId","experimentName"]]
+                print(experimentNameDf,type(experimentNameDf))
+                
+                experimentNameDf.drop_duplicates(inplace=True) 
+                experimentNameDf = experimentNameDf[experimentNameDf["experimentName"].str.len() > 0]  
+
+                
+            else: 
+                experimentNameDf = []
+
+
         else:
             print("no experimentName column in experiment tracker")
             experimentNameList = []
+            experimentNameDf = []
     else:
         print("no experiment tracker in working data pkg dir")
         # messageText = "<br>Your working Data Package Directory does not contain a properly formatted Experiment Tracker from which to populate unique experiment names for experiments you've already documented. <br><br> The field in this form <b>Experiment Result \"Belongs\" To</b> pulls from this list of experiment names to provide options of study experiments to which you can link your results. Because we cannot populate this list without your experiment tracker, your only option for this field will be the default experiment name: \"default-experiment-name\"." 
         # errorFormat = '<span style="color:red;">{}</span>'
         # self.userMessageBox.append(errorFormat.format(messageText)) 
         experimentNameList = []
+        experimentNameDf = []
 
     print("experimentNameList: ", experimentNameList)
-    return experimentNameList
+    return experimentNameList, experimentNameDf
 
 def add_exp_names_to_schema(self):
 

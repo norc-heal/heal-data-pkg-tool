@@ -9,10 +9,11 @@ from pyqtschema.builder import WidgetBuilder
 
 #from schema_results_tracker import schema_results_tracker
 from schema_experiment_tracker import schema_experiment_tracker
-from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions, get_exp_names
+from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions
 import dsc_pkg_utils
 import pandas as pd
 import json
+import dsc_pkg_utils
 
 from PyQt5.QtWidgets import (QWidget, QSlider, QLineEdit, QLabel, QPushButton, QScrollArea,QApplication,
                              QHBoxLayout, QVBoxLayout, QMainWindow, QGroupBox)
@@ -322,10 +323,11 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             self.uniqueExpNameOnSave = True
         
         self.experimentNameList = []
-        self.experimentNameList = get_exp_names(self=self) # gets self.experimentNameList
+        self.experimentNameList, self.experimentNameDf = dsc_pkg_utils.get_exp_names(self=self, perResource=True) # gets self.experimentNameList
 
         print("self.experimentNameList: ",self.experimentNameList)
         currentExperimentName = self.formWidgetList[self.formWidgetNameList.index("experimentName")].text()
+        currentExperimentId = self.formWidgetList[self.formWidgetNameList.index("experimentId")].text()
         print("currentExperimentName: ",currentExperimentName)
 
         if currentExperimentName == "default-experiment-name":
@@ -340,16 +342,26 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
                 self.userMessageBox.append(errorFormat.format(messageText))
 
         elif currentExperimentName in self.experimentNameList:
-            if saveStatus != "save":
-                messageText = "<br>You've used this experiment name before, and experiment name must be unique - Please enter a unique experiment name. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
-                errorFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(errorFormat.format(messageText))
+            # if this experiment name has been used before, check to see if it's been used for another entry in the exp tracker that is for this exp id
+            # this may happen if for example user is editing an existing experiment
+            # if this is the case, do not throw an error
 
-            if saveStatus == "save":
-                messageText = "<br>Your experiment cannot be saved because the experiment name you entered in the Experiment Name form field is not unique. If you want to assign an experiment name to your experiment you must choose a unique experiment name and enter it into the Experiment Name form field, then try saving again. If you do not want to assign an experiment name to your experiment, re-set the value of the Experiment Name form field to \"default-experiment-name\" and try saving again. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
-                errorFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(errorFormat.format(messageText))
-                self.uniqueExpNameOnSave = False
+            currentExperimentNameDf = self.experimentNameDf[self.experimentNameDf["experimentName"] == currentExperimentName]
+            currentAssociatedExperimentId = currentExperimentNameDf["experimentID"].tolist()[0]
+            print(currentAssociatedExperimentId)
+
+            if currentExperimentId != currentAssociatedExperimentId:
+
+                if saveStatus != "save":
+                    messageText = "<br>You've used this experiment name before, and experiment name must be unique - Please enter a unique experiment name. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
+                    errorFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(errorFormat.format(messageText))
+
+                if saveStatus == "save":
+                    messageText = "<br>Your experiment cannot be saved because the experiment name you entered in the Experiment Name form field is not unique. If you want to assign an experiment name to your experiment you must choose a unique experiment name and enter it into the Experiment Name form field, then try saving again. If you do not want to assign an experiment name to your experiment, re-set the value of the Experiment Name form field to \"default-experiment-name\" and try saving again. Experiment names already in use include: <br><br>" + "<br>".join(self.experimentNameList)
+                    errorFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(errorFormat.format(messageText))
+                    self.uniqueExpNameOnSave = False
 
         else: 
             if saveStatus != "save": 

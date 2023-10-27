@@ -347,7 +347,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             # if this is the case, do not throw an error
 
             currentExperimentNameDf = self.experimentNameDf[self.experimentNameDf["experimentName"] == currentExperimentName]
-            currentAssociatedExperimentId = currentExperimentNameDf["experimentID"].tolist()[0]
+            currentAssociatedExperimentId = currentExperimentNameDf["experimentId"].tolist()[0]
             print(currentAssociatedExperimentId)
 
             if currentExperimentId != currentAssociatedExperimentId:

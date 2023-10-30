@@ -24,7 +24,7 @@ Desktop tool that provides a user-friendly tool/interface to operationalize data
 - Unzip archive
 - The result will be a directory called dsc-pkg-tool-windows with a single file called dsc_pkg_tool.exe inside. Double click this executable file to open tool.  
 - **NOTE**:
-    - **Delete previous version(s) of the tool**: If you have downloaded a previous version of the tool, delete the previous version of the tool (dsc-pkg-tool-windows\dsc_pkg_tool.exe – delete the dsc-pkg-tool-widows folder) prior to downloading and unzipping the current version of the tool, as having more than one version of the tool in the same file location may lead to problems with duplicate file names.
+    - **Delete previous version(s) of the tool**: If you have downloaded a previous version of the tool, delete the previous version of the tool (dsc-pkg-tool-windows\dsc_pkg_tool.exe – delete the whole dsc-pkg-tool-windows folder) prior to downloading and unzipping the current version of the tool, as having more than one version of the tool in the same file location may lead to problems with duplicate file names.
     - **DO NOT delete your dsc-pkg folder or contents**: If you have already used the tool to create/initialize your data package (i.e. created your dsc-pkg folder within your study folder), **DO NOT** delete your dsc-pkg folder or any of its contents (i.e. standard data package metadata files such as experiment, resource, and results trackers and data dictionaries)
 
 # Download and Open Tool (Mac executable)

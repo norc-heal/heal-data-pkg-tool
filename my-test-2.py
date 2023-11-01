@@ -3,12 +3,15 @@ from PyQt5.QtCore    import *
 from PyQt5.QtWidgets import *
 from PyQt5 import QtWidgets, QtCore, uic
 import dsc_pkg_utils
+from pathlib import Path # base python, no pip install needed
+from PyQt5.QtCore import Qt, QSize
 
 
 #class Window(QWidget):
 class Window(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(Window, self).__init__(parent)
+        self.workingDataPkgDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
         self.initUI()
 
         
@@ -19,6 +22,9 @@ class Window(QtWidgets.QMainWindow):
         
         ################################## Create component widgets 
         
+        self.buttonLoadList = QtWidgets.QPushButton("Load Resource List")
+        self.buttonUpdateList = QtWidgets.QPushButton("Update Resource List")
+
         # create status message box
         self.userMessageBox = QtWidgets.QTextEdit(parent=self)
         self.userMessageBox.setReadOnly(True)
@@ -32,31 +38,74 @@ class Window(QtWidgets.QMainWindow):
         # )
         # self.labelAddMultiDepend.setWordWrap(True)
 
-        self.listCheckBox = ["Checkbox_1", "Checkbox_2", "Checkbox_3", "Checkbox_4", "Checkbox_5",
-                             "Checkbox_6", "Checkbox_7", "Checkbox_8", "Checkbox_9", "Checkbox_10",
-                             "Checkbox_6", "Checkbox_7", "Checkbox_8", "Checkbox_9", "Checkbox_10",
-                             "Checkbox_6", "Checkbox_7", "Checkbox_8", "Checkbox_9", "Checkbox_10" ]
+        # self.listCheckBox = ["Checkbox_1", "Checkbox_2", "Checkbox_3", "Checkbox_4", "Checkbox_5",
+        #                      "Checkbox_6", "Checkbox_7", "Checkbox_8", "Checkbox_9", "Checkbox_10",
+        #                      "Checkbox_6", "Checkbox_7", "Checkbox_8", "Checkbox_9", "Checkbox_10",
+        #                      "Checkbox_6", "Checkbox_7", "Checkbox_8", "Checkbox_9", "Checkbox_10" ]
+        self.listCheckBox    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ]
+        self.listPath    = ['my-file.csv']*20
+        self.listType    = ['associatedDataDictionary']*20
+        self.listParent    = ['resource-1']*20
         self.listPushButton    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ] 
+        self.listPushButton2    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ] 
         self.listLabel    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ]
         self.grid = QGridLayout()
 
         self.checkboxLabel = QLabel("<b>Share resource?</b>")
-        self.grid.addWidget(self.checkboxLabel,0,0)
+        self.checkboxLabel.setSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        self.checkboxLabel.setWordWrap(True)
+        self.grid.addWidget(self.checkboxLabel,0,0,Qt.AlignCenter)
+
+        self.pathLabel = QLabel("<b>Path</b>")
+        self.pathLabel.setSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        self.pathLabel.setWordWrap(True)
+        self.grid.addWidget(self.pathLabel,0,1,Qt.AlignCenter)
+
+        self.typeLabel = QLabel("<b>Type</b>")
+        self.typeLabel.setSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        self.typeLabel.setWordWrap(True)
+        self.grid.addWidget(self.typeLabel,0,2,Qt.AlignCenter)
+
+        self.parentLabel = QLabel("<b>Parent</b>")
+        self.parentLabel.setSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        self.parentLabel.setWordWrap(True)
+        self.grid.addWidget(self.parentLabel,0,3,Qt.AlignCenter)
 
         for i, v in enumerate(self.listCheckBox):
             self.listCheckBox[i] = QCheckBox(v)
+            self.listCheckBox[i].setChecked(True) 
+            self.listCheckBox[i].stateChanged.connect(self.updateActionButton)
+            self.listPath[i] = QLabel(self.listPath[i])
+            self.listType[i] = QLabel(self.listType[i])
+            self.listParent[i] = QLabel(self.listParent[i])
             self.listPushButton[i] = QPushButton("Add resource to tracker")
+            self.listPushButton2[i] = QPushButton("Rapid audit resource")
             self.listLabel[i] = QLabel()
-            self.grid.addWidget(self.listCheckBox[i], i+1, 0)
-            self.grid.addWidget(self.listPushButton[i], i+1, 1)
-            self.grid.addWidget(self.listLabel[i],    i+1, 2)
+            self.grid.addWidget(self.listCheckBox[i], i+1, 0, Qt.AlignCenter)
+            self.grid.addWidget(self.listPath[i],    i+1, 1, Qt.AlignCenter)
+            self.grid.addWidget(self.listType[i],    i+1, 2, Qt.AlignCenter)
+            self.grid.addWidget(self.listParent[i],    i+1, 3, Qt.AlignCenter)
+            self.grid.addWidget(self.listPushButton[i], i+1, 4)
+            self.grid.addWidget(self.listPushButton2[i], i+1, 5)
+            #self.grid.addWidget(self.listLabel[i],    i+1, 5)
 
-        self.button = QPushButton("Check CheckBox")
-        self.button.clicked.connect(self.checkboxChanged)
-        self.labelResult = QLabel()
+        #self.button = QPushButton("Check CheckBox")
+        #self.button.clicked.connect(self.checkboxChanged)
+        #self.labelResult = QLabel()
 
-        self.grid.addWidget(self.button,     len(self.listCheckBox) + 1, 0, 1,2)     
-        self.grid.addWidget(self.labelResult,len(self.listCheckBox) + 2, 0, 1,2)  
+        #self.grid.addWidget(self.button,     len(self.listCheckBox) + 1, 0, 1,2)     
+        #self.grid.addWidget(self.labelResult,len(self.listCheckBox) + 2, 0, 1,2) 
+        # self.grid.setSizePolicy(
+        #     QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        # ) 
         #self.setLayout(grid)
 
         
@@ -90,6 +139,8 @@ class Window(QtWidgets.QMainWindow):
         
         ################################## Finished creating component widgets - add them to vbox layout
         
+        self.vbox.addWidget(self.buttonLoadList)
+        self.vbox.addWidget(self.buttonUpdateList)
         self.vbox.addWidget(self.labelUserMessageBox)
         self.vbox.addWidget(self.userMessageBox)
         self.vbox.addLayout(self.grid)
@@ -132,6 +183,14 @@ class Window(QtWidgets.QMainWindow):
                 self.scroll.verticalScrollBar().minimum()
             )
         
+    def updateActionButton(self):
+        #check = self.checkbox.isChecked() 
+        print("something happened")
+        for i, v in enumerate(self.listCheckBox):
+            self.listLabel[i].setText("True" if v.checkState() else "False")
+            self.labelResult.setText("{}, {}".format(self.labelResult.text(),
+                                                     self.listLabel[i].text()))
+
 
     def checkboxChanged(self):
         self.labelResult.setText("")

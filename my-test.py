@@ -1,14 +1,18 @@
 import sys
 from PyQt5.QtCore    import *
 from PyQt5.QtWidgets import *
+import dsc_pkg_utils
 
 class Window(QWidget):
     def __init__(self, parent=None):
         super(Window, self).__init__(parent)
+
         self.listCheckBox = ["Checkbox_1", "Checkbox_2", "Checkbox_3", "Checkbox_4", "Checkbox_5",
+                             "Checkbox_6", "Checkbox_7", "Checkbox_8", "Checkbox_9", "Checkbox_10",
+                             "Checkbox_6", "Checkbox_7", "Checkbox_8", "Checkbox_9", "Checkbox_10",
                              "Checkbox_6", "Checkbox_7", "Checkbox_8", "Checkbox_9", "Checkbox_10" ]
-        self.listPushButton    = ['', '', '', '', '', '', '', '', '', '', ] 
-        self.listLabel    = ['', '', '', '', '', '', '', '', '', '', ]
+        self.listPushButton    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ] 
+        self.listLabel    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ]
         grid = QGridLayout()
 
         self.checkboxLabel = QLabel("<b>Share resource?</b>")

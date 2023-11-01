@@ -33,6 +33,10 @@ class Window(QtWidgets.QMainWindow):
 
         self.labelUserMessageBox = QtWidgets.QLabel(text = "User Status Message Box:", parent=self)
 
+        self.labelMinimalAnnotationCheckbox = QtWidgets.QLabel(text = "<b>Have you chosen a minimal annotation standard due to a very low level of resources available to devote to data-sharing?</b>", parent=self)
+        self.minimalAnnotationCheckbox = QtWidgets.QCheckBox("Yes, I have chosen a minimal annotation standard")
+        self.minimalAnnotationCheckbox.stateChanged.connect(self.checkIfMinimalAnnotation)
+        
         # self.labelAddMultiDepend.setSizePolicy(
         #     QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
         # )
@@ -57,6 +61,8 @@ class Window(QtWidgets.QMainWindow):
         )
         self.checkboxLabel.setWordWrap(True)
         self.grid.addWidget(self.checkboxLabel,0,0,Qt.AlignCenter)
+        # start hidden
+        self.checkboxLabel.hide()
 
         self.pathLabel = QLabel("<b>Path</b>")
         self.pathLabel.setSizePolicy(
@@ -83,12 +89,19 @@ class Window(QtWidgets.QMainWindow):
             self.listCheckBox[i] = QCheckBox(v)
             self.listCheckBox[i].setChecked(True) 
             self.listCheckBox[i].stateChanged.connect(self.updateActionButton)
+            # start hidden
+            self.listCheckBox[i].hide()
+
             self.listPath[i] = QLabel(self.listPath[i])
             self.listType[i] = QLabel(self.listType[i])
             self.listParent[i] = QLabel(self.listParent[i])
             self.listPushButton[i] = QPushButton("Add resource to tracker")
+            
             self.listPushButton2[i] = QPushButton("Rapid audit resource")
-            self.listLabel[i] = QLabel()
+            # start hidden
+            self.listPushButton2[i].hide()
+            
+            #self.listLabel[i] = QLabel()
             self.grid.addWidget(self.listCheckBox[i], i+1, 0, Qt.AlignCenter)
             self.grid.addWidget(self.listPath[i],    i+1, 1, Qt.AlignCenter)
             self.grid.addWidget(self.listType[i],    i+1, 2, Qt.AlignCenter)
@@ -143,6 +156,8 @@ class Window(QtWidgets.QMainWindow):
         self.vbox.addWidget(self.buttonUpdateList)
         self.vbox.addWidget(self.labelUserMessageBox)
         self.vbox.addWidget(self.userMessageBox)
+        self.vbox.addWidget(self.labelMinimalAnnotationCheckbox, Qt.AlignCenter)
+        self.vbox.addWidget(self.minimalAnnotationCheckbox, Qt.AlignCenter)
         self.vbox.addLayout(self.grid)
         
         ################################## Set layout of the grouping widget as the vbox layout with widgets added
@@ -191,7 +206,10 @@ class Window(QtWidgets.QMainWindow):
             self.labelResult.setText("{}, {}".format(self.labelResult.text(),
                                                      self.listLabel[i].text()))
 
+    def checkIfMinimalAnnotation(self):
+        print("annotation mode changed")
 
+        
     def checkboxChanged(self):
         self.labelResult.setText("")
         for i, v in enumerate(self.listCheckBox):

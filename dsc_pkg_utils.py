@@ -20,6 +20,28 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+def get_added_resource_paths(self):
+    
+    getDir = self.workingDataPkgDir
+    getResourceTrk = os.path.join(getDir,"heal-csv-resource-tracker.csv")
+    #getResourcesToAdd = os.path.join(getDir,"resources-to-add.csv")
+
+    if os.path.isfile(getResourceTrk):
+        resourceTrackerDf = pd.read_csv(getResourceTrk)
+        resourceTrackerDf.fillna("", inplace = True)
+
+        print(resourceTrackerDf)
+        print(resourceTrackerDfTrackerDf.columns)
+
+        if "path" in resourceTrackerDf.columns:
+
+            #experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
+            resourcePathSeries = resourceTrackerDf["path"].astype(str)
+            print(resourcePathSeries,type(resourcePathSeries))
+            resourcePathList = resourcePathSeries.tolist()
+            print(resourcePathList,type(resourcePathList))
+            
+
 def get_id(self, prefix, fileExt, folderPath):
 
     if folderPath:

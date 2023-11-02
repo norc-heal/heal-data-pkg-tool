@@ -202,14 +202,46 @@ class Window(QtWidgets.QMainWindow):
         #check = self.checkbox.isChecked() 
         print("something happened")
         for i, v in enumerate(self.listCheckBox):
-            self.listLabel[i].setText("True" if v.checkState() else "False")
-            self.labelResult.setText("{}, {}".format(self.labelResult.text(),
-                                                     self.listLabel[i].text()))
+            if self.listCheckBox[i].isChecked():
+                self.listPushButton[i].show()
+                self.listPushButton2[i].hide()
+            else:
+                self.listPushButton[i].hide()
+                self.listPushButton2[i].show()
+
+
 
     def checkIfMinimalAnnotation(self):
         print("annotation mode changed")
+        if self.minimalAnnotationCheckbox.isChecked():
+            self.checkboxLabel.show()
+            for i, v in enumerate(self.listCheckBox):
+            
+                # start hidden
+                self.listCheckBox[i].show()
+            
+                # if self.listCheckBox[i].isChecked:
+                #     self.listPushButton[i].show()
+                #     self.listPushButton2[i].hide()
+                # else: 
+                #     self.listPushButton[i].hide()
+                #     self.listPushButton2[i].show()
+            self.updateActionButton()
 
-        
+        else:
+            self.checkboxLabel.hide()
+            for i, v in enumerate(self.listCheckBox):
+            
+                # start hidden
+                self.listCheckBox[i].hide()
+            
+                # start hidden
+                self.listPushButton2[i].hide()
+
+                self.listPushButton[i].show()
+
+
+
     def checkboxChanged(self):
         self.labelResult.setText("")
         for i, v in enumerate(self.listCheckBox):

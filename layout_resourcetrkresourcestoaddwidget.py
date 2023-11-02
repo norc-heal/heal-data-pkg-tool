@@ -27,13 +27,12 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.buttonUpdateList = QtWidgets.QPushButton("Update Resource List")
 
         # create status message box
+        self.labelUserMessageBox = QtWidgets.QLabel(text = "User Status Message Box:", parent=self)
+
         self.userMessageBox = QtWidgets.QTextEdit(parent=self)
         self.userMessageBox.setReadOnly(True)
         self.messageText = ""
         self.userMessageBox.setText(self.messageText)
-
-        
-        self.labelUserMessageBox = QtWidgets.QLabel(text = "User Status Message Box:", parent=self)
 
         self.labelMinimalAnnotationCheckbox = QtWidgets.QLabel(text = "<b>Have you chosen a minimal annotation standard due to a very low level of resources available to devote to data-sharing?</b>", parent=self)
         self.minimalAnnotationCheckbox = QtWidgets.QCheckBox("Yes, I have chosen a minimal annotation standard")
@@ -200,6 +199,45 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 self.scroll.verticalScrollBar().minimum()
             )
         
+    def loadResourceList(self):
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        # resource tracker and resources to add files are needed to populate the list of resources that need to be added so perform some checks
+
+        checkFileList = ["heal-csv-resource-tracker.csv","resources-to-add.csv"]
+        checkFileNameList = ["Resource Tracker","Resources-to-Add"]
+
+        for i,c in enumerate(checkFileList):
+            # check that file exists in working data pkg dir, if not, return
+            if not os.path.exists(os.path.join(self.workingDataPkgDir, c)):
+                messageText = "<br>There is no " + checkFileNameList[i] + " file in your working Data Package Directory; Your working Data Package Directory must contain a " +  checkFileNameList[i] + " file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+            
+            # check that file is closed (user doesn't have it open in excel for example)
+            try: 
+                with open(os.path.join(self.workingDataPkgDir, c),'r+') as f:
+                    print("file is closed, proceed!!")
+            except PermissionError:
+                    messageText = "<br>The " + checkFileNameList[i] + " file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the " + checkFileNameList[i] + " file is open in Excel or similar application, and close the file. <br>"
+                    saveFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(saveFormat.format(messageText))
+                    return
+
+        if dsc_pkg_utils.get_added_resource_paths(self=self):
+            print("do a thing")
+        else: 
+            messageText = "<br>The list of study files/resources you still need to add to your Resource Tracker is populated by pulling in study files/resources you have listed as associated/dependencies for resources you have already added to the Resource Tracker. <br><br>You have not added any study files/resources to the Resource Tracker in your working Data Package Directory. You must add at least one study file/resource to the Resource Tracker to proceed. For guidance on where to start (e.g. which study file/resource to start with) you can visit the <a href=\"https://norc-heal.github.io/heal-data-pkg-guide/\">HEAL Data Packaging Guide</a>. To add a first study resource/file to your Resource Tracker, navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Add a new resource\" push-button. <br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+
+
+
+
+
     def updateActionButton(self):
         #check = self.checkbox.isChecked() 
         print("something happened")

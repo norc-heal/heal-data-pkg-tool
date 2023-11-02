@@ -40,6 +40,47 @@ def get_added_resource_paths(self):
             print(resourcePathSeries,type(resourcePathSeries))
             resourcePathList = resourcePathSeries.tolist()
             print(resourcePathList,type(resourcePathList))
+            resourcePathList = [x for x in resourcePathList if x] # remove empty strings
+            print(resourcePathList,type(resourcePathList))
+            resourcePathList = list(dict.fromkeys(resourcePathList)) # deduplicate list
+            print(resourcePathList,type(resourcePathList))
+
+        else: 
+            resourcePathList = []
+
+    else:
+        resourcePathList = []
+
+    return resourcePathList
+
+def get_resources_to_add():
+    print("hiiii")
+    
+    #getDir = self.workingDataPkgDir
+    getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
+    getResourcesToAdd = os.path.join(getDir,"resources-to-add.csv")
+    
+
+    if os.path.isfile(getResourcesToAdd):
+        resourcesToAddDf = pd.read_csv(getResourcesToAdd)
+        resourcesToAddDf.fillna("", inplace = True)
+        resourcesToAddDf = resourcesToAddDf[resourcesToAddDf["path"] != ""]
+        resourcesToAddDf["date-time"] = pd.to_datetime(resourcesToAddDf["date-time"])
+
+        print(resourcesToAddDf)
+        print(resourcesToAddDf.columns)
+        print(resourcesToAddDf.shape)
+
+        resourcesToAddDf = resourcesToAddDf[resourcesToAddDf["date-time"] == (resourcesToAddDf.groupby("parent-resource-id")["date-time"].transform("max"))]
+        #df[df['date'] < (df.groupby('id')['date'].transform('max') - pd.Timedelta(3, unit='M'))]
+
+        print(resourcesToAddDf)
+        print(resourcesToAddDf.columns)
+        print(resourcesToAddDf.shape)
+
+        
+
+    
             
 
 def get_id(self, prefix, fileExt, folderPath):

@@ -21,8 +21,10 @@ from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
 def get_added_resource_paths(self):
+#def get_added_resource_paths():
     
     getDir = self.workingDataPkgDir
+    #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
     getResourceTrk = os.path.join(getDir,"heal-csv-resource-tracker.csv")
     #getResourcesToAdd = os.path.join(getDir,"resources-to-add.csv")
 
@@ -31,7 +33,7 @@ def get_added_resource_paths(self):
         resourceTrackerDf.fillna("", inplace = True)
 
         print(resourceTrackerDf)
-        print(resourceTrackerDfTrackerDf.columns)
+        print(resourceTrackerDf.columns)
 
         if "path" in resourceTrackerDf.columns:
 
@@ -53,11 +55,12 @@ def get_added_resource_paths(self):
 
     return resourcePathList
 
-def get_resources_to_add():
+def get_resources_to_add(self):
+#def get_resources_to_add():
     print("hiiii")
     
-    #getDir = self.workingDataPkgDir
-    getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
+    getDir = self.workingDataPkgDir
+    #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
     getResourcesToAdd = os.path.join(getDir,"resources-to-add.csv")
     
 
@@ -77,6 +80,11 @@ def get_resources_to_add():
         print(resourcesToAddDf)
         print(resourcesToAddDf.columns)
         print(resourcesToAddDf.shape)
+
+    else:
+        resourcesToAddDf = None
+
+    return resourcesToAddDf
 
         
 

@@ -5,6 +5,8 @@ from PyQt5 import QtWidgets, QtCore, uic
 import dsc_pkg_utils
 from pathlib import Path # base python, no pip install needed
 from PyQt5.QtCore import Qt, QSize
+import os
+import pandas as pd
 
 
 #class Window(QWidget):
@@ -24,6 +26,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         ################################## Create component widgets 
         
         self.buttonLoadList = QtWidgets.QPushButton("Load Resource List")
+        self.buttonLoadList.clicked.connect(self.loadResourceList)
+
         self.buttonUpdateList = QtWidgets.QPushButton("Update Resource List")
 
         # create status message box
@@ -37,120 +41,74 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.labelMinimalAnnotationCheckbox = QtWidgets.QLabel(text = "<b>Have you chosen a minimal annotation standard due to a very low level of resources available to devote to data-sharing?</b>", parent=self)
         self.minimalAnnotationCheckbox = QtWidgets.QCheckBox("Yes, I have chosen a minimal annotation standard")
         self.minimalAnnotationCheckbox.stateChanged.connect(self.checkIfMinimalAnnotation)
+
+        # start hidden - unhide when user loads list of resources to add
+        self.labelMinimalAnnotationCheckbox.hide()
+        self.minimalAnnotationCheckbox.hide()
         
-        # self.labelAddMultiDepend.setSizePolicy(
+        # self.listCheckBox    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ]
+        # self.listPath    = ['my-file.csv']*20
+        # self.listType    = ['associatedDataDictionary']*20
+        # self.listParent    = ['resource-1']*20
+        # self.listPushButton    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ] 
+        # self.listPushButton2    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ] 
+        # self.listLabel    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ]
+        # self.grid = QGridLayout()
+
+        # self.checkboxLabel = QLabel("<b>Share resource?</b>")
+        # self.checkboxLabel.setSizePolicy(
         #     QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
         # )
-        # self.labelAddMultiDepend.setWordWrap(True)
+        # self.checkboxLabel.setWordWrap(True)
+        # self.grid.addWidget(self.checkboxLabel,0,0,Qt.AlignCenter)
+        # # start hidden
+        # self.checkboxLabel.hide()
 
-        # self.listCheckBox = ["Checkbox_1", "Checkbox_2", "Checkbox_3", "Checkbox_4", "Checkbox_5",
-        #                      "Checkbox_6", "Checkbox_7", "Checkbox_8", "Checkbox_9", "Checkbox_10",
-        #                      "Checkbox_6", "Checkbox_7", "Checkbox_8", "Checkbox_9", "Checkbox_10",
-        #                      "Checkbox_6", "Checkbox_7", "Checkbox_8", "Checkbox_9", "Checkbox_10" ]
-        self.listCheckBox    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ]
-        self.listPath    = ['my-file.csv']*20
-        self.listType    = ['associatedDataDictionary']*20
-        self.listParent    = ['resource-1']*20
-        self.listPushButton    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ] 
-        self.listPushButton2    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ] 
-        self.listLabel    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ]
-        self.grid = QGridLayout()
-
-        self.checkboxLabel = QLabel("<b>Share resource?</b>")
-        self.checkboxLabel.setSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
-        )
-        self.checkboxLabel.setWordWrap(True)
-        self.grid.addWidget(self.checkboxLabel,0,0,Qt.AlignCenter)
-        # start hidden
-        self.checkboxLabel.hide()
-
-        self.pathLabel = QLabel("<b>Path</b>")
-        self.pathLabel.setSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
-        )
-        self.pathLabel.setWordWrap(True)
-        self.grid.addWidget(self.pathLabel,0,1,Qt.AlignCenter)
-
-        self.typeLabel = QLabel("<b>Type</b>")
-        self.typeLabel.setSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
-        )
-        self.typeLabel.setWordWrap(True)
-        self.grid.addWidget(self.typeLabel,0,2,Qt.AlignCenter)
-
-        self.parentLabel = QLabel("<b>Parent</b>")
-        self.parentLabel.setSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
-        )
-        self.parentLabel.setWordWrap(True)
-        self.grid.addWidget(self.parentLabel,0,3,Qt.AlignCenter)
-
-        for i, v in enumerate(self.listCheckBox):
-            self.listCheckBox[i] = QCheckBox(v)
-            self.listCheckBox[i].setChecked(True) 
-            self.listCheckBox[i].stateChanged.connect(self.updateActionButton)
-            # start hidden
-            self.listCheckBox[i].hide()
-
-            self.listPath[i] = QLabel(self.listPath[i])
-            self.listType[i] = QLabel(self.listType[i])
-            self.listParent[i] = QLabel(self.listParent[i])
-            self.listPushButton[i] = QPushButton("Add resource to tracker")
-            
-            self.listPushButton2[i] = QPushButton("Rapid audit resource")
-            # start hidden
-            self.listPushButton2[i].hide()
-            
-            #self.listLabel[i] = QLabel()
-            self.grid.addWidget(self.listCheckBox[i], i+1, 0, Qt.AlignCenter)
-            self.grid.addWidget(self.listPath[i],    i+1, 1, Qt.AlignCenter)
-            self.grid.addWidget(self.listType[i],    i+1, 2, Qt.AlignCenter)
-            self.grid.addWidget(self.listParent[i],    i+1, 3, Qt.AlignCenter)
-            self.grid.addWidget(self.listPushButton[i], i+1, 4)
-            self.grid.addWidget(self.listPushButton2[i], i+1, 5)
-            #self.grid.addWidget(self.listLabel[i],    i+1, 5)
-
-        #self.button = QPushButton("Check CheckBox")
-        #self.button.clicked.connect(self.checkboxChanged)
-        #self.labelResult = QLabel()
-
-        #self.grid.addWidget(self.button,     len(self.listCheckBox) + 1, 0, 1,2)     
-        #self.grid.addWidget(self.labelResult,len(self.listCheckBox) + 2, 0, 1,2) 
-        # self.grid.setSizePolicy(
+        # self.pathLabel = QLabel("<b>Path</b>")
+        # self.pathLabel.setSizePolicy(
         #     QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
-        # ) 
-        #self.setLayout(grid)
+        # )
+        # self.pathLabel.setWordWrap(True)
+        # self.grid.addWidget(self.pathLabel,0,1,Qt.AlignCenter)
 
-        
+        # self.typeLabel = QLabel("<b>Type</b>")
+        # self.typeLabel.setSizePolicy(
+        #     QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        # )
+        # self.typeLabel.setWordWrap(True)
+        # self.grid.addWidget(self.typeLabel,0,2,Qt.AlignCenter)
+
+        # self.parentLabel = QLabel("<b>Parent</b>")
+        # self.parentLabel.setSizePolicy(
+        #     QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        # )
+        # self.parentLabel.setWordWrap(True)
+        # self.grid.addWidget(self.parentLabel,0,3,Qt.AlignCenter)
+
+        # for i, v in enumerate(self.listCheckBox):
+        #     self.listCheckBox[i] = QCheckBox(v)
+        #     self.listCheckBox[i].setChecked(True) 
+        #     self.listCheckBox[i].stateChanged.connect(self.updateActionButton)
+        #     # start hidden
+        #     self.listCheckBox[i].hide()
+
+        #     self.listPath[i] = QLabel(self.listPath[i])
+        #     self.listType[i] = QLabel(self.listType[i])
+        #     self.listParent[i] = QLabel(self.listParent[i])
+        #     self.listPushButton[i] = QPushButton("Add resource to tracker")
+            
+        #     self.listPushButton2[i] = QPushButton("Rapid audit resource")
+        #     # start hidden
+        #     self.listPushButton2[i].hide()
+            
+            
+        #     self.grid.addWidget(self.listCheckBox[i], i+1, 0, Qt.AlignCenter)
+        #     self.grid.addWidget(self.listPath[i],    i+1, 1, Qt.AlignCenter)
+        #     self.grid.addWidget(self.listType[i],    i+1, 2, Qt.AlignCenter)
+        #     self.grid.addWidget(self.listParent[i],    i+1, 3, Qt.AlignCenter)
+        #     self.grid.addWidget(self.listPushButton[i], i+1, 4)
+        #     self.grid.addWidget(self.listPushButton2[i], i+1, 5)
        
-        # ################################## Apply some initializing and maintenance functions
-
-        # # initialize tool tip for each form field based on the description text for the corresponding schema property
-        # self.add_tooltip()
-        # self.add_priority_highlight_and_hide()
-        # self.add_dir()
-        # if self.mode == "add":
-        #     self.get_id()
-        # #self.add_priority_highlight()
-        # #self.initial_hide()
-        # self.popFormField = []
-        # self.editSingle = False
-
-        # # check for emptyp tooltip content whenever form changes and replace empty tooltip with original tooltip content
-        # # (only relevant for fields with in situ validation - i.e. string must conform to a pattern - as pyqtschema will replace the 
-        # # tooltip content with some error content, then replace the content with empty string once the error is cleared - this check will
-        # # restore the original tooltip content - for efficiency, may want to only run this when a widget that can have validation 
-        # # errors changes - #TODO)
-        # self.form.widget.on_changed.connect(self.check_tooltip)
-        # self.formWidgetList[self.formWidgetNameList.index("category")].on_changed.connect(self.conditional_fields)
-        # self.formWidgetList[self.formWidgetNameList.index("access")].on_changed.connect(self.conditional_fields)
-        # self.formWidgetList[self.formWidgetNameList.index("descriptionFileNameConvention")].on_changed.connect(self.conditional_highlight_apply_convention)
-        # self.formWidgetList[self.formWidgetNameList.index("categorySubMetadata")].on_changed.connect(self.conditional_fields)
-        # self.formWidgetList[self.formWidgetNameList.index("path")].on_changed.connect(self.conditional_fields)
-        
-        
-        
         ################################## Finished creating component widgets - add them to vbox layout
         
         self.vbox.addWidget(self.buttonLoadList)
@@ -159,7 +117,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.vbox.addWidget(self.userMessageBox)
         self.vbox.addWidget(self.labelMinimalAnnotationCheckbox, Qt.AlignCenter)
         self.vbox.addWidget(self.minimalAnnotationCheckbox, Qt.AlignCenter)
-        self.vbox.addLayout(self.grid)
+        #self.vbox.addLayout(self.grid)
         
         ################################## Set layout of the grouping widget as the vbox layout with widgets added
 
@@ -226,13 +184,103 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     return
-
-        if dsc_pkg_utils.get_added_resource_paths(self=self):
-            print("do a thing")
-        else: 
-            messageText = "<br>The list of study files/resources you still need to add to your Resource Tracker is populated by pulling in study files/resources you have listed as associated/dependencies for resources you have already added to the Resource Tracker. <br><br>You have not added any study files/resources to the Resource Tracker in your working Data Package Directory. You must add at least one study file/resource to the Resource Tracker to proceed. For guidance on where to start (e.g. which study file/resource to start with) you can visit the <a href=\"https://norc-heal.github.io/heal-data-pkg-guide/\">HEAL Data Packaging Guide</a>. To add a first study resource/file to your Resource Tracker, navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Add a new resource\" push-button. <br>"
+        
+        resourcePathList = dsc_pkg_utils.get_added_resource_paths(self=self)
+        
+        if not resourcePathList:
+                   
+            messageText = "<br>We can't currently populate a list of study files/resources that need to be added to the Resource Tracker. The list of study files/resources you still need to add to your Resource Tracker is populated by pulling in study files/resources you have listed as associated/dependencies for resources you have already added to the Resource Tracker. <br><br>You have not added any study files/resources to the Resource Tracker in your working Data Package Directory. You must add at least one study file/resource to the Resource Tracker to proceed. For guidance on where to start (e.g. which study file/resource to start with) you can visit the <a href=\"https://norc-heal.github.io/heal-data-pkg-guide/\">HEAL Data Packaging Guide</a>. To add a first study resource/file to your Resource Tracker, navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Add a new resource\" push-button. <br>"
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
+            return
+
+        resourcesToAddDf = dsc_pkg_utils.get_resources_to_add(self=self)
+
+        if ((not isinstance(resourcesToAddDf, pd.DataFrame)) | resourcesToAddDf.empty):
+             
+            messageText = "<br>We can't currently populate a list of study files/resources that need to be added to the Resource Tracker. The list of study files/resources you still need to add to your Resource Tracker is populated by pulling in study files/resources you have listed as associated/dependencies for resources you have already added to the Resource Tracker. <br><br>You have not listed any files as associated/dependencies for any of the study files/resources you've already added to the Resource Tracker in your working Data Package Directory. You must add at least one file that is an associated file/dependency for a study file/resource added to the Resource Tracker to proceed. For guidance on where to start (e.g. which study file/resource to start with) you can visit the <a href=\"https://norc-heal.github.io/heal-data-pkg-guide/\">HEAL Data Packaging Guide</a> site. To add a first study resource/file to your Resource Tracker, navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Add a new resource\" push-button. For guidance on how to add an associated file/dependency for a study file/resource when you add it to the Resource tracker, head to the <a href=\"https://norc-heal.github.io/heal-data-pkg-tool-docs/\">HEAL Data Packaging Tool \"How-to\" </a> site<br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+
+        print(resourcesToAddDf.shape)
+        resourcesToAddDf = resourcesToAddDf[~resourcesToAddDf["path"].isin(resourcePathList)]
+        print("removed resources already added:")
+        print(resourcesToAddDf.shape)
+
+        #################################################################################################
+
+        self.labelMinimalAnnotationCheckbox.show() 
+        self.minimalAnnotationCheckbox.show()
+        
+        self.listCheckBox    = ['']*resourcesToAddDf.shape[0]
+        self.listPath    = resourcesToAddDf["path"].tolist()
+        self.listType    = resourcesToAddDf["dependency-type"].tolist()
+        self.listParent    = resourcesToAddDf["parent-resource-id"].tolist()
+        self.listPushButton    = ['']*resourcesToAddDf.shape[0]
+        self.listPushButton2    = ['']*resourcesToAddDf.shape[0]
+        self.grid = QGridLayout()
+
+        self.checkboxLabel = QLabel("<b>Share resource?</b>")
+        self.checkboxLabel.setSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        self.checkboxLabel.setWordWrap(True)
+        self.grid.addWidget(self.checkboxLabel,0,0,Qt.AlignCenter)
+        # start hidden
+        self.checkboxLabel.hide()
+
+        self.pathLabel = QLabel("<b>Path</b>")
+        self.pathLabel.setSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        self.pathLabel.setWordWrap(True)
+        self.grid.addWidget(self.pathLabel,0,1,Qt.AlignCenter)
+
+        self.typeLabel = QLabel("<b>Type</b>")
+        self.typeLabel.setSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        self.typeLabel.setWordWrap(True)
+        self.grid.addWidget(self.typeLabel,0,2,Qt.AlignCenter)
+
+        self.parentLabel = QLabel("<b>Parent</b>")
+        self.parentLabel.setSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        self.parentLabel.setWordWrap(True)
+        self.grid.addWidget(self.parentLabel,0,3,Qt.AlignCenter)
+
+        for i, v in enumerate(self.listCheckBox):
+            self.listCheckBox[i] = QCheckBox(v)
+            self.listCheckBox[i].setChecked(True) 
+            self.listCheckBox[i].stateChanged.connect(self.updateActionButton)
+            # start hidden
+            self.listCheckBox[i].hide()
+
+            self.listPath[i] = QLabel(self.listPath[i])
+            self.listType[i] = QLabel(self.listType[i])
+            self.listParent[i] = QLabel(self.listParent[i])
+            self.listPushButton[i] = QPushButton("Add resource to tracker")
+            
+            self.listPushButton2[i] = QPushButton("Rapid audit resource")
+            # start hidden
+            self.listPushButton2[i].hide()
+            
+            self.grid.addWidget(self.listCheckBox[i], i+1, 0, Qt.AlignCenter)
+            self.grid.addWidget(self.listPath[i],    i+1, 1, Qt.AlignCenter)
+            self.grid.addWidget(self.listType[i],    i+1, 2, Qt.AlignCenter)
+            self.grid.addWidget(self.listParent[i],    i+1, 3, Qt.AlignCenter)
+            self.grid.addWidget(self.listPushButton[i], i+1, 4)
+            self.grid.addWidget(self.listPushButton2[i], i+1, 5)
+            
+        ################################## Finished creating component widgets - add them to vbox layout
+        
+        self.vbox.addLayout(self.grid)
+        
+        
+        
+
 
 
 

@@ -204,10 +204,17 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             return
 
         print(resourcesToAddDf.shape)
+        # remove resources already added to resource tracker from list
         resourcesToAddDf = resourcesToAddDf[~resourcesToAddDf["path"].isin(resourcePathList)]
         print("removed resources already added:")
         print(resourcesToAddDf.shape)
 
+        # drop duplicates of resource that needs to be added, keep the first instance 
+        resourcesToAddDf.drop_duplicates(subset=["path"],inplace=True)
+        print("drop duplicates of resource that needs to be added, keep the first instance:")
+        print(resourcesToAddDf.shape)
+
+        
         #################################################################################################
 
         self.labelMinimalAnnotationCheckbox.show() 

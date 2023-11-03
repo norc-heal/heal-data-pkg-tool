@@ -86,6 +86,60 @@ def get_resources_to_add(self):
 
     return resourcesToAddDf
 
+def get_resources_share_status(self):
+    
+    getDir = self.workingDataPkgDir
+    #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
+    getShareStatus = os.path.join(getDir,"share-status.csv")
+    
+
+    if os.path.isfile(getShareStatus):
+        shareStatusDf = pd.read_csv(getShareStatus)
+        shareStatusDf.fillna("", inplace = True)
+        pd.to_datetime(shareStatusDf["date-time"])
+        
+        print(shareStatusDf)
+        print(shareStatusDf.columns)
+        print(shareStatusDf.shape)
+
+        # sort by date-time (ascending), then drop duplicates of, keeping the last/latest instance of each path's occurrence
+        # to get the latest share status
+        shareStatusDf.sort_values(by=["date-time"],ascending=True,inplace=True)
+        shareStatusDf.drop_duplicates(subset=["path"],keep="last",inplace=True)
+        print("drop duplicates of resource keeping the last/latest instance of each path's occurrence to get the latest share status:")
+        print(shareStatusDf.shape)
+        
+    else:
+        shareStatusDf = []
+
+    return shareStatusDf
+
+def get_resources_annotation_mode_status(self):
+#def get_resources_annotation_mode_status():
+    
+    getDir = self.workingDataPkgDir
+    #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
+    getAnnotationModeStatus = os.path.join(getDir,"annotation_mode-status.csv")
+    
+
+    if os.path.isfile(getAnnotationModeStatus):
+        annotationModeStatusDf = pd.read_csv(getAnnotationModeStatus)
+        annotationModeStatusDf.fillna("", inplace = True)
+        
+        print(annotationModeStatusDf)
+        print(annotationModeStatusDf.columns)
+        print(annotationModeStatusDf.shape)
+
+        # sort by date-time (descending) so that latest annotation mode status value is in first row of df
+        annotationModeStatusDf.sort_values(by=["date-time"],ascending=False,inplace=True)
+        # get the latest annotation mode status from first row of df as a string
+        annotationModeStatus = annotationModeStatusDf["annotation-mode-status"].iloc[0]
+
+    else:
+        annotationModeStatus = ""
+
+    return annotationModeStatus
+
         
 
     

@@ -16,8 +16,14 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         #self.workingDataPkgDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         
+        self.newSession = True
+
         self.shareStatusListChanged = False
         self.annotationModeChanged = False
+
+        self.shareStatusList = []
+        self.shareStatusDf = []
+        self.annotationModeStatus = None
         
         self.initUI()
 
@@ -162,12 +168,21 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             )
         
     def loadResourceList(self):
+        
         # check if user has set a working data package dir - if not exit gracefully with informative message
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
 
-        # resource tracker and resources to add files are needed to populate the list of resources that need to be added so perform some checks
+        # these conditions will only be true if the user has alreay loaded a resource list at least once, 
+        # this means the check on working data pkg dir set will already be done, so this does not need to be 
+        # run after checking for working data pkg dir set again, but just to be safe..
+        if ((self.shareStatusListChanged) | (self.annotationModeChanged)):
+            # if user has changed the status of either the share status check boxes or the minimal annotation mode check box, 
+            # write the share status list and annotation mode status to file, then reset the changed boolean vars back to false
+            # to be ready to detect a new change to either of these
+            self.cleanup()
 
+        # resource tracker and resources to add files are needed to populate the list of resources that need to be added so perform some checks
         checkFileList = ["heal-csv-resource-tracker.csv","resources-to-add.csv"]
         checkFileNameList = ["Resource Tracker","Resources-to-Add"]
 
@@ -213,17 +228,27 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         print("removed resources already added:")
         print(resourcesToAddDf.shape)
 
-        # drop duplicates of resource that needs to be added, keep the first instance 
+        # sort by date-time (ascending), then drop duplicates of resource that needs to be added, keeping the first/earliest instance 
+        resourcesToAddDf.sort_values(by=["date-time"],ascending=True,inplace=True)
         resourcesToAddDf.drop_duplicates(subset=["path"],inplace=True)
         print("drop duplicates of resource that needs to be added, keep the first instance:")
         print(resourcesToAddDf.shape)
+
+        if self.newSession:
+            if os.path.isfile(os.path.join(self.workingDataPkgDir,"latest-share-status.csv")):
+                self.shareStatusDf = dsc_pkg_utils.get_resources_share_status(self=self)
+                print("shareStatusDf from file: ",self.shareStatusDf)
+
+            if os.path.isfile(os.path.join(self.workingDataPkgDir,"latest-share-status.csv")):
+                self.annotationModeStatus = dsc_pkg_utils.get_resources_annotation_mode_status(self=self)
+                print("annotationModeStatus from file: ",self.annotationModeStatus)
 
         
         #################################################################################################
 
         self.labelMinimalAnnotationCheckbox.show() 
         self.minimalAnnotationCheckbox.show()
-        
+                
         self.listCheckBox    = ['']*resourcesToAddDf.shape[0]
         self.listPath    = resourcesToAddDf["path"].tolist()
         self.listType    = resourcesToAddDf["dependency-type"].tolist()
@@ -265,6 +290,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         for i, v in enumerate(self.listCheckBox):
             self.listCheckBox[i] = QCheckBox(v)
             self.listCheckBox[i].setChecked(True) 
+            
             self.listCheckBox[i].stateChanged.connect(self.updateActionButton)
             # start hidden
             self.listCheckBox[i].hide()
@@ -288,6 +314,29 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         ################################## Finished creating component widgets - add them to vbox layout
         
         self.vbox.addLayout(self.grid)
+
+        ################################## Update default settings of minimal annotation checkbox and share status checkboxes based on information either from this or previous/most recent session
+        if self.annotationModeStatus:
+            if self.annotationModeStatus == "minimal":
+                self.minimalAnnotationCheckbox.setChecked(True) 
+
+        if isinstance(self.shareStatusDf,pd.DataFrame):
+            for i, v in enumerate(self.listCheckBox):
+                if (self.shareStatusDf["path"] == self.listPath[i].text()).any():
+                    print ("Share status available for: ", self.listPath[i].text())
+                    subShareStatusDf = self.shareStatusDf[self.shareStatusDf["path"] == self.listPath[i].text()]
+                    print(subShareStatusDf.shape) # should be just one row
+
+                    if subShareStatusDf["share-status"] != "share":
+                        self.listCheckBox[i].setChecked(False) 
+
+        # programmatic update of the minimal annotation checkbox to checked should trigger the state changed signal and 
+        # lead to showing the share checkboxes
+        # 
+        # programmatic update of the share checkboxes to unchecked should trigger the state changed signal and lead to 
+        # showing the rapid audit resource button and hiding the add resource to tracker button        
+                
+        self.newSession = False # set new session indicator to False - this will let the widget know that it shouldn't try to open share status or annotation mode status save files, but should load them from local within session vars if they exist
         
     
     def updateActionButton(self):
@@ -305,7 +354,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 self.listPushButton[i].show()
                 self.listPushButton2[i].hide()
             else:
-                self.shareStatusList.append("no share")
+                self.shareStatusList.append("no-share")
                 self.listPushButton[i].hide()
                 self.listPushButton2[i].show()
 
@@ -332,7 +381,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             self.updateActionButton()
 
         else:
-            self.annotationModeStatus = "standard/wholistic"
+            self.annotationModeStatus = "standard-wholistic"
             self.checkboxLabel.hide()
             for i, v in enumerate(self.listCheckBox):
             
@@ -345,15 +394,22 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 self.listPushButton[i].show()
 
     def cleanup(self):
+        
         if self.shareStatusListChanged:
-            df = pd.DataFrame(list(zip(self.pathShareStatusList, self.shareStatusList)),
-               columns =["path", "latest-share-status"])
-            df.to_csv(os.path.join(self.workingDataPkgDir,"latest-share-status.csv"), index=False)
+            self.shareStatusDf = pd.DataFrame(list(zip(self.pathShareStatusList, self.shareStatusList)),
+               columns =["path", "share-status"])
+            self.shareStatusDf["date-time"] = pd.Timestamp("now")
+            self.shareStatusDf.to_csv(os.path.join(self.workingDataPkgDir,"share-status.csv"), index=False)
+
+            self.shareStatusListChanged = False
 
         if self.annotationModeChanged:
             print("hello")
             df = pd.DataFrame([self.annotationModeStatus], columns =['annotation-mode-status'])
+            df["date-time"] = pd.Timestamp("now")
             df.to_csv(os.path.join(self.workingDataPkgDir,"annotation-mode-status.csv"), index=False)
+
+            self.annotationModeChanged = False
 
     # def checkboxChanged(self):
     #     self.labelResult.setText("")

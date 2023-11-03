@@ -15,9 +15,13 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         super(ResourcesToAddWindow, self).__init__(parent)
         #self.workingDataPkgDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
+        
+        self.shareStatusListChanged = False
+        self.annotationModeChanged = False
+        
         self.initUI()
 
-        
+    
     def initUI(self):
         self.scroll = QtWidgets.QScrollArea()             # Scroll Area which contains the widgets, set as the centralWidget
         self.widget = QtWidgets.QWidget()                 # Widget that contains the collection of Vertical Box
@@ -285,30 +289,34 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         
         self.vbox.addLayout(self.grid)
         
-        
-        
-
-
-
-
-
-
+    
     def updateActionButton(self):
-        #check = self.checkbox.isChecked() 
         print("something happened")
+        self.shareStatusListChanged = True
+        self.shareStatusList = []
+        self.pathShareStatusList = []
+
         for i, v in enumerate(self.listCheckBox):
+            self.pathShareStatusList.append(self.listPath[i].text())
+            print(self.pathShareStatusList)
+
             if self.listCheckBox[i].isChecked():
+                self.shareStatusList.append("share")
                 self.listPushButton[i].show()
                 self.listPushButton2[i].hide()
             else:
+                self.shareStatusList.append("no share")
                 self.listPushButton[i].hide()
                 self.listPushButton2[i].show()
 
 
-
     def checkIfMinimalAnnotation(self):
         print("annotation mode changed")
+        self.annotationModeChanged = True
+        self.annotationModeStatus = None
+
         if self.minimalAnnotationCheckbox.isChecked():
+            self.annotationModeStatus = "minimal"
             self.checkboxLabel.show()
             for i, v in enumerate(self.listCheckBox):
             
@@ -324,6 +332,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             self.updateActionButton()
 
         else:
+            self.annotationModeStatus = "standard/wholistic"
             self.checkboxLabel.hide()
             for i, v in enumerate(self.listCheckBox):
             
@@ -335,14 +344,23 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
 
                 self.listPushButton[i].show()
 
+    def cleanup(self):
+        if self.shareStatusListChanged:
+            df = pd.DataFrame(list(zip(self.pathShareStatusList, self.shareStatusList)),
+               columns =["path", "latest-share-status"])
+            df.to_csv(os.path.join(self.workingDataPkgDir,"latest-share-status.csv"), index=False)
 
+        if self.annotationModeChanged:
+            print("hello")
+            df = pd.DataFrame([self.annotationModeStatus], columns =['annotation-mode-status'])
+            df.to_csv(os.path.join(self.workingDataPkgDir,"annotation-mode-status.csv"), index=False)
 
-    def checkboxChanged(self):
-        self.labelResult.setText("")
-        for i, v in enumerate(self.listCheckBox):
-            self.listLabel[i].setText("True" if v.checkState() else "False")
-            self.labelResult.setText("{}, {}".format(self.labelResult.text(),
-                                                     self.listLabel[i].text()))
+    # def checkboxChanged(self):
+    #     self.labelResult.setText("")
+    #     for i, v in enumerate(self.listCheckBox):
+    #         self.listLabel[i].setText("True" if v.checkState() else "False")
+    #         self.labelResult.setText("{}, {}".format(self.labelResult.text(),
+    #                                                  self.listLabel[i].text()))
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

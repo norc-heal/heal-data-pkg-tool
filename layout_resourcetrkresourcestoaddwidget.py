@@ -16,6 +16,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         #self.workingDataPkgDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         
+        self.grid = None
         self.newSession = True
 
         self.shareStatusListChanged = False
@@ -168,6 +169,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             )
         
     def loadResourceList(self):
+
+        self.loadingFile = True
         
         # check if user has set a working data package dir - if not exit gracefully with informative message
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
@@ -204,6 +207,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                     self.userMessageBox.append(saveFormat.format(messageText))
                     return
         
+        ##############################################################################################
+
         resourcePathList = dsc_pkg_utils.get_added_resource_paths(self=self)
         
         if not resourcePathList:
@@ -234,16 +239,20 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         print("drop duplicates of resource that needs to be added, keep the first instance:")
         print(resourcesToAddDf.shape)
 
-        if self.newSession:
-            if os.path.isfile(os.path.join(self.workingDataPkgDir,"latest-share-status.csv")):
-                self.shareStatusDf = dsc_pkg_utils.get_resources_share_status(self=self)
-                print("shareStatusDf from file: ",self.shareStatusDf)
+        
+        if os.path.isfile(os.path.join(self.workingDataPkgDir,"latest-share-status.csv")):
+            self.shareStatusDf = dsc_pkg_utils.get_resources_share_status(self=self)
+            print("shareStatusDf from file: ",self.shareStatusDf)
 
-            if os.path.isfile(os.path.join(self.workingDataPkgDir,"latest-share-status.csv")):
-                self.annotationModeStatus = dsc_pkg_utils.get_resources_annotation_mode_status(self=self)
-                print("annotationModeStatus from file: ",self.annotationModeStatus)
+        if os.path.isfile(os.path.join(self.workingDataPkgDir,"latest-share-status.csv")):
+            self.annotationModeStatus = dsc_pkg_utils.get_resources_annotation_mode_status(self=self)
+            print("annotationModeStatus from file: ",self.annotationModeStatus)
 
         
+        #################################################################################################
+        # if grid layout already exists, delete it before remaking and readding to vbox layout
+        if self.grid: 
+            dsc_pkg_utils.layoutInLayoutDelete(self=self,containerLayout=self.vbox,layoutInLayout=self.grid)
         #################################################################################################
 
         self.labelMinimalAnnotationCheckbox.show() 
@@ -327,7 +336,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                     subShareStatusDf = self.shareStatusDf[self.shareStatusDf["path"] == self.listPath[i].text()]
                     print(subShareStatusDf.shape) # should be just one row
 
-                    if subShareStatusDf["share-status"] != "share":
+                    if subShareStatusDf["share-status"].iloc[0] != "share":
                         self.listCheckBox[i].setChecked(False) 
 
         # programmatic update of the minimal annotation checkbox to checked should trigger the state changed signal and 
@@ -335,12 +344,43 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         # 
         # programmatic update of the share checkboxes to unchecked should trigger the state changed signal and lead to 
         # showing the rapid audit resource button and hiding the add resource to tracker button        
-                
-        self.newSession = False # set new session indicator to False - this will let the widget know that it shouldn't try to open share status or annotation mode status save files, but should load them from local within session vars if they exist
         
+        self.shareStatusListChanged = False
+        self.annotationModeChanged = False
+
+        self.shareStatusList = []
+        self.shareStatusDf = []
+        self.annotationModeStatus = None
+        
+        self.newSession = False # set new session indicator to False - this will let the widget know that it shouldn't try to open share status or annotation mode status save files, but should load them from local within session vars if they exist
+        self.loadFileStatus = True
+        self.loadingFile = False
+
+    # def deleteItemsOfLayout(layout):
+    #     if layout is not None:
+    #         while layout.count():
+    #             item = layout.takeAt(0)
+    #             widget = item.widget()
+    #             if widget is not None:
+    #                 widget.setParent(None)
+    #             else:
+    #                 deleteItemsOfLayout(item.layout())
+
+    # def layoutInLayoutDelete(self, layoutInLayout):
+    #     for i in range(self.containerLayout.count()):
+    #         layout_item = self.containerLayout.itemAt(i)
+    #         if layout_item.layout() == layoutInLayout:
+    #             deleteItemsOfLayout(layout_item.layout())
+    #             self.containerLayout.removeItem(layout_item)
+    #             break
     
     def updateActionButton(self):
         print("something happened")
+
+        # this update action will get triggered during load file fx; return if checkboxes are being updated by load file function
+        if self.loadingFile: 
+            return
+
         self.shareStatusListChanged = True
         self.shareStatusList = []
         self.pathShareStatusList = []

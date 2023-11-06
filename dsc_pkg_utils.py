@@ -20,6 +20,25 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+
+def deleteItemsOfLayout(layout):
+        if layout is not None:
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.setParent(None)
+                else:
+                    deleteItemsOfLayout(item.layout())
+
+def layoutInLayoutDelete(self,containerLayout,layoutInLayout):
+    for i in range(self.containerLayout.count()):
+        layout_item = self.containerLayout.itemAt(i)
+        if layout_item.layout() == layoutInLayout:
+            dsc_pkg_utils.deleteItemsOfLayout(layout_item.layout())
+            self.containerLayout.removeItem(layout_item)
+            break
+
 def get_added_resource_paths(self):
 #def get_added_resource_paths():
     

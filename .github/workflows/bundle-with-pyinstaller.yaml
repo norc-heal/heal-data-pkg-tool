@@ -50,7 +50,7 @@ jobs:
     - name: Add version number to app script
       run: |
         title="DSC Data Packaging Tool - alpha"
-        title_with_version = "DSC Data Packaging Tool - alpha - ${GITHUBREF//./-}"
+        title_with_version="DSC Data Packaging Tool - alpha - ${GITHUBREF//./-}"
         sed -i -e "s/${title}/${title_with_version}/g" dsc_pkg_tool.py 
     - name: Bundle EXE for mac  
       run: |

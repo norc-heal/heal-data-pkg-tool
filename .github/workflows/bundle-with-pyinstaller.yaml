@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "*"
+env:
+  TAG_BRANCH: tag-versions # See note below when this var is called
 jobs:
   tag_version:
     name: Create version identifiers
@@ -12,10 +14,11 @@ jobs:
     outputs:
       slug_version: ${{ steps.save.outputs.slug_version }}
       # NOTE: ${GITHUB_REF_NAME//./-} is bash syntax for referencing the default environment $GITHUB_REF and replacing dots with dashes (in the form //<tobereplaced>/<replacewith>)
+      # NOTE: this is equivalent to ${{ github.ref_name }}
       # NOTE: for comparison, double brackets like ${{ matrix.name }} is for referencing github workflow variables (and is not bash syntax)
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # add the slugified (ie replace periods with dashes) to the version name to the saved output variables file
       - id: save
         run: |
@@ -25,6 +28,9 @@ jobs:
       - id: title_in_version
         name: Add version number to app title
         run: |
+
+          git checkout -b $TAG_BRANCH # change branch to the branch defined for tags. Need some sort of branch to do git commits (could also be the main branch)
+          git push --set-upstream origin $TAG_BRANCH
           version="${GITHUB_REF_NAME}"
           title_with_version="DSC Data Packaging Tool - alpha - ${version}"
           echo $title_with_version
@@ -34,7 +40,7 @@ jobs:
           git config user.email ${{ github.triggering_actor }}@users.noreply.github.com
 
           git add dsc_pkg_tool.py
-          git commit -m "Update app title to ${version}"
+          git commit -m "Automated update of app title to ${version}"
           git push -u origin
           
 

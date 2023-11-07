@@ -26,7 +26,7 @@ jobs:
       - name: Save slugified version tag
         id: save
         run: |
-          slug_version="${GITHUB_REF_NAME//./-}" | sed -e "s/\./\-/g"
+          slug_version="${GITHUB_REF_NAME//./-}"
           echo "slug_version=${slug_version}" >> $GITHUB_OUTPUT
       # add git tag version to app script
       - id: title_in_version
@@ -95,10 +95,10 @@ jobs:
       if: ${{matrix.name == 'windows' }} 
     - name: Zip exe (for windows) and no ext (for ubuntu/mac)
       run: |
-        python -m zipfile -c  $dsc-pkg-tool-${{ matrix.name }}${{ needs.tag_version.outputs.slug_version }}.zip dist/dsc_pkg_tool.exe dist/dsc_pkg_tool
+        python -m zipfile -c dsc-pkg-tool-${{ matrix.name }}-${{ needs.tag_version.outputs.slug_version }}.zip dist/dsc_pkg_tool.exe dist/dsc_pkg_tool
     - name: Release with bundles
       uses: softprops/action-gh-release@v1
       with:
         draft: true
         files: |
-          *dsc-pkg-tool-${{ matrix.name }}${{ needs.tag_version.outputs.slug_version }}.zip
+          *dsc-pkg-tool-${{ matrix.name }}*.zip

@@ -31,9 +31,6 @@ jobs:
           title_with_version="DSC Data Packaging Tool - alpha - ${version}"
           echo $title_with_version
           sed -i -e "s/DSC Data Packaging Tool*/${title_with_version}/g" dsc_pkg_tool.py
-          git add dsc_pkg_tool.py
-          git commit -m "Update app title to ${version}"
-          git push
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           # Optional. Commit message for the created commit.

@@ -35,7 +35,8 @@ jobs:
           version="${GITHUB_REF_NAME}"
           title_with_version="${APP_TITLE}${version}"
           echo $title_with_version
-          sed -i -e "s/DSC Data Packaging Tool*/${title_with_version}/g" dsc_pkg_tool.py
+          # replace the window title
+          sed -i -e "s/self.setWindowTitle(.*)/self.setWindowTitle(\"${title_with_version}\")/g" dsc_pkg_tool.py
 
           git config user.name ${{ github.triggering_actor }}
           git config user.email ${{ github.triggering_actor }}@users.noreply.github.com

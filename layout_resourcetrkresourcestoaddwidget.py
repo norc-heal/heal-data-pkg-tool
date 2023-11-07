@@ -51,7 +51,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
 
         self.labelMinimalAnnotationCheckbox = QtWidgets.QLabel(text = "<b>Have you chosen a minimal annotation standard due to a very low level of resources available to devote to data-sharing?</b>", parent=self)
         self.minimalAnnotationCheckbox = QtWidgets.QCheckBox("Yes, I have chosen a minimal annotation standard")
-        self.minimalAnnotationCheckbox.stateChanged.connect(self.checkIfMinimalAnnotation)
+        self.minimalAnnotationCheckbox.setChecked(False)
+        #self.minimalAnnotationCheckbox.stateChanged.connect(self.checkIfMinimalAnnotation)
 
         # start hidden - unhide when user loads list of resources to add
         self.labelMinimalAnnotationCheckbox.hide()
@@ -171,6 +172,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
     def loadResourceList(self):
 
         self.loadingFile = True
+        print("loading resource list")
         
         # check if user has set a working data package dir - if not exit gracefully with informative message
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
@@ -240,24 +242,19 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         print(resourcesToAddDf.shape)
 
         
-        if os.path.isfile(os.path.join(self.workingDataPkgDir,"latest-share-status.csv")):
-            self.shareStatusDf = dsc_pkg_utils.get_resources_share_status(self=self)
-            print("shareStatusDf from file: ",self.shareStatusDf)
-
-        if os.path.isfile(os.path.join(self.workingDataPkgDir,"latest-share-status.csv")):
-            self.annotationModeStatus = dsc_pkg_utils.get_resources_annotation_mode_status(self=self)
-            print("annotationModeStatus from file: ",self.annotationModeStatus)
+        
 
         
         #################################################################################################
         # if grid layout already exists, delete it before remaking and readding to vbox layout
         if self.grid: 
-            dsc_pkg_utils.layoutInLayoutDelete(self=self,containerLayout=self.vbox,layoutInLayout=self.grid)
+            print("deleting existing grid layout")
+            dsc_pkg_utils.layoutInLayoutDelete(containerLayout=self.vbox,layoutInLayout=self.grid)
         #################################################################################################
 
         self.labelMinimalAnnotationCheckbox.show() 
         self.minimalAnnotationCheckbox.show()
-                
+                        
         self.listCheckBox    = ['']*resourcesToAddDf.shape[0]
         self.listPath    = resourcesToAddDf["path"].tolist()
         self.listType    = resourcesToAddDf["dependency-type"].tolist()
@@ -300,7 +297,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             self.listCheckBox[i] = QCheckBox(v)
             self.listCheckBox[i].setChecked(True) 
             
-            self.listCheckBox[i].stateChanged.connect(self.updateActionButton)
+            #self.listCheckBox[i].stateChanged.connect(self.updateActionButton)
             # start hidden
             self.listCheckBox[i].hide()
 
@@ -323,11 +320,21 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         ################################## Finished creating component widgets - add them to vbox layout
         
         self.vbox.addLayout(self.grid)
-
+                        
         ################################## Update default settings of minimal annotation checkbox and share status checkboxes based on information either from this or previous/most recent session
+        if os.path.isfile(os.path.join(self.workingDataPkgDir,"latest-share-status.csv")):
+            self.annotationModeStatus = dsc_pkg_utils.get_resources_annotation_mode_status(self=self)
+            print("annotationModeStatus from file: ",self.annotationModeStatus)
+        
         if self.annotationModeStatus:
             if self.annotationModeStatus == "minimal":
+                print("setting minimal annotation status from previous knowledge")
                 self.minimalAnnotationCheckbox.setChecked(True) 
+
+        if os.path.isfile(os.path.join(self.workingDataPkgDir,"latest-share-status.csv")):
+            self.shareStatusDf = dsc_pkg_utils.get_resources_share_status(self=self)
+            print("shareStatusDf from file: ",self.shareStatusDf)
+                
 
         if isinstance(self.shareStatusDf,pd.DataFrame):
             for i, v in enumerate(self.listCheckBox):
@@ -339,6 +346,15 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                     if subShareStatusDf["share-status"].iloc[0] != "share":
                         self.listCheckBox[i].setChecked(False) 
 
+        self.checkIfMinimalAnnotation()
+        self.updateActionButton()
+        
+        ################################## Hook up checkboxes to signal connect function after set up is complete
+        self.minimalAnnotationCheckbox.stateChanged.connect(self.checkIfMinimalAnnotation)
+        
+        for i, v in enumerate(self.listCheckBox):
+            self.listCheckBox[i].stateChanged.connect(self.updateActionButton)
+        
         # programmatic update of the minimal annotation checkbox to checked should trigger the state changed signal and 
         # lead to showing the share checkboxes
         # 
@@ -348,13 +364,14 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.shareStatusListChanged = False
         self.annotationModeChanged = False
 
-        self.shareStatusList = []
-        self.shareStatusDf = []
-        self.annotationModeStatus = None
+        #self.shareStatusList = []
+        #self.shareStatusDf = []
+        #self.annotationModeStatus = None
         
         self.newSession = False # set new session indicator to False - this will let the widget know that it shouldn't try to open share status or annotation mode status save files, but should load them from local within session vars if they exist
         self.loadFileStatus = True
         self.loadingFile = False
+        print("done loading resource list")
 
     # def deleteItemsOfLayout(layout):
     #     if layout is not None:
@@ -377,13 +394,17 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
     def updateActionButton(self):
         print("something happened")
 
-        # this update action will get triggered during load file fx; return if checkboxes are being updated by load file function
-        if self.loadingFile: 
-            return
+        # # this update action will get triggered during load file fx; return if checkboxes are being updated by load file function
+        # if self.loadingFile:
+        #     print("share status changed while loading file - ignore change")
+        #     return
 
+        print("share status changed outside of loading file - DO NOT ignore change")
+        print("start self.shareStatusList: ", self.shareStatusList)
         self.shareStatusListChanged = True
         self.shareStatusList = []
         self.pathShareStatusList = []
+       
 
         for i, v in enumerate(self.listCheckBox):
             self.pathShareStatusList.append(self.listPath[i].text())
@@ -398,9 +419,11 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 self.listPushButton[i].hide()
                 self.listPushButton2[i].show()
 
+        print("end self.shareStatusList: ", self.shareStatusList)
 
     def checkIfMinimalAnnotation(self):
         print("annotation mode changed")
+        print("start self.annotationModeStatus: ", self.annotationModeStatus)
         self.annotationModeChanged = True
         self.annotationModeStatus = None
 
@@ -411,13 +434,14 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             
                 # start hidden
                 self.listCheckBox[i].show()
-            
+
                 # if self.listCheckBox[i].isChecked:
                 #     self.listPushButton[i].show()
                 #     self.listPushButton2[i].hide()
                 # else: 
                 #     self.listPushButton[i].hide()
                 #     self.listPushButton2[i].show()
+
             self.updateActionButton()
 
         else:
@@ -432,6 +456,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 self.listPushButton2[i].hide()
 
                 self.listPushButton[i].show()
+
+        print("end self.annotationModeStatus: ", self.annotationModeStatus)
 
     def cleanup(self):
         

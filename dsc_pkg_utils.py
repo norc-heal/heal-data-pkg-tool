@@ -31,13 +31,21 @@ def deleteItemsOfLayout(layout):
                 else:
                     deleteItemsOfLayout(item.layout())
 
-def layoutInLayoutDelete(self,containerLayout,layoutInLayout):
-    for i in range(self.containerLayout.count()):
-        layout_item = self.containerLayout.itemAt(i)
+def layoutInLayoutDelete(containerLayout,layoutInLayout):
+    for i in range(containerLayout.count()):
+        layout_item = containerLayout.itemAt(i)
         if layout_item.layout() == layoutInLayout:
-            dsc_pkg_utils.deleteItemsOfLayout(layout_item.layout())
-            self.containerLayout.removeItem(layout_item)
+            deleteItemsOfLayout(layout_item.layout())
+            containerLayout.removeItem(layout_item)
             break
+
+# def layoutInLayoutDelete(self,containerLayout,layoutInLayout):
+#     for i in range(self.containerLayout.count()):
+#         layout_item = self.containerLayout.itemAt(i)
+#         if layout_item.layout() == layoutInLayout:
+#             dsc_pkg_utils.deleteItemsOfLayout(layout_item.layout())
+#             self.containerLayout.removeItem(layout_item)
+#             break
 
 def get_added_resource_paths(self):
 #def get_added_resource_paths():

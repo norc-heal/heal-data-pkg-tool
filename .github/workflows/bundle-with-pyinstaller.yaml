@@ -23,7 +23,8 @@ jobs:
         with:
           ref: ${{ env.TAG_BRANCH }} # defaults to the hash for tags. Need some sort of branch to do git commits (could also be the main branch). 
       # add the slugified (ie replace periods with dashes) to the version name to the saved output variables file
-      - id: save
+      - name: Save slugified version tag
+        id: save
         run: |
           slug_version="${GITHUB_REF_NAME//./-}" | sed -e "s/\./\-/g"
           echo "slug_version=${slug_version}" >> $GITHUB_OUTPUT

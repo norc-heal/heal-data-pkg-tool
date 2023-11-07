@@ -33,7 +33,7 @@ jobs:
         name: Add version number to app title
         run: |
           version="${GITHUB_REF_NAME}"
-          title_with_version="${APP_TITLE}${version}"
+          title_with_version="${APP_TITLE} ${version}"
           echo $title_with_version
           # replace the window title
           sed -i -e "s/self.setWindowTitle(.*)/self.setWindowTitle(\"${title_with_version}\")/g" dsc_pkg_tool.py

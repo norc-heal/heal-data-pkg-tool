@@ -7,6 +7,7 @@ from pathlib import Path # base python, no pip install needed
 from PyQt5.QtCore import Qt, QSize
 import os
 import pandas as pd
+from layout_scrollannotateresourcewidget import ScrollAnnotateResourceWindow
 
 
 #class Window(QWidget):
@@ -15,6 +16,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         super(ResourcesToAddWindow, self).__init__(parent)
         #self.workingDataPkgDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
+        self.w = None  # No external window yet.
         
         self.grid = None
         self.newSession = True
@@ -364,6 +366,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         
         for i, v in enumerate(self.listCheckBox):
             self.listCheckBox[i].stateChanged.connect(self.updateActionButton)
+            self.listPushButton[i].clicked.connect(self.annotate_resource)
+            #self.listPushButton2[i].clicked.connect(self.annotate_resource_rapid)
         
         ################################## Set share status and annotation mode changed signals back to false after set up is complete        
         
@@ -510,6 +514,41 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             df.to_csv(os.path.join(self.workingDataPkgDir,"annotation-mode-status.csv"), index=False)
 
             self.annotationModeChanged = False
+
+    def annotate_resource(self,checked):
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property so perform some checks
+
+        # check that experiment tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
+            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that experiment tracker is closed (user doesn't have it open in excel for example)
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+        
+        # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
+        if self.w is None:
+            #self.w.editState = False
+            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add")
+            self.w.show()
+
+        else:
+            self.w.close()  # Close window.
+            self.w = None  # Discard reference.
 
     # def checkboxChanged(self):
     #     self.labelResult.setText("")

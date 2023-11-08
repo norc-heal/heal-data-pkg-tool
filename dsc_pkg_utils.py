@@ -21,15 +21,25 @@ from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
 
+def getPositionOfWidgetInLayout(layout,getWidget):
+    if layout is not None:
+        for i in range(layout.count()):
+            item = layout.itemAt(i)
+            widget = item.widget()
+            if widget is not None:
+                if widget == getWidget:
+                    return i
+
+            
 def deleteItemsOfLayout(layout):
-        if layout is not None:
-            while layout.count():
-                item = layout.takeAt(0)
-                widget = item.widget()
-                if widget is not None:
-                    widget.setParent(None)
-                else:
-                    deleteItemsOfLayout(item.layout())
+    if layout is not None:
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+            else:
+                deleteItemsOfLayout(item.layout())
 
 def layoutInLayoutDelete(containerLayout,layoutInLayout):
     for i in range(containerLayout.count()):

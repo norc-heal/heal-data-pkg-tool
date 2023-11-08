@@ -306,9 +306,9 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             self.listPath[i] = QLabel(self.listPath[i])
             self.listType[i] = QLabel(self.listType[i])
             self.listParent[i] = QLabel(self.listParent[i])
-            self.listPushButton[i] = QPushButton("Add resource to tracker")
+            self.listPushButton[i] = QPushButton("Add resource to tracker", self)
             
-            self.listPushButton2[i] = QPushButton("Rapid audit resource")
+            self.listPushButton2[i] = QPushButton("Rapid audit resource", self)
             # start hidden
             self.listPushButton2[i].hide()
             
@@ -410,8 +410,9 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             #self.listPushButton[i].clicked.connect(lambda formSetState=formSetState: self.annotate_resource(formSetState))
             #self.listPushButton[i].clicked.connect(lambda x=formSetState: self.annotate_resource(x))
             #self.listPushButton[i].clicked.connect(lambda formSetState: self.annotate_resource(x)) # passes last
-            self.listPushButton[i].clicked.connect(lambda x=formSetState: self.annotate_resource(formSetState=x)) # passes nothing
+            #self.listPushButton[i].clicked.connect(lambda x=formSetState: self.annotate_resource(formSetState=x)) # passes nothing
             
+            self.listPushButton[i].clicked.connect(self.btnListener)
 
         ################################## Set share status and annotation mode changed signals back to false after set up is complete        
         
@@ -445,6 +446,13 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
     #             self.containerLayout.removeItem(layout_item)
     #             break
     
+    def btnListener(self):
+        rbt = self.sender()
+        rbtText = rbt.text()
+        print(rbt.text())
+        print(rbt)
+        #print(rbt == self.btn1)
+
     def updateActionButton(self):
         print("something happened")
 

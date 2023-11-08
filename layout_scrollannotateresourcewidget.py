@@ -34,12 +34,13 @@ from jsonschema import validate
 from healdata_utils.validators.jsonschema import validate_against_jsonschema
 
 class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
-    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add", *args, **kwargs):
+    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add", formSetState = {}, *args, **kwargs):
         super().__init__(*args, **kwargs)
         #self.setWindowTitle("Annotate Resource")
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         self.workingDataPkgDir = workingDataPkgDir
         self.mode = mode
+        self.formSetState = formSetState
         self.initUI()
         #self.load_file()
 
@@ -80,6 +81,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             "accessDate": "2099-01-01"
         }
 
+        print(self.formDefaultState)
+        # by default self.formSetState will be an empty dict, also equal to None, so this will not be enacted
+        # if a dict is passed in the formSetState param to scroll annotate resource widge, this will be enacted
+        # it will merge the dict passes as param with the hard coded default dict, overwriting key value 
+        # pairs in the hard coded default dict with dict passed as param if there are overlapping keys
+        if self.formSetState:
+            print(self.formSetState)
+            self.formDefaultState = {**self.formDefaultState, **self.formSetState}
+            print(self.formDefaultState)
+             
         self.form.widget.state = deepcopy(self.formDefaultState)
       
         # # create 'add dsc data pkg directory' button

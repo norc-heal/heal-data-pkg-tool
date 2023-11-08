@@ -364,11 +364,55 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         ################################## Hook up checkboxes to signal connect function after set up is complete
         self.minimalAnnotationCheckbox.stateChanged.connect(self.checkIfMinimalAnnotation)
         
+        self.formSetStateList = []
+
         for i, v in enumerate(self.listCheckBox):
+            
             self.listCheckBox[i].stateChanged.connect(self.updateActionButton)
-            self.listPushButton[i].clicked.connect(self.annotate_resource)
-            #self.listPushButton2[i].clicked.connect(self.annotate_resource_rapid)
-        
+            #self.listPushButton[i].clicked.connect(self.annotate_resource)
+            #self.listPushButton[i].clicked.connect(lambda gridLayoutIndex: self.annotate_resource(i))
+
+            formSetState = {}
+
+            setPath = self.listPath[i].text() 
+            setType = self.listType[i].text()  
+            setParent = self.listParent[i].text() 
+            print("setPath: ", setPath)
+            print("setType: ", setType)
+            print("setParent: ", setParent)
+
+            if setType in ["associatedFileDataDict","associatedFileProtocol","associatedFileResultsTracker"]:
+                setCategory = "metadata"
+                if setType == "associatedFileProtocol":
+                    setCategorySubMetadata = "protocol"
+                    setDescription = "protocol for " + setParent
+                elif setType == "associatedFileResultsTracker":
+                    setCategorySubMetadata = "heal-formatted-results-tracker"
+                    setDescription = "heal formatted results tracker for " + setParent
+                elif setType == "associatedFileDataDict":
+                    setCategorySubMetadata = "heal-formatted-data-dictionary"
+                    setDescription = "heal formatted data dictionary for " + setParent 
+            else:
+                setCategory = ""
+                setCategorySubMetadata = ""
+                setDescription = ""
+            
+            formSetState = {
+                "path": setPath,
+                "description": setDescription,
+                "category": setCategory,
+                "categorySubMetadata": setCategorySubMetadata
+            }
+            self.formSetStateList.append(formSetState)
+            print("formSetState: ", formSetState)
+            #self.listPushButton[i].clicked.connect(lambda formSetState: self.annotate_resource(formSetStateValue))
+            #self.listPushButton[i].clicked.connect(self.annotate_resource((lambda formSetState: lambda: formSetState)(formSetStateValue)))
+            #self.listPushButton[i].clicked.connect(lambda formSetState=formSetState: self.annotate_resource(formSetState))
+            #self.listPushButton[i].clicked.connect(lambda x=formSetState: self.annotate_resource(x))
+            #self.listPushButton[i].clicked.connect(lambda formSetState: self.annotate_resource(x)) # passes last
+            self.listPushButton[i].clicked.connect(lambda x=formSetState: self.annotate_resource(formSetState=x)) # passes nothing
+            
+
         ################################## Set share status and annotation mode changed signals back to false after set up is complete        
         
         self.shareStatusListChanged = False
@@ -515,7 +559,9 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
 
             self.annotationModeChanged = False
 
-    def annotate_resource(self,checked):
+    def annotate_resource(self, formSetState={}):
+
+        print("in annotate resource fx")
 
         # check if user has set a working data package dir - if not exit gracefully with informative message
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
@@ -539,11 +585,41 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return
+
+        # ######################################### Get the path, type, and parent resource id
+        # setPath = self.listPath[gridLayoutIndex].text() 
+        # setType = self.listType[gridLayoutIndex].text()  
+        # setParent = self.listParent[gridLayoutIndex].text() 
+
+        # if setType in ["associatedFileDataDict","associatedFileProtocol","associatedFileResultsTracker"]:
+        #     setCategory = "metadata"
+        #     if setType == "associatedFileProtocol":
+        #         setCategorySubMetadata = "protocol"
+        #         setDescription = "protocol for " + setParent
+        #     elif setType == "associatedFileResultsTracker":
+        #         setCategorySubMetadata = "heal-formatted-results-tracker"
+        #         setDescription = "heal formatted results tracker for " + setParent
+        #     elif setType == "associatedFileDataDict":
+        #         setCategorySubMetadata = "heal-formatted-data-dictionary"
+        #         setDescription = "heal formatted data dictionary for " + setParent 
+        # else:
+        #     setCategory = ""
+        #     setCategorySubMetadata = ""
+        #     setDescription = ""
+        
+        # formSetState = {
+        #     "path": setPath,
+        #     "description": setDescription,
+        #     "category": setCategory,
+        #     "categorySubMetadata": setCategorySubMetadata
+        # }
+        
+        print("formSetState passed to annotate resource fx: ",formSetState)
         
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
             #self.w.editState = False
-            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add")
+            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add",formSetState=formSetState)
             self.w.show()
 
         else:

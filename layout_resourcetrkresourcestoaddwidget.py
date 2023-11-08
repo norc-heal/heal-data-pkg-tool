@@ -326,28 +326,38 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             self.annotationModeStatus = dsc_pkg_utils.get_resources_annotation_mode_status(self=self)
             print("annotationModeStatus from file: ",self.annotationModeStatus)
         
+        # by default, minimal annotation box is unchecked
+        # if user set annotation to minimal, check it
         if self.annotationModeStatus:
             if self.annotationModeStatus == "minimal":
                 print("setting minimal annotation status from previous knowledge")
                 self.minimalAnnotationCheckbox.setChecked(True) 
 
-        if os.path.isfile(os.path.join(self.workingDataPkgDir,"latest-share-status.csv")):
+        if os.path.isfile(os.path.join(self.workingDataPkgDir,"share-status.csv")):
             self.shareStatusDf = dsc_pkg_utils.get_resources_share_status(self=self)
             print("shareStatusDf from file: ",self.shareStatusDf)
-                
 
+        # by default, share status checkboxes are checked
+        # if user set share status to not share, uncheck it
         if isinstance(self.shareStatusDf,pd.DataFrame):
             for i, v in enumerate(self.listCheckBox):
-                if (self.shareStatusDf["path"] == self.listPath[i].text()).any():
+                if self.listPath[i].text() in self.shareStatusDf["path"].values:
+                #if (self.shareStatusDf["path"] == self.listPath[i].text()).any():
                     print ("Share status available for: ", self.listPath[i].text())
                     subShareStatusDf = self.shareStatusDf[self.shareStatusDf["path"] == self.listPath[i].text()]
+                    print(subShareStatusDf)
                     print(subShareStatusDf.shape) # should be just one row
 
                     if subShareStatusDf["share-status"].iloc[0] != "share":
                         self.listCheckBox[i].setChecked(False) 
 
+        # calling this function will check if the minimal annotation checkbox is checked
+        # if it is this will 1) unhide the share status checkboxes, and 2) call the self.updateActionButton() fx
+        # which will check if each share status box is checked and if it is will show just the add resource to tracker button
+        # for that resource, and if it is not will show just the rapid audit resource button for that resource
         self.checkIfMinimalAnnotation()
-        self.updateActionButton()
+        #
+        #self.updateActionButton()
         
         ################################## Hook up checkboxes to signal connect function after set up is complete
         self.minimalAnnotationCheckbox.stateChanged.connect(self.checkIfMinimalAnnotation)
@@ -355,11 +365,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         for i, v in enumerate(self.listCheckBox):
             self.listCheckBox[i].stateChanged.connect(self.updateActionButton)
         
-        # programmatic update of the minimal annotation checkbox to checked should trigger the state changed signal and 
-        # lead to showing the share checkboxes
-        # 
-        # programmatic update of the share checkboxes to unchecked should trigger the state changed signal and lead to 
-        # showing the rapid audit resource button and hiding the add resource to tracker button        
+        ################################## Set share status and annotation mode changed signals back to false after set up is complete        
         
         self.shareStatusListChanged = False
         self.annotationModeChanged = False
@@ -368,8 +374,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         #self.shareStatusDf = []
         #self.annotationModeStatus = None
         
-        self.newSession = False # set new session indicator to False - this will let the widget know that it shouldn't try to open share status or annotation mode status save files, but should load them from local within session vars if they exist
-        self.loadFileStatus = True
+        # self.newSession = False # set new session indicator to False - this will let the widget know that it shouldn't try to open share status or annotation mode status save files, but should load them from local within session vars if they exist
+        # self.loadFileStatus = True
         self.loadingFile = False
         print("done loading resource list")
 
@@ -399,8 +405,9 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         #     print("share status changed while loading file - ignore change")
         #     return
 
-        print("share status changed outside of loading file - DO NOT ignore change")
+        #print("share status changed outside of loading file - DO NOT ignore change")
         print("start self.shareStatusList: ", self.shareStatusList)
+        startShareStatusList = self.shareStatusList
         self.shareStatusListChanged = True
         self.shareStatusList = []
         self.pathShareStatusList = []
@@ -408,7 +415,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
 
         for i, v in enumerate(self.listCheckBox):
             self.pathShareStatusList.append(self.listPath[i].text())
-            print(self.pathShareStatusList)
+            #print(self.pathShareStatusList)
 
             if self.listCheckBox[i].isChecked():
                 self.shareStatusList.append("share")
@@ -419,7 +426,16 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 self.listPushButton[i].hide()
                 self.listPushButton2[i].show()
 
+        #print("end self.pathShareStatusList: ", self.pathShareStatusList)
+        print("start self.shareStatusList: ", startShareStatusList)
         print("end self.shareStatusList: ", self.shareStatusList)
+
+
+        if self.shareStatusList == startShareStatusList: 
+            self.shareStatusListChanged = False
+        
+        print("self.shareStatusListChanged: ", self.shareStatusListChanged)
+
 
     def checkIfMinimalAnnotation(self):
         print("annotation mode changed")
@@ -465,6 +481,15 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             self.shareStatusDf = pd.DataFrame(list(zip(self.pathShareStatusList, self.shareStatusList)),
                columns =["path", "share-status"])
             self.shareStatusDf["date-time"] = pd.Timestamp("now")
+            
+            # if there's already an existing share status df written to file, append the one from this call
+            if os.path.isfile(os.path.join(self.workingDataPkgDir,"share-status.csv")):
+                existingShareStatusDf = pd.read_csv(os.path.join(self.workingDataPkgDir,"share-status.csv"))
+                pd.to_datetime(existingShareStatusDf["date-time"])
+                print(existingShareStatusDf.shape) 
+                
+                self.shareStatusDf = pd.concat([existingShareStatusDf,self.shareStatusDf],axis=0)
+            
             self.shareStatusDf.to_csv(os.path.join(self.workingDataPkgDir,"share-status.csv"), index=False)
 
             self.shareStatusListChanged = False
@@ -473,6 +498,15 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             print("hello")
             df = pd.DataFrame([self.annotationModeStatus], columns =['annotation-mode-status'])
             df["date-time"] = pd.Timestamp("now")
+
+            # if there's already an existing annotation mode status df written to file, append the one from this call
+            if os.path.isfile(os.path.join(self.workingDataPkgDir,"annotation-mode-status.csv")):
+                existingAnnotationModeStatusDf = pd.read_csv(os.path.join(self.workingDataPkgDir,"annotation-mode-status.csv"))
+                pd.to_datetime(existingAnnotationModeStatusDf["date-time"])
+                print(existingAnnotationModeStatusDf.shape) 
+                
+                df = pd.concat([existingAnnotationModeStatusDf,df],axis=0)
+
             df.to_csv(os.path.join(self.workingDataPkgDir,"annotation-mode-status.csv"), index=False)
 
             self.annotationModeChanged = False

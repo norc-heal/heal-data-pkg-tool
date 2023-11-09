@@ -414,6 +414,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             
             self.listPushButton[i].clicked.connect(self.btnListener)
 
+        print("self.formSetStateList: ",self.formSetStateList)
         ################################## Set share status and annotation mode changed signals back to false after set up is complete        
         
         self.shareStatusListChanged = False
@@ -452,6 +453,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         print(rbt.text())
         print(rbt)
         #print(rbt == self.btn1)
+        [row,col] = dsc_pkg_utils.getPositionOfWidgetInLayout(layout=self.grid,getWidget=rbt)
+        self.annotate_resource(formSetState=self.formSetStateList[row-1])
 
     def updateActionButton(self):
         print("something happened")

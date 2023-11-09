@@ -33,6 +33,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
     
     def initUI(self):
         self.scroll = QtWidgets.QScrollArea()             # Scroll Area which contains the widgets, set as the centralWidget
+        self.vscrollbar = self.scroll.verticalScrollBar()
         self.widget = QtWidgets.QWidget()                 # Widget that contains the collection of Vertical Box
         self.vbox = QtWidgets.QVBoxLayout()               # The Vertical Box that contains the Horizontal Boxes of  labels and buttons
         
@@ -190,6 +191,10 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
 
         self.loadingFile = True
         print("loading resource list")
+
+        messageText = "<br><b>--------------Loading resource list</b><br>"
+        saveFormat = '<span style="color:green;">{}</span>'
+        self.userMessageBox.append(saveFormat.format(messageText))
         
         # check if user has set a working data package dir - if not exit gracefully with informative message
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
@@ -469,6 +474,10 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.loadingFile = False
         print("done loading resource list")
 
+        messageText = "<br><b>--------------Finished loading resource list</b><br>"
+        saveFormat = '<span style="color:green;">{}</span>'
+        self.userMessageBox.append(saveFormat.format(messageText))
+
     # def deleteItemsOfLayout(layout):
     #     if layout is not None:
     #         while layout.count():
@@ -498,6 +507,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         messageText = "<br><b>Re-Load Resources: </b> After you've finished adding your resource by completing the form and saving, re-load your resource list by clicking the <b>\"Load Resource List\"</b> push-button above. <br>"
         saveFormat = '<span style="color:red;">{}</span>'
         self.userMessageBox.append(saveFormat.format(messageText))
+
+        self.vscrollbar.setValue(self.vscrollbar.minimum())
         
         self.annotate_resource(formSetState=self.formSetStateList[row-1])
 

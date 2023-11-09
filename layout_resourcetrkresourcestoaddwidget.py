@@ -51,6 +51,10 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.messageText = ""
         self.userMessageBox.setText(self.messageText)
 
+        messageText = "<br><b>Load Resources: </b>Load the list of resources that need to be added to the Resource Tracker by clicking the <b>\"Load Resource List\"</b> push-button above.<br><br><b>Re-Load Resources: </b> Each time you add a resource, after you've finished adding, re-load your resource list using the same <b>\"Load Resource List\"</b> push-button. <br><br><b>Save Settings: </b>Before leaving this tab or closing out of the tool completely, save your settings by clicking the <b>\"Save settings\"</b> push-button above<br>"
+        saveFormat = '<span style="color:blue;">{}</span>'
+        self.userMessageBox.append(saveFormat.format(messageText))
+
         self.labelMinimalAnnotationCheckbox = QtWidgets.QLabel(text = "<b>Have you chosen a minimal annotation standard due to a low level of resources available to devote to data-sharing?</b>", parent=self)
         self.minimalAnnotationCheckbox = QtWidgets.QCheckBox("Yes, I have chosen a minimal annotation standard")
         self.minimalAnnotationCheckbox.setChecked(False)
@@ -489,7 +493,13 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         print(rbt)
         #print(rbt == self.btn1)
         [row,col] = dsc_pkg_utils.getPositionOfWidgetInLayout(layout=self.grid,getWidget=rbt)
+        
+        messageText = "<br><b>Re-Load Resources: </b> After you've finished adding your resource by completing the form and saving, re-load your resource list by clicking the <b>\"Load Resource List\"</b> push-button above. <br>"
+        saveFormat = '<span style="color:red;">{}</span>'
+        self.userMessageBox.append(saveFormat.format(messageText))
+        
         self.annotate_resource(formSetState=self.formSetStateList[row-1])
+
 
     def updateActionButton(self):
         print("something happened")

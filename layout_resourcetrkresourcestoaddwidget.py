@@ -51,7 +51,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.messageText = ""
         self.userMessageBox.setText(self.messageText)
 
-        messageText = "<br><b>Load Resources: </b>Load the list of resources that need to be added to the Resource Tracker by clicking the <b>\"Load Resource List\"</b> push-button above.<br><br><b>Re-Load Resources: </b> Each time you add a resource, after you've finished adding, re-load your resource list using the same <b>\"Load Resource List\"</b> push-button. <br><br><b>Save Settings: </b>Before leaving this tab or closing out of the tool completely, save your settings by clicking the <b>\"Save settings\"</b> push-button above<br>"
+        #messageText = "<br><b>Load Resources: </b>Load the list of resources that need to be added to the Resource Tracker by clicking the <b>\"Load Resource List\"</b> push-button above.<br><br><b>Re-Load Resources: </b> Each time you add a resource, after you've finished adding, re-load your resource list using the same <b>\"Load Resource List\"</b> push-button. <br><br><b>Save Settings: </b>Before leaving this tab or closing out of the tool completely, save your settings by clicking the <b>\"Save settings\"</b> push-button above<br>"
+        messageText = "<br><b>Load Resources: </b>Load the list of resources that need to be added to the Resource Tracker by clicking the <b>\"Load Resource List\"</b> push-button above.<br><br><b>Re-Load Resources: </b> Each time you add a resource, after you've finished adding, re-load your resource list using the same <b>\"Load Resource List\"</b> push-button. <br>"
         saveFormat = '<span style="color:blue;">{}</span>'
         self.userMessageBox.append(saveFormat.format(messageText))
 

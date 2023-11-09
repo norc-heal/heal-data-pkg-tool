@@ -416,22 +416,27 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 if setType == "associatedFileProtocol":
                     setCategorySubMetadata = "protocol"
                     setDescription = "protocol for " + setParent
+                    setAccess = ["public"]
                 elif setType == "associatedFileResultsTracker":
                     setCategorySubMetadata = "heal-formatted-results-tracker"
                     setDescription = "heal formatted results tracker for " + setParent
+                    setAccess = ["temporary-private","public"]
                 elif setType == "associatedFileDataDict":
                     setCategorySubMetadata = "heal-formatted-data-dictionary"
                     setDescription = "heal formatted data dictionary for " + setParent 
+                    setAccess = ["public"]
             else:
                 setCategory = ""
                 setCategorySubMetadata = ""
                 setDescription = ""
+                setAccess = []
             
             formSetState = {
                 "path": setPath,
                 "description": setDescription,
                 "category": setCategory,
-                "categorySubMetadata": setCategorySubMetadata
+                "categorySubMetadata": setCategorySubMetadata,
+                "access": setAccess
             }
             self.formSetStateList.append(formSetState)
             print("formSetState: ", formSetState)

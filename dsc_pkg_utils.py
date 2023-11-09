@@ -24,11 +24,17 @@ from schema_results_tracker import schema_results_tracker
 def getPositionOfWidgetInLayout(layout,getWidget):
     if layout is not None:
         for i in range(layout.count()):
+            print(i)
+            row, column, rowSpan, colSpan = layout.getItemPosition(i)
             item = layout.itemAt(i)
             widget = item.widget()
             if widget is not None:
                 if widget == getWidget:
-                    return i
+                    #print(i)
+                    print(widget)
+                    print(widget.text())
+                    print("row: ",row,"; column: ", column)
+                    return [row,column]
 
             
 def deleteItemsOfLayout(layout):

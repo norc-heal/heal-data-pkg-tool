@@ -259,6 +259,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                         
         self.listCheckBox    = ['']*resourcesToAddDf.shape[0]
         self.listPath    = resourcesToAddDf["path"].tolist()
+        self.listRelPath = [os.path.relpath(p,self.workingDataPkgDir) for p in self.listPath]
+        print(self.listRelPath)
         self.listType    = resourcesToAddDf["dependency-type"].tolist()
         self.listParent    = resourcesToAddDf["parent-resource-id"].tolist()
         self.listPushButton    = ['']*resourcesToAddDf.shape[0]
@@ -281,19 +283,26 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.pathLabel.setWordWrap(True)
         self.grid.addWidget(self.pathLabel,0,1,Qt.AlignCenter)
 
+        self.relPathLabel = QLabel("<b>Relative Path</b>")
+        self.relPathLabel.setSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        self.relPathLabel.setWordWrap(True)
+        self.grid.addWidget(self.relPathLabel,0,2,Qt.AlignCenter)
+
         self.typeLabel = QLabel("<b>Type</b>")
         self.typeLabel.setSizePolicy(
             QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
         )
         self.typeLabel.setWordWrap(True)
-        self.grid.addWidget(self.typeLabel,0,2,Qt.AlignCenter)
+        self.grid.addWidget(self.typeLabel,0,3,Qt.AlignCenter)
 
         self.parentLabel = QLabel("<b>Parent</b>")
         self.parentLabel.setSizePolicy(
             QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
         )
         self.parentLabel.setWordWrap(True)
-        self.grid.addWidget(self.parentLabel,0,3,Qt.AlignCenter)
+        self.grid.addWidget(self.parentLabel,0,4,Qt.AlignCenter)
 
         for i, v in enumerate(self.listCheckBox):
             self.listCheckBox[i] = QCheckBox(v)
@@ -304,6 +313,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             self.listCheckBox[i].hide()
 
             self.listPath[i] = QLabel(self.listPath[i])
+            self.listRelPath[i] = QLabel(self.listRelPath[i])
             self.listType[i] = QLabel(self.listType[i])
             self.listParent[i] = QLabel(self.listParent[i])
             self.listPushButton[i] = QPushButton("Add resource to tracker", self)
@@ -313,18 +323,19 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             self.listPushButton2[i].hide()
             
             self.grid.addWidget(self.listCheckBox[i], i+1, 0, Qt.AlignCenter)
-            self.grid.addWidget(self.listPath[i],    i+1, 1, Qt.AlignCenter)
-            self.grid.addWidget(self.listType[i],    i+1, 2, Qt.AlignCenter)
-            self.grid.addWidget(self.listParent[i],    i+1, 3, Qt.AlignCenter)
-            self.grid.addWidget(self.listPushButton[i], i+1, 4)
-            self.grid.addWidget(self.listPushButton2[i], i+1, 5)
+            self.grid.addWidget(self.listPath[i],    i+1, 1, Qt.AlignLeft)
+            self.grid.addWidget(self.listRelPath[i],    i+1, 2, Qt.AlignLeft)
+            self.grid.addWidget(self.listType[i],    i+1, 3, Qt.AlignCenter)
+            self.grid.addWidget(self.listParent[i],    i+1, 4, Qt.AlignCenter)
+            self.grid.addWidget(self.listPushButton[i], i+1, 5)
+            self.grid.addWidget(self.listPushButton2[i], i+1, 6)
             
         ################################## Finished creating component widgets - add them to vbox layout
         
         self.vbox.addLayout(self.grid)
                         
         ################################## Update default settings of minimal annotation checkbox and share status checkboxes based on information either from this or previous/most recent session
-        if os.path.isfile(os.path.join(self.workingDataPkgDir,"latest-share-status.csv")):
+        if os.path.isfile(os.path.join(self.workingDataPkgDir,"annotation-mode-status.csv")):
             self.annotationModeStatus = dsc_pkg_utils.get_resources_annotation_mode_status(self=self)
             print("annotationModeStatus from file: ",self.annotationModeStatus)
         

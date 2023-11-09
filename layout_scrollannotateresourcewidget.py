@@ -41,6 +41,10 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.workingDataPkgDir = workingDataPkgDir
         self.mode = mode
         self.formSetState = formSetState
+        if self.formSetState:
+            self.resetForFormSetState = True
+        else:
+            self.resetForFormSetState = False
         self.initUI()
         #self.load_file()
 
@@ -183,8 +187,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.add_tooltip()
         self.add_priority_highlight_and_hide()
         self.add_dir()
-        if self.mode == "add":
-            self.get_id()
+        if not self.resetForFormSetState:
+            if self.mode == "add":
+                self.get_id()
         #self.add_priority_highlight()
         #self.initial_hide()
         self.popFormField = []
@@ -244,6 +249,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #self.show()
         #if self.editState: 
         #    self.load_file
+        if self.resetForFormSetState:
+            self.clear_form(resetForFormSetState=self.resetForFormSetState)
+            # this will engage the connected functions for fields and so will 
+            # hide/show appropriate fields (was not doing this before because form set state
+            # values were added before functions for fields were connected)
+            # this will also get the resource id (don't get it above if a formsetstate param has been passed
+            # so that we don't run get id fx twice and print the message twice which is inefficient and 
+            # confusing for users)
+
 
         return
         
@@ -1471,7 +1485,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(messageText)
             return
         
-    def clear_form(self):
+    def clear_form(self,resetForFormSetState=False):
 
         self.popFormField = []
 
@@ -1527,10 +1541,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
 
-        messageText = "<br>Your form was successfully cleared and you can start annotating a new resource"
-        saveFormat = '<span style="color:green;">{}</span>'
-        self.userMessageBox.append(saveFormat.format(messageText))
-        self.userMessageBox.moveCursor(QTextCursor.End)
+        if not resetForFormSetState:
+            messageText = "<br>Your form was successfully cleared and you can start annotating a new resource"
+            saveFormat = '<span style="color:green;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            self.userMessageBox.moveCursor(QTextCursor.End)
 
         self.get_id()
 

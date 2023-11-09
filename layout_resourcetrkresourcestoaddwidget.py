@@ -51,7 +51,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.messageText = ""
         self.userMessageBox.setText(self.messageText)
 
-        self.labelMinimalAnnotationCheckbox = QtWidgets.QLabel(text = "<b>Have you chosen a minimal annotation standard due to a very low level of resources available to devote to data-sharing?</b>", parent=self)
+        self.labelMinimalAnnotationCheckbox = QtWidgets.QLabel(text = "<b>Have you chosen a minimal annotation standard due to a low level of resources available to devote to data-sharing?</b>", parent=self)
         self.minimalAnnotationCheckbox = QtWidgets.QCheckBox("Yes, I have chosen a minimal annotation standard")
         self.minimalAnnotationCheckbox.setChecked(False)
         #self.minimalAnnotationCheckbox.stateChanged.connect(self.checkIfMinimalAnnotation)
@@ -59,6 +59,14 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         # start hidden - unhide when user loads list of resources to add
         self.labelMinimalAnnotationCheckbox.hide()
         self.minimalAnnotationCheckbox.hide()
+
+        self.labelFullPathCheckbox = QtWidgets.QLabel(text = "<b>By default, resource paths are displayed as relative paths, relative to your working Data Package Directory. Would you prefer to display resource paths as full paths?</b>", parent=self)
+        self.fullPathCheckbox = QtWidgets.QCheckBox("Yes, I would prefer to display resource paths as full paths")
+        self.fullPathCheckbox.setChecked(False)
+
+        # start hidden - unhide when user loads list of resources to add
+        self.labelFullPathCheckbox.hide()
+        self.fullPathCheckbox.hide()
         
         # self.listCheckBox    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ]
         # self.listPath    = ['my-file.csv']*20
@@ -129,6 +137,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.vbox.addWidget(self.buttonUpdateList)
         self.vbox.addWidget(self.labelUserMessageBox)
         self.vbox.addWidget(self.userMessageBox)
+        self.vbox.addWidget(self.labelFullPathCheckbox, Qt.AlignCenter)
+        self.vbox.addWidget(self.fullPathCheckbox, Qt.AlignCenter)
         self.vbox.addWidget(self.labelMinimalAnnotationCheckbox, Qt.AlignCenter)
         self.vbox.addWidget(self.minimalAnnotationCheckbox, Qt.AlignCenter)
         #self.vbox.addLayout(self.grid)
@@ -256,6 +266,9 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
 
         self.labelMinimalAnnotationCheckbox.show() 
         self.minimalAnnotationCheckbox.show()
+
+        self.labelFullPathCheckbox.show() 
+        self.fullPathCheckbox.show()
                         
         self.listCheckBox    = ['']*resourcesToAddDf.shape[0]
         self.listPath    = resourcesToAddDf["path"].tolist()
@@ -282,6 +295,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         )
         self.pathLabel.setWordWrap(True)
         self.grid.addWidget(self.pathLabel,0,1,Qt.AlignCenter)
+        # start hidden
+        self.pathLabel.hide()
 
         self.relPathLabel = QLabel("<b>Relative Path</b>")
         self.relPathLabel.setSizePolicy(
@@ -313,6 +328,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             self.listCheckBox[i].hide()
 
             self.listPath[i] = QLabel(self.listPath[i])
+            # start hidden
+            self.listPath[i].hide()
             self.listRelPath[i] = QLabel(self.listRelPath[i])
             self.listType[i] = QLabel(self.listType[i])
             self.listParent[i] = QLabel(self.listParent[i])
@@ -374,6 +391,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         
         ################################## Hook up checkboxes to signal connect function after set up is complete
         self.minimalAnnotationCheckbox.stateChanged.connect(self.checkIfMinimalAnnotation)
+        self.fullPathCheckbox.stateChanged.connect(self.checkIfFullPath)
+        
         
         self.formSetStateList = []
 
@@ -544,6 +563,26 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 self.listPushButton[i].show()
 
         print("end self.annotationModeStatus: ", self.annotationModeStatus)
+
+    def checkIfFullPath(self):
+        print("path display mode changed")
+                
+        if self.fullPathCheckbox.isChecked():
+            self.pathLabel.show()
+            self.relPathLabel.hide()
+            for i, v in enumerate(self.listPath):
+                            
+                self.listPath[i].show()
+                self.listRelPath[i].hide()
+        else:
+            self.pathLabel.hide()
+            self.relPathLabel.show()
+            for i, v in enumerate(self.listPath):
+                            
+                self.listPath[i].hide()
+                self.listRelPath[i].show()
+            
+                
 
     def cleanup(self):
         

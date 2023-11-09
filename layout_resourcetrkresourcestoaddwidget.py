@@ -41,7 +41,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.buttonLoadList = QtWidgets.QPushButton("Load Resource List")
         self.buttonLoadList.clicked.connect(self.loadResourceList)
 
-        self.buttonUpdateList = QtWidgets.QPushButton("Update Resource List")
+        #self.buttonUpdateList = QtWidgets.QPushButton("Update Resource List")
 
         # create status message box
         self.labelUserMessageBox = QtWidgets.QLabel(text = "User Status Message Box:", parent=self)
@@ -138,7 +138,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         ################################## Finished creating component widgets - add them to vbox layout
         
         self.vbox.addWidget(self.buttonLoadList)
-        self.vbox.addWidget(self.buttonUpdateList)
+        #self.vbox.addWidget(self.buttonUpdateList)
         self.vbox.addWidget(self.labelUserMessageBox)
         self.vbox.addWidget(self.userMessageBox)
         self.vbox.addWidget(self.labelFullPathCheckbox, Qt.AlignCenter)

@@ -73,6 +73,19 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         # start hidden - unhide when user loads list of resources to add
         self.labelFullPathCheckbox.hide()
         self.fullPathCheckbox.hide()
+
+        self.optional_layout = QtWidgets.QVBoxLayout()
+        self.optional_layout.addWidget(self.labelFullPathCheckbox, Qt.AlignCenter)
+        self.optional_layout.addWidget(self.fullPathCheckbox, Qt.AlignCenter)
+        self.optional_layout.addWidget(self.labelMinimalAnnotationCheckbox, Qt.AlignCenter)
+        self.optional_layout.addWidget(self.minimalAnnotationCheckbox, Qt.AlignCenter)
+        
+        self.optional_groupbox = QtWidgets.QGroupBox("Optional")
+        self.optional_groupbox.setLayout(self.optional_layout)
+
+        # start hidden - unhide when user loads list of resources to add
+        self.optional_groupbox.hide()
+        
         
         # self.listCheckBox    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ]
         # self.listPath    = ['my-file.csv']*20
@@ -143,10 +156,11 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         #self.vbox.addWidget(self.buttonUpdateList)
         self.vbox.addWidget(self.labelUserMessageBox)
         self.vbox.addWidget(self.userMessageBox)
-        self.vbox.addWidget(self.labelFullPathCheckbox, Qt.AlignCenter)
-        self.vbox.addWidget(self.fullPathCheckbox, Qt.AlignCenter)
-        self.vbox.addWidget(self.labelMinimalAnnotationCheckbox, Qt.AlignCenter)
-        self.vbox.addWidget(self.minimalAnnotationCheckbox, Qt.AlignCenter)
+        # self.vbox.addWidget(self.labelFullPathCheckbox, Qt.AlignCenter)
+        # self.vbox.addWidget(self.fullPathCheckbox, Qt.AlignCenter)
+        # self.vbox.addWidget(self.labelMinimalAnnotationCheckbox, Qt.AlignCenter)
+        # self.vbox.addWidget(self.minimalAnnotationCheckbox, Qt.AlignCenter)
+        self.vbox.addWidget(self.optional_groupbox,Qt.AlignCenter)
         #self.vbox.addLayout(self.grid)
         
         ################################## Set layout of the grouping widget as the vbox layout with widgets added
@@ -263,10 +277,6 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         print("drop duplicates of resource that needs to be added, keep the first instance:")
         print(resourcesToAddDf.shape)
 
-        
-        
-
-        
         #################################################################################################
         # if grid layout already exists, delete it before remaking and readding to vbox layout
         if self.grid: 
@@ -274,11 +284,28 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             dsc_pkg_utils.layoutInLayoutDelete(containerLayout=self.vbox,layoutInLayout=self.grid)
         #################################################################################################
 
+        if resourcesToAddDf.empty:
+            messageText = "<br><b>--------------Based on study files/resources you have alreay added to the Resource Tracker, there are currently no more resources that need to be added to Resource Tracker - In other words, all associated/dependency files for the study files/resources you have already added to the Resource Tracker have also been added to the Resource Tracker</b> - If you have more study resources to share, navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Add a new resource\" push-button to start adding a resource - If you have more study results to document and share underlying data for, navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Add a new result\" push-button to start adding a result <br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+
+            self.labelMinimalAnnotationCheckbox.hide() 
+            self.minimalAnnotationCheckbox.hide() 
+
+            self.labelFullPathCheckbox.hide() 
+            self.fullPathCheckbox.hide() 
+
+            self.optional_groupbox.hide() 
+            return
+
+
         self.labelMinimalAnnotationCheckbox.show() 
         self.minimalAnnotationCheckbox.show()
 
         self.labelFullPathCheckbox.show() 
         self.fullPathCheckbox.show()
+
+        self.optional_groupbox.show()
                         
         self.listCheckBox    = ['']*resourcesToAddDf.shape[0]
         self.listPath    = resourcesToAddDf["path"].tolist()
@@ -713,6 +740,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         else:
             self.w.close()  # Close window.
             self.w = None  # Discard reference.
+            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add",formSetState=formSetState)
+            self.w.show()
 
     # def checkboxChanged(self):
     #     self.labelResult.setText("")

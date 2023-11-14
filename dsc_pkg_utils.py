@@ -162,7 +162,7 @@ def get_resources_annotation_mode_status(self):
     
     getDir = self.workingDataPkgDir
     #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
-    getAnnotationModeStatus = os.path.join(getDir,"annotation_mode-status.csv")
+    getAnnotationModeStatus = os.path.join(getDir,"annotation-mode-status.csv")
     
 
     if os.path.isfile(getAnnotationModeStatus):

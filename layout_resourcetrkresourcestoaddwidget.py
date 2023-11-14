@@ -531,13 +531,24 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         #print(rbt == self.btn1)
         [row,col] = dsc_pkg_utils.getPositionOfWidgetInLayout(layout=self.grid,getWidget=rbt)
         
-        messageText = "<br><b>Re-Load Resources: </b> After you've finished adding your resource by completing the form and saving, re-load your resource list by clicking the <b>\"Load Resource List\"</b> push-button above. <br>"
+        if rbtText == "Add resource to tracker":
+            messageText = "<br><b>Re-Load Resources: </b> After you've finished adding your resource to the Resource Tracker by completing the form and saving, re-load your resource list by clicking the <b>\"Load Resource List\"</b> push-button above. <br>"
+            annotationMode = "standard"
+            formSetState = self.formSetStateList[row-1]
+        elif rbtText == "Rapid audit resource":
+            messageText = "<br><b>Re-Load Resources: </b> After you've finished a rapid audit of your resource by completing the short form and saving, re-load your resource list by clicking the <b>\"Load Resource List\"</b> push-button above. <br>"
+            annotationMode = "minimal"
+            formSetState = self.formSetStateList[row-1]
+            print(formSetState)
+            formSetState = {**formSetState, **{"access":["permanent-private"]}}
+            print(formSetState)
+
         saveFormat = '<span style="color:red;">{}</span>'
         self.userMessageBox.append(saveFormat.format(messageText))
-
         self.vscrollbar.setValue(self.vscrollbar.minimum())
         
-        self.annotate_resource(formSetState=self.formSetStateList[row-1])
+        #self.annotate_resource(formSetState=self.formSetStateList[row-1])
+        self.annotate_resource(formSetState=formSetState,annotationMode=annotationMode)
 
 
     def updateActionButton(self):

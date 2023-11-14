@@ -465,8 +465,23 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                         resultIds = resultsTrk["resultId"].tolist()
 
                         if resultIds:
-                            resultIdDependencies = resultsTrk["associatedFileDependsOn"].tolist()
 
+                            # for each result id if multiple entries (due to editing the result entry) only keep the entry with the latest mod date
+                            print("de-duping result ids if necessary")
+                            resultsTrk["annotationModDateTime"] = pd.to_datetime(resultsTrk["annotationModDateTime"])
+
+                            #print(resultsTrk)
+                            print("start resultsTrk.columns: ",resultsTrk.columns)
+                            print("start resultsTrk.shape: ",resultsTrk.shape)
+
+                            resultsTrk = resultsTrk[resultsTrk["annotationModDateTime"] == (resultsTrk.groupby("resultId")["annotationModDateTime"].transform("max"))]
+                            print("finished de-duping result ids if necessary")
+                            #print(resultsTrk)
+                            print("end resultsTrk.columns: ",resultsTrk.columns)
+                            print("end resultsTrk.shape: ",resultsTrk.shape)
+
+                            resultIds = resultsTrk["resultId"].tolist()
+                            resultIdDependencies = resultsTrk["associatedFileDependsOn"].tolist()
                             
                             
                             popFormField = [{"resultId": rId, "resultIdDependsOn": rIdD.strip("][").split(", ")} for rId,rIdD in zip(resultIds,resultIdDependencies)]

@@ -65,13 +65,14 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
         layout = QtWidgets.QVBoxLayout()
 
         advanced_layout = QtWidgets.QVBoxLayout()
+        advanced_layout.addWidget(self.buttonAddBasedOnExp)
         advanced_layout.addWidget(self.buttonAddExp)
         advanced_groupbox = QtWidgets.QGroupBox("Advanced")
         advanced_groupbox.setLayout(advanced_layout)
         
         layout.addWidget(self.buttonAnnotateExp)
         layout.addWidget(self.buttonEditExp)
-        layout.addWidget(self.buttonAddBasedOnExp)
+        #layout.addWidget(self.buttonAddBasedOnExp)
         #layout.addWidget(self.buttonAddExp)
         layout.addWidget(advanced_groupbox)
         layout.addWidget(self.userMessageBox)

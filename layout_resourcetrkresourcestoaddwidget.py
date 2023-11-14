@@ -485,6 +485,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             #self.listPushButton[i].clicked.connect(lambda x=formSetState: self.annotate_resource(formSetState=x)) # passes nothing
             
             self.listPushButton[i].clicked.connect(self.btnListener)
+            self.listPushButton2[i].clicked.connect(self.btnListener)
 
         print("self.formSetStateList: ",self.formSetStateList)
         ################################## Set share status and annotation mode changed signals back to false after set up is complete        
@@ -685,7 +686,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
 
             self.annotationModeChanged = False
 
-    def annotate_resource(self, formSetState={}):
+    def annotate_resource(self, formSetState={}, annotationMode="standard"):
 
         print("in annotate resource fx")
 
@@ -745,7 +746,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
             #self.w.editState = False
-            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add",formSetState=formSetState)
+            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add",formSetState=formSetState, annotationMode=annotationMode)
             self.w.show()
 
         else:

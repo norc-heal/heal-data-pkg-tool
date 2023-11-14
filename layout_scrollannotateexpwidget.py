@@ -908,23 +908,35 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
 
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
         #        (QtCore.QDir.homePath()), "Text (*.txt)")
+        if self.mode == "edit":
+            textBit = "edit"
+            textButton = "\"Edit an existing experiment\""
+        elif self.mode == "add-based-on":
+            textBit = "base a new experiment upon"
+            textButton = "\"Add a new experiment based upon an existing experiment\""
 
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Experiment txt file you want to edit",
-               self.saveFolderPath, "Text (*.txt)")
+        
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Experiment txt file you want to " + textBit,
+            self.saveFolderPath, "Text (*.txt)")
 
         if not ifileName: 
-            messageText = "<br>You have not selected a file to edit. Close this form now. If you still want to edit an existing experiment, Navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click the \"Edit and existing experiment\" push-button."
+            messageText = "<br>You have not selected a file to " + textBit + ". Close this form now. If you still want to " + textBit + " an existing experiment, Navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click the " + textButton + " push-button."
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText)) 
         else: 
             #self.editMode = True
-                     
-            self.saveFilePath = ifileName
+            # if self.mode == "edit":         
+            #     self.saveFilePath = ifileName
+            #     print("setting saveFilePath to path of chosen file")
+            
             print("saveFilePath: ", self.saveFilePath)
             print(Path(ifileName).parent)
             print(Path(self.saveFolderPath))
 
-            # if user selects a result txt file that is not in the working data pkg dir, return w informative message
+            # add check on if filename starts with exp-trk-exp?
+            # add check on if valid exp-trk file?
+
+            # if user selects a exp txt file that is not in the working data pkg dir, return w informative message
             if Path(self.saveFolderPath) != Path(ifileName).parent:
                 messageText = "<br>You selected an experiment txt file that is not in your working Data Package Directory; You must select an experiment txt file that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
                 saveFormat = '<span style="color:red;">{}</span>'
@@ -937,22 +949,36 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             with open(ifileName, 'r') as stream:
                 data = load(stream)
 
-            self.annotation_id = data["experimentId"]
-            self.annotationIdNum = int(self.annotation_id.split("-")[1])
-            self.annotationFileName = 'exp-trk-'+ self.annotation_id + '.txt'
-            #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
+            if self.mode == "add-based-on":
+                based_on_annotation_id = data["experimentId"]
 
-            # make sure an archive folder exists, if not create it
-            if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
-                os.makedirs(os.path.join(self.saveFolderPath,"archive"))
 
-            # move the experiment annotation file user opened for editing to archive folder
-            os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationFileName))
-            messageText = "<br>Your original experiment annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationFileName) + "<br><br>"
-            saveFormat = '<span style="color:blue;">{}</span>'
-            self.userMessageBox.append(saveFormat.format(messageText))
+            if self.mode == "edit":         
+                self.saveFilePath = ifileName # is this necessary?
+                print("setting saveFilePath to path of chosen file")
+
+                self.annotation_id = data["experimentId"]
+                self.annotationIdNum = int(self.annotation_id.split("-")[1])
+                self.annotationFileName = 'exp-trk-'+ self.annotation_id + '.txt'
+                #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
+
+                # make sure an archive folder exists, if not create it
+                if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
+                    os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+
+                # move the experiment annotation file user opened for editing to archive folder
+                os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationFileName))
+                messageText = "<br>Your original experiment annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationFileName) + "<br><br>"
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
 
             self.form.widget.state = data
+
+            if self.mode == "add-based-on":
+                self.get_id()
+                messageText = "<br>Your new experiment has been initialized based on information you entered for " + based_on_annotation_id + "<br><br>"
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
 
             # if len(data["associatedFileDependsOn"]) > 2: 
             #     self.lstbox_view2.addItems(data["associatedFileDependsOn"])

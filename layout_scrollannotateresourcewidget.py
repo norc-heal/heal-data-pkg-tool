@@ -34,7 +34,7 @@ from jsonschema import validate
 from healdata_utils.validators.jsonschema import validate_against_jsonschema
 
 class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
-    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add", formSetState = {}, *args, **kwargs):
+    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add", formSetState = {}, annotationMode = "standard", *args, **kwargs):
         super().__init__(*args, **kwargs)
         #self.setWindowTitle("Annotate Resource")
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
@@ -45,6 +45,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.resetForFormSetState = True
         else:
             self.resetForFormSetState = False
+        self.annotationMode = annotationMode
         self.initUI()
         #self.load_file()
 
@@ -379,6 +380,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     labelWidget.hide()
                     widget.hide()
 
+                # if annotationMode is minimal and hide-minimal in priority text content then hide the widget and its label
+                if self.annotationMode == "minimal":
+                    if "hide-minimal" in priorityContent:
+                        labelWidget.hide()
+                        widget.hide()
+
+
    
     def check_tooltip(self):
         i = 0
@@ -401,6 +409,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         indices = [i for i, x in enumerate(self.priorityContentList) if keyText in x.split(", ")]
         print(indices)
         for i in indices:
+
             labelW = self.formLabelWidgetList[i]
             print(labelW)
             labelWType = self.formLabelWidgetTypeList[i]
@@ -413,8 +422,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             print(fieldWName)
 
             if desiredToggleState == "show":
-                labelW.show()
-                fieldW.show()
+                if self.annotationMode == "standard":
+                    labelW.show()
+                    fieldW.show()
+                elif self.annotationMode == "minimal":
+                    if "hide-minimal" not in self.priorityContentList[i]:
+                        labelW.show()
+                        fieldW.show()
             
             if desiredToggleState == "hide":
                 labelW.hide()

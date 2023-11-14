@@ -221,6 +221,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             # if user has changed the status of either the share status check boxes or the minimal annotation mode check box, 
             # write the share status list and annotation mode status to file, then reset the changed boolean vars back to false
             # to be ready to detect a new change to either of these
+            print("running clean up and save")
             self.cleanup()
 
         # resource tracker and resources to add files are needed to populate the list of resources that need to be added so perform some checks
@@ -246,7 +247,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                     return
         
         ##############################################################################################
-
+        print("getting resources already added to resource tracker")
         resourcePathList = dsc_pkg_utils.get_added_resource_paths(self=self)
         
         if not resourcePathList:
@@ -256,6 +257,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(saveFormat.format(messageText))
             return
 
+        print("getting list of resources that are associated/dependencies of resources already added to tracker")
         resourcesToAddDf = dsc_pkg_utils.get_resources_to_add(self=self)
 
         if ((not isinstance(resourcesToAddDf, pd.DataFrame)) | resourcesToAddDf.empty):

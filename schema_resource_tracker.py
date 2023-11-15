@@ -10,7 +10,7 @@
 # if multi-result resource - info to create a result tracker, and come back to add ref to result tracker in this resource file
 # if expBelongsTo experiment id does not have an experiment file - info to create an experiment file for that experiment
 # if expBelongsTo is left as default - info to confirm that the resource pertains to more than one experiment or to the study as a whole rather than to one specific experiment
-# if temporary-private is selected in access field, check that either managed-access or public is also selected as the final access state
+# if temporary-private is selected in access field, check that either managed-access or open-access is also selected as the final access state
 # if temporary-private is selected in access field, check that accessDate has been changed from the default date and is a 'reasonable' date (e.g. within 5 years of current date?)
 # maybe create an accessory file for each resource file with data on all of these checks so that we can programmatically bring to attention all resources that need additional attention (e.g. all tabular data files still missing data dictionaries)
 
@@ -230,17 +230,17 @@ schema_resource_tracker = {
         #},
         "access": {
             "title" : "Access",
-            "description": "What is the current/final access level anticipated for this resource? Options are permanent-private (current and final access level is private), temporary-private (current access level is private but final access level will be either managed-access or public), managed-access (current, final, or current AND final access level will allow request of data with barriers/restrictions to access), public (current, final, or current AND final access level will allow largely unrestricted request of/access to data); Many investigators will designate data as currently temporary-private, with a final access level of either managed-access or public: In this case choose both temporary-private AND either 1) managed-access or 2) public, then add the date at which you expect to transition from temporary-private to either managed-access or public in the Access Date field below; Private means members of the public cannot request access; Restricted access means they can request access but there is gate-keeping; Public access means they can often access the data without requesting access, and with minimal barriers to access.",
+            "description": "What is the current/final access level anticipated for this resource? Options are permanent-private (current and final access level is private), temporary-private (current access level is private but final access level will be either managed-access or open-access), managed-access (current, final, or current AND final access level will allow request of data with barriers/restrictions to access), open-access (current, final, or current AND final access level will allow largely unrestricted request of/access to data); Many investigators will designate data as currently temporary-private, with a final access level of either managed-access or open-access: In this case choose both temporary-private AND either 1) managed-access or 2) open-access, then add the date at which you expect to transition from temporary-private to either managed-access or open-access in the Access Date field below; Private means members of the public cannot request access; Restricted access means they can request access but there is gate-keeping; Open access means they can often access the data without requesting access from a gate-keeper, and with minimal barriers to access.",
             "type": "array",
             "items":{
                 "type": "string",
-                "enum": ["","permanent-private","temporary-private","managed-access","public"]
+                "enum": ["","permanent-private","temporary-private","managed-access","open-access"]
             },
             "priority": "all, high, hide-minimal"
         },
         "accessDate": {
             "title": "Access Date (YYYY/MM/DD or YYYY-MM-DD)",
-            "description": "If the resource file is currently being held as temporary-private access level and will transition to either managed-access or public access level at some point, please provide an anticipated date at which this transition will occur - Best guesses are appreciated, however you will NOT be held to this date and may update this date at any time.",
+            "description": "If the resource file is currently being held as temporary-private access level and will transition to either managed-access or open-access access level at some point, please provide an anticipated date at which this transition will occur - Best guesses are appreciated, however you will NOT be held to this date and may update this date at any time.",
             "type": "string",
             "pattern": "(((19|20)([2468][048]|[13579][26]|0[48])|2000)[/-]02[/-]29|((19|20)[0-9]{2}[/-](0[4678]|1[02])[/-](0[1-9]|[12][0-9]|30)|(19|20)[0-9]{2}[/-](0[1359]|11)[/-](0[1-9]|[12][0-9]|3[01])|(19|20)[0-9]{2}[/-]02[/-](0[1-9]|1[0-9]|2[0-8])))",
             "priority": "temporary private, high"

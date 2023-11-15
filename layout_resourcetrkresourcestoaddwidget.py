@@ -460,15 +460,15 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 if setType == "associatedFileProtocol":
                     setCategorySubMetadata = "protocol"
                     setDescription = "protocol for " + setParent
-                    setAccess = ["public"]
+                    setAccess = ["open-access"]
                 elif setType == "associatedFileResultsTracker":
                     setCategorySubMetadata = "heal-formatted-results-tracker"
                     setDescription = "heal formatted results tracker for " + setParent
-                    setAccess = ["temporary-private","public"]
+                    setAccess = ["temporary-private","open-access"]
                 elif setType == "associatedFileDataDict":
                     setCategorySubMetadata = "heal-formatted-data-dictionary"
                     setDescription = "heal formatted data dictionary for " + setParent 
-                    setAccess = ["public"]
+                    setAccess = ["open-access"]
             else:
                 setCategory = ""
                 setCategorySubMetadata = ""

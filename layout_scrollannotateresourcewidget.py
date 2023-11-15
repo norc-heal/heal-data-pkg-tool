@@ -632,7 +632,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if "temporary-private" in self.form.widget.state["access"]:
             self.toggle_widgets(keyText = "temporary private", desiredToggleState = "show")
             
-            messageText = "<br>You have indicated your resource will be temporarily held as private. Please 1) use the Access field to indicate the access level at which you'll set this resource once the temporary private access setting expires (either public access, or restricted access), and 2) use the Access Date field to indicate the date at which the temporary private access level is expected to expire (You will not be held to this date - Estimated dates are appreciated)."
+            messageText = "<br>You have indicated your resource will be temporarily held as private. Please 1) use the Access field to indicate the access level at which you'll set this resource once the temporary private access setting expires (either open-access access, or restricted access), and 2) use the Access Date field to indicate the date at which the temporary private access level is expected to expire (You will not be held to this date - Estimated dates are appreciated)."
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 
@@ -1253,16 +1253,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
             if "temporary-private" in self.form.widget.state["access"]:
-                if not any(map(lambda v: v in self.form.widget.state["access"], ["public","managed-access"])):
+                if not any(map(lambda v: v in self.form.widget.state["access"], ["open-access","managed-access"])):
 
-                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'public\n' or to \n'managed-access\n' once the temporary-private status expires. Please return to the form to indicate what the final access level of this resource will be by adding another value to the Access field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
+                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'open-access\n' or to \n'managed-access\n' once the temporary-private status expires. Please return to the form to indicate what the final access level of this resource will be by adding another value to the Access field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
                 if self.form.widget.state["accessDate"] == self.formDefaultState["accessDate"]:
 
-                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'public\n' or to \n'managed-access\n'. Please return to the form to indicate the date at which temporary-provate access level will expire in the Access Date field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
+                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'open-access\n' or to \n'managed-access\n'. Please return to the form to indicate the date at which temporary-provate access level will expire in the Access Date field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)

@@ -660,13 +660,12 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
     def cleanup(self):
 
         cleanupOutputDir = os.path.join(self.workingDataPkgDir,"no-user-access")
-            if not os.path.exists(cleanupOutputDir):
-                os.makedirs(cleanupOutputDir)
-                print("creating no-user-access subdirectory")
-            else:
-                print("no-user-access subdirectory already exists")
-            
-            resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"no-user-access","resources-to-add.csv")
+        if not os.path.exists(cleanupOutputDir):
+            os.makedirs(cleanupOutputDir)
+            print("creating no-user-access subdirectory")
+        else:
+            print("no-user-access subdirectory already exists")
+        
         
         if self.shareStatusListChanged:
             self.shareStatusDf = pd.DataFrame(list(zip(self.pathShareStatusList, self.shareStatusList)),

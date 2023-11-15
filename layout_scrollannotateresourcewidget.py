@@ -1156,6 +1156,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if not os.path.exists(resourcesToAddOutputDir):
                 os.makedirs(resourcesToAddOutputDir)
                 print("creating no-user-access subdirectory")
+            else:
+                print("no-user-access subdirectory already exists")
             
             resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"no-user-access","resources-to-add.csv")
 

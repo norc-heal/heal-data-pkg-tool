@@ -757,6 +757,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         # }
         
         print("formSetState passed to annotate resource fx: ",formSetState)
+        print("annotationMode passed to annotate resource fx: ", annotationMode)
         
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
@@ -767,7 +768,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         else:
             self.w.close()  # Close window.
             self.w = None  # Discard reference.
-            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add",formSetState=formSetState)
+            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add",formSetState=formSetState, annotationMode=annotationMode)
             self.w.show()
 
     # def checkboxChanged(self):

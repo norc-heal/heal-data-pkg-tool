@@ -396,7 +396,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.vbox.addLayout(self.grid)
                         
         ################################## Update default settings of minimal annotation checkbox and share status checkboxes based on information either from this or previous/most recent session
-        if os.path.isfile(os.path.join(self.workingDataPkgDir,"annotation-mode-status.csv")):
+        if os.path.isfile(os.path.join(self.workingDataPkgDir,"no-user-access","annotation-mode-status.csv")):
             self.annotationModeStatus = dsc_pkg_utils.get_resources_annotation_mode_status(self=self)
             print("annotationModeStatus from file: ",self.annotationModeStatus)
         
@@ -407,7 +407,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 print("setting minimal annotation status from previous knowledge")
                 self.minimalAnnotationCheckbox.setChecked(True) 
 
-        if os.path.isfile(os.path.join(self.workingDataPkgDir,"share-status.csv")):
+        if os.path.isfile(os.path.join(self.workingDataPkgDir,"no-user-access","share-status.csv")):
             self.shareStatusDf = dsc_pkg_utils.get_resources_share_status(self=self)
             print("shareStatusDf from file: ",self.shareStatusDf)
 

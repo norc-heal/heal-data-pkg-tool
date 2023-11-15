@@ -1152,7 +1152,12 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 
                 resourceDependAllDf = pd.concat([resourceDependAllDf,resourceDependResultDependDf])
 
-            resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"resources-to-add.csv")
+            resourcesToAddOutputDir = os.path.join(self.workingDataPkgDir,"no-user-access")
+            if not os.path.exists(resourcesToAddOutputDir):
+                os.makedirs(resourcesToAddOutputDir)
+                print("creating no-user-access subdirectory")
+            
+            resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"no-user-access","resources-to-add.csv")
 
             # if not os.path.isfile(resourcesToAddOutputPath):
             #     f=open(resourcesToAddOutputPath,'w')
@@ -1183,7 +1188,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     all_to_add_df = pd.read_csv(resourcesToAddOutputPath)
                     all_to_add_df["date-time"] = pd.to_datetime(all_to_add_df["date-time"])
                     all_to_add_df = pd.concat([all_to_add_df, resourceDependAllDf], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
-                    all_to_add_df.sort_values(by = ["date-time"], inplace=True)
+                    all_to_add_df.sort_values(by = ["date-time"], ascending=True, inplace=True)
                     # drop any exact duplicate rows
                     #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
                     # this current approach does not appear to be working at the moment

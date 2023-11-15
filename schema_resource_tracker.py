@@ -123,7 +123,7 @@ schema_resource_tracker = {
             "title" : "Metadata Resource - Sub-Category",
             "description": "Sub-category for a metadata resource",
             "type": "string",
-            "enum": ["","heal-formatted-data-dictionary","other-formatted-data-dictionary","protocol","id-map","analysis-plan","heal-formatted-results-tracker","heal-formatted-experiment-tracker"],
+            "enum": ["","heal-formatted-data-dictionary","other-formatted-data-dictionary","protocol","analysis-plan","heal-formatted-results-tracker","heal-formatted-experiment-tracker","other"],
             "priority": "metadata, high"
         },
         "categorySubData": {

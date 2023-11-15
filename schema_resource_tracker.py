@@ -126,6 +126,13 @@ schema_resource_tracker = {
             "enum": ["","heal-formatted-data-dictionary","other-formatted-data-dictionary","protocol","analysis-plan","heal-formatted-results-tracker","heal-formatted-experiment-tracker","other"],
             "priority": "metadata, high"
         },
+        "categorySubMetadataOther": {
+            "title" : "Metadata Resource - Sub-Category - Other",
+            "description": "If you selected \"other\" as your metadata type/sub-category, please tell us what kind of metadata this is",
+            "type": "string",
+            #"enum": ["","heal-formatted-data-dictionary","other-formatted-data-dictionary","protocol","analysis-plan","heal-formatted-results-tracker","heal-formatted-experiment-tracker","other"],
+            "priority": "subMetadataOther, high"
+        },
         "categorySubData": {
             "title" : "Data Resource - Sub-Category",
             "description": "Sub-category for a data resource",

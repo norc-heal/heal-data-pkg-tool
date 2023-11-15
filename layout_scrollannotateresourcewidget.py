@@ -177,7 +177,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # create drag and drop window for multiple file dependencies addition
         self.lstbox_view2 = ListboxWidget(self)
         self.lwModel2 = self.lstbox_view2.model()
-        self.items2 = []
+        self.items2 = [] # this will hold the values in the listbox widget
         self.programmaticListUpdate2 = False
         self.lwModel2.rowsInserted.connect(self.get_items_list2)
         self.lwModel2.rowsRemoved.connect(self.get_items_list2)
@@ -847,11 +847,18 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         print(len(self.items2))
 
         if self.items2:
-            #updatePath = self.items2[0]
+            
             updateAssocFileMultiDepend = self.items2
+            # if self.form.widget.state["associatedFileDependsOn"]:
+            #     updateAssocFileMultiDepend = self.items2 + 
+            # else: 
+            #     updateAssocFileMultiDepend = self.items2
         else:
-            #updatePath = ""
+            
             updateAssocFileMultiDepend = []
+
+
+        #list(pd.unique(students))
 
         self.form.widget.state = {
             #"path": updatePath,

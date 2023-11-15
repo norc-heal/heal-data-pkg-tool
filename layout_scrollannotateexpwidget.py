@@ -929,11 +929,17 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             #     self.saveFilePath = ifileName
             #     print("setting saveFilePath to path of chosen file")
             
-            print("saveFilePath: ", self.saveFilePath)
+            #print("saveFilePath: ", self.saveFilePath)
             print(Path(ifileName).parent)
             print(Path(self.saveFolderPath))
 
             # add check on if filename starts with exp-trk-exp?
+            if not Path(ifileName).stem.startswith("exp-trk-exp-"):
+                messageText = "<br>The file you selected may not be an experiment txt file - an experiment txt file will have a name that starts with \"exp-trk-exp-\" followed by a number which is that experiment's ID number. You must select an experiment txt file that is in your working Data Package Directory to proceed. <br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
             # add check on if valid exp-trk file?
 
             # if user selects a exp txt file that is not in the working data pkg dir, return w informative message

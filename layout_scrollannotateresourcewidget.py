@@ -1006,6 +1006,14 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
+        addedResourcePathsList = dsc_pkg_utils.get_added_resource_paths(self=self)
+        if self.form.widget.state["path"] in addedResourcePathsList:
+            messageText = "<br>You have already added a resource to the Resource Tracker with the file path indicated in this form. You must add a unique resource file path before saving your resource file. Please check your resource file path, add a unique resource file path, and then try saving again. <b>If you meant to edit an existing resource</b>, you can do that by closing this window, then navigating to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab, and clicking the \"Edit an existing resource\" push-button. " 
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return
+
+
         # check that file path and at least a minimal description has been added to the form 
         # if not exit with informative error
         if not ((self.form.widget.state["path"]) and (self.form.widget.state["description"])):

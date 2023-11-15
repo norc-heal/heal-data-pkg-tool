@@ -34,12 +34,18 @@ from jsonschema import validate
 from healdata_utils.validators.jsonschema import validate_against_jsonschema
 
 class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
-    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add", *args, **kwargs):
+    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add", formSetState = {}, annotationMode = "standard", *args, **kwargs):
         super().__init__(*args, **kwargs)
         #self.setWindowTitle("Annotate Resource")
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         self.workingDataPkgDir = workingDataPkgDir
         self.mode = mode
+        self.formSetState = formSetState
+        if self.formSetState:
+            self.resetForFormSetState = True
+        else:
+            self.resetForFormSetState = False
+        self.annotationMode = annotationMode
         self.initUI()
         #self.load_file()
 
@@ -80,6 +86,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             "accessDate": "2099-01-01"
         }
 
+        print(self.formDefaultState)
+        # by default self.formSetState will be an empty dict, also equal to None, so this will not be enacted
+        # if a dict is passed in the formSetState param to scroll annotate resource widge, this will be enacted
+        # it will merge the dict passes as param with the hard coded default dict, overwriting key value 
+        # pairs in the hard coded default dict with dict passed as param if there are overlapping keys
+        if self.formSetState:
+            print(self.formSetState)
+            self.formDefaultState = {**self.formDefaultState, **self.formSetState}
+            print(self.formDefaultState)
+             
         self.form.widget.state = deepcopy(self.formDefaultState)
       
         # # create 'add dsc data pkg directory' button
@@ -172,8 +188,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.add_tooltip()
         self.add_priority_highlight_and_hide()
         self.add_dir()
-        if self.mode == "add":
-            self.get_id()
+        if not self.resetForFormSetState:
+            if self.mode == "add":
+                self.get_id()
         #self.add_priority_highlight()
         #self.initial_hide()
         self.popFormField = []
@@ -233,6 +250,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #self.show()
         #if self.editState: 
         #    self.load_file
+        if self.resetForFormSetState:
+            self.clear_form(resetForFormSetState=self.resetForFormSetState)
+            # this will engage the connected functions for fields and so will 
+            # hide/show appropriate fields (was not doing this before because form set state
+            # values were added before functions for fields were connected)
+            # this will also get the resource id (don't get it above if a formsetstate param has been passed
+            # so that we don't run get id fx twice and print the message twice which is inefficient and 
+            # confusing for users)
+
 
         return
         
@@ -354,6 +380,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     labelWidget.hide()
                     widget.hide()
 
+                # if annotationMode is minimal and hide-minimal in priority text content then hide the widget and its label
+                if self.annotationMode == "minimal":
+                    if "hide-minimal" in priorityContent:
+                        labelWidget.hide()
+                        widget.hide()
+
+
    
     def check_tooltip(self):
         i = 0
@@ -376,6 +409,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         indices = [i for i, x in enumerate(self.priorityContentList) if keyText in x.split(", ")]
         print(indices)
         for i in indices:
+
             labelW = self.formLabelWidgetList[i]
             print(labelW)
             labelWType = self.formLabelWidgetTypeList[i]
@@ -388,8 +422,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             print(fieldWName)
 
             if desiredToggleState == "show":
-                labelW.show()
-                fieldW.show()
+                if self.annotationMode == "standard":
+                    labelW.show()
+                    fieldW.show()
+                elif self.annotationMode == "minimal":
+                    if "hide-minimal" not in self.priorityContentList[i]:
+                        labelW.show()
+                        fieldW.show()
             
             if desiredToggleState == "hide":
                 labelW.hide()
@@ -440,8 +479,23 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                         resultIds = resultsTrk["resultId"].tolist()
 
                         if resultIds:
-                            resultIdDependencies = resultsTrk["associatedFileDependsOn"].tolist()
 
+                            # for each result id if multiple entries (due to editing the result entry) only keep the entry with the latest mod date
+                            print("de-duping result ids if necessary")
+                            resultsTrk["annotationModDateTime"] = pd.to_datetime(resultsTrk["annotationModDateTime"])
+
+                            #print(resultsTrk)
+                            print("start resultsTrk.columns: ",resultsTrk.columns)
+                            print("start resultsTrk.shape: ",resultsTrk.shape)
+
+                            resultsTrk = resultsTrk[resultsTrk["annotationModDateTime"] == (resultsTrk.groupby("resultId")["annotationModDateTime"].transform("max"))]
+                            print("finished de-duping result ids if necessary")
+                            #print(resultsTrk)
+                            print("end resultsTrk.columns: ",resultsTrk.columns)
+                            print("end resultsTrk.shape: ",resultsTrk.shape)
+
+                            resultIds = resultsTrk["resultId"].tolist()
+                            resultIdDependencies = resultsTrk["associatedFileDependsOn"].tolist()
                             
                             
                             popFormField = [{"resultId": rId, "resultIdDependsOn": rIdD.strip("][").split(", ")} for rId,rIdD in zip(resultIds,resultIdDependencies)]
@@ -1460,7 +1514,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(messageText)
             return
         
-    def clear_form(self):
+    def clear_form(self,resetForFormSetState=False):
 
         self.popFormField = []
 
@@ -1516,10 +1570,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
 
-        messageText = "<br>Your form was successfully cleared and you can start annotating a new resource"
-        saveFormat = '<span style="color:green;">{}</span>'
-        self.userMessageBox.append(saveFormat.format(messageText))
-        self.userMessageBox.moveCursor(QTextCursor.End)
+        if not resetForFormSetState:
+            messageText = "<br>Your form was successfully cleared and you can start annotating a new resource"
+            saveFormat = '<span style="color:green;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            self.userMessageBox.moveCursor(QTextCursor.End)
 
         self.get_id()
 

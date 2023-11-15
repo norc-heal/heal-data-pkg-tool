@@ -20,6 +20,174 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+
+def getPositionOfWidgetInLayout(layout,getWidget):
+    if layout is not None:
+        for i in range(layout.count()):
+            print(i)
+            row, column, rowSpan, colSpan = layout.getItemPosition(i)
+            item = layout.itemAt(i)
+            widget = item.widget()
+            if widget is not None:
+                if widget == getWidget:
+                    #print(i)
+                    print(widget)
+                    print(widget.text())
+                    print("row: ",row,"; column: ", column)
+                    return [row,column]
+
+            
+def deleteItemsOfLayout(layout):
+    if layout is not None:
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+            else:
+                deleteItemsOfLayout(item.layout())
+
+def layoutInLayoutDelete(containerLayout,layoutInLayout):
+    for i in range(containerLayout.count()):
+        layout_item = containerLayout.itemAt(i)
+        if layout_item.layout() == layoutInLayout:
+            deleteItemsOfLayout(layout_item.layout())
+            containerLayout.removeItem(layout_item)
+            break
+
+# def layoutInLayoutDelete(self,containerLayout,layoutInLayout):
+#     for i in range(self.containerLayout.count()):
+#         layout_item = self.containerLayout.itemAt(i)
+#         if layout_item.layout() == layoutInLayout:
+#             dsc_pkg_utils.deleteItemsOfLayout(layout_item.layout())
+#             self.containerLayout.removeItem(layout_item)
+#             break
+
+def get_added_resource_paths(self):
+#def get_added_resource_paths():
+    
+    getDir = self.workingDataPkgDir
+    #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
+    getResourceTrk = os.path.join(getDir,"heal-csv-resource-tracker.csv")
+    #getResourcesToAdd = os.path.join(getDir,"resources-to-add.csv")
+
+    if os.path.isfile(getResourceTrk):
+        resourceTrackerDf = pd.read_csv(getResourceTrk)
+        resourceTrackerDf.fillna("", inplace = True)
+
+        print(resourceTrackerDf)
+        print(resourceTrackerDf.columns)
+
+        if "path" in resourceTrackerDf.columns:
+
+            #experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
+            resourcePathSeries = resourceTrackerDf["path"].astype(str)
+            print(resourcePathSeries,type(resourcePathSeries))
+            resourcePathList = resourcePathSeries.tolist()
+            print(resourcePathList,type(resourcePathList))
+            resourcePathList = [x for x in resourcePathList if x] # remove empty strings
+            print(resourcePathList,type(resourcePathList))
+            resourcePathList = list(dict.fromkeys(resourcePathList)) # deduplicate list
+            print(resourcePathList,type(resourcePathList))
+
+        else: 
+            resourcePathList = []
+
+    else:
+        resourcePathList = []
+
+    return resourcePathList
+
+def get_resources_to_add(self):
+#def get_resources_to_add():
+    print("hiiii")
+    
+    getDir = self.workingDataPkgDir
+    #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
+    getResourcesToAdd = os.path.join(getDir,"resources-to-add.csv")
+    
+
+    if os.path.isfile(getResourcesToAdd):
+        resourcesToAddDf = pd.read_csv(getResourcesToAdd)
+        resourcesToAddDf.fillna("", inplace = True)
+        resourcesToAddDf = resourcesToAddDf[resourcesToAddDf["path"] != ""]
+        resourcesToAddDf["date-time"] = pd.to_datetime(resourcesToAddDf["date-time"])
+
+        print(resourcesToAddDf)
+        print(resourcesToAddDf.columns)
+        print(resourcesToAddDf.shape)
+
+        resourcesToAddDf = resourcesToAddDf[resourcesToAddDf["date-time"] == (resourcesToAddDf.groupby("parent-resource-id")["date-time"].transform("max"))]
+        #df[df['date'] < (df.groupby('id')['date'].transform('max') - pd.Timedelta(3, unit='M'))]
+
+        print(resourcesToAddDf)
+        print(resourcesToAddDf.columns)
+        print(resourcesToAddDf.shape)
+
+    else:
+        resourcesToAddDf = None
+
+    return resourcesToAddDf
+
+def get_resources_share_status(self):
+    
+    getDir = self.workingDataPkgDir
+    #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
+    getShareStatus = os.path.join(getDir,"share-status.csv")
+    
+
+    if os.path.isfile(getShareStatus):
+        shareStatusDf = pd.read_csv(getShareStatus)
+        shareStatusDf.fillna("", inplace = True)
+        pd.to_datetime(shareStatusDf["date-time"])
+        
+        print(shareStatusDf)
+        print(shareStatusDf.columns)
+        print(shareStatusDf.shape)
+
+        # sort by date-time (ascending), then drop duplicates of, keeping the last/latest instance of each path's occurrence
+        # to get the latest share status
+        shareStatusDf.sort_values(by=["date-time"],ascending=True,inplace=True)
+        shareStatusDf.drop_duplicates(subset=["path"],keep="last",inplace=True)
+        print("drop duplicates of resource keeping the last/latest instance of each path's occurrence to get the latest share status:")
+        print(shareStatusDf.shape)
+        
+    else:
+        shareStatusDf = []
+
+    return shareStatusDf
+
+def get_resources_annotation_mode_status(self):
+#def get_resources_annotation_mode_status():
+    
+    getDir = self.workingDataPkgDir
+    #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
+    getAnnotationModeStatus = os.path.join(getDir,"annotation-mode-status.csv")
+    
+
+    if os.path.isfile(getAnnotationModeStatus):
+        annotationModeStatusDf = pd.read_csv(getAnnotationModeStatus)
+        annotationModeStatusDf.fillna("", inplace = True)
+        
+        print(annotationModeStatusDf)
+        print(annotationModeStatusDf.columns)
+        print(annotationModeStatusDf.shape)
+
+        # sort by date-time (descending) so that latest annotation mode status value is in first row of df
+        annotationModeStatusDf.sort_values(by=["date-time"],ascending=False,inplace=True)
+        # get the latest annotation mode status from first row of df as a string
+        annotationModeStatus = annotationModeStatusDf["annotation-mode-status"].iloc[0]
+
+    else:
+        annotationModeStatus = ""
+
+    return annotationModeStatus
+
+        
+
+    
+            
+
 def get_id(self, prefix, fileExt, folderPath):
 
     if folderPath:

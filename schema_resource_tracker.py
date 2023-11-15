@@ -87,7 +87,7 @@ schema_resource_tracker = {
             "type": "string",
             #"pattern": "^(?=.{3,50}$)[a-z]+(-*)([a-z0-9]+)(-[a-z,0-9]+)*$",
             "enum": ["default-experiment-name"],
-            "priority": "all, low"
+            "priority": "all, low, hide-minimal"
         },
         "name": {
             "title" : "Resource Name",
@@ -99,25 +99,25 @@ schema_resource_tracker = {
             "title": "Resource Title",
             "description": "Human-readable title/name of resource",
             "type": "string",
-            "priority": "all, low"
+            "priority": "all, low, hide-minimal"
         },
         "descriptionFileNameConvention": {
             "title": "Resource File Name Convention",
             "description": "For multi-file resource containing multiple files of the same type (multiple 'like' files), provide the naming convention of the files (e.g. for a file set: [subject-01-protocol-A-day-2020-06-05.csv, subject-02-protocol-A-day-2020-06-05.csv, subject-02-protocol-B-day-2020-12-05.csv], you would specify the naming convention as: subject-{subject ID}-protocol-{protocol ID}-day-{date of measurment in YYYY-MM-DD}). If you are using the DSC Packaging application, you can use the Apply Name Convention button above the form to validate your name convention format and use a valid file name convention to generate a minimal 'Resource File Description' that is a minimal description specific to each file in the multi-file resource set.",
             "type": "string",
-            "priority": "multiple like resource, high"
+            "priority": "multiple like resource, high, hide-minimal"
         },
         "descriptionFile": {
             "title": "Resource File Description",
             "description": "For a multi-file resource containing multiple files of the same type (multiple 'like' files), a description specific to the specific current file that is a component of that multi-file set.",
             "type": "string",
-            "priority": "multiple like resource, high, auto"
+            "priority": "multiple like resource, high, auto, hide-minimal"
         },
         "descriptionRow": {
             "title": "Resource Row Description",
             "description": "For a tabular data resource, a description of what one row in the tabular data resource represents; e.g. one row represents one subject at one timepoint",
             "type": "string",
-            "priority": "tabular data, high"
+            "priority": "tabular data, high, hide-minimal"
         },
         "categorySubMetadata": {
             "title" : "Metadata Resource - Sub-Category",
@@ -236,7 +236,7 @@ schema_resource_tracker = {
                 "type": "string",
                 "enum": ["","permanent-private","temporary-private","restricted-access","public"]
             },
-            "priority": "all, high"
+            "priority": "all, high, hide-minimal"
         },
         "accessDate": {
             "title": "Access Date (YYYY/MM/DD or YYYY-MM-DD)",
@@ -255,7 +255,7 @@ schema_resource_tracker = {
             "title": "Software used to produce/read the resource file",
             "description": "If the file format of the resource file is proprietary and requires specific software to open/interpret, provide the software name and version used by the study group to produce/work with the file; e.g. Origin 11.0, CorelDraw 5.6",
             "type": "string",
-            "priority": "all, low"
+            "priority": "all, low, hide-minimal"
         },
         #"format.open.type": {
         #    "title": "Format Open Type",

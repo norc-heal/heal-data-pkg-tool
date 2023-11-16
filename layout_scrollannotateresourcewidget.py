@@ -446,7 +446,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
 
         if self.form.widget.state["category"] == "multi-result":
-            messageText = "<br>You have indicated your resource is a multi-result resource. Please ensure that you add a result tracker for this multi-result resource in the Associated Result Tracker field in the form below. A result tracker is a HEAL formatted file to track all results in a multi-result file, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted result tracker, you can easily create one by visiting the Result Tracker tab of the DSC Packaging Desktop application. You can leave this form open, visit the Result Tracker tab to create and save your HEAL formatted result tracker, and then return to this form to add the result tracker you created."
+            messageText = "<br>You have indicated your resource is a multi-result resource. Please ensure that you add a results tracker for this multi-result resource in the Associated Results Tracker field in the form below. A results tracker is a HEAL formatted file to track all results in a multi-result file, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted results tracker, you can easily create one by visiting the Results Tracker tab of the DSC Data Packaging Desktop tool. You can leave this form open, visit the Results Tracker tab to create and save your HEAL formatted results tracker, and then return to this form to add the results tracker you created."
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 
@@ -576,12 +576,26 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     "categorySubMetadata": ""
                 } 
 
-        if self.form.widget.state["category"] not in ["single-result","multi-result"]:
-            self.toggle_widgets(keyText = "results", desiredToggleState = "hide")
+        # if self.form.widget.state["category"] not in ["single-result","multi-result"]:
+        #     self.toggle_widgets(keyText = "results", desiredToggleState = "hide")
+        #     # delete contents of conditional fields if any added
+        #     self.form.widget.state = {
+        #             "categorySubResults": ""
+        #         } 
+
+        if self.form.widget.state["category"] != "single-result":
+            self.toggle_widgets(keyText = "singleResult", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                    "categorySubResults": ""
-                } 
+                    "categorySubSingleResult": ""
+                }
+
+        if self.form.widget.state["category"] != "multi-result":
+            self.toggle_widgets(keyText = "multiResult", desiredToggleState = "hide")
+            # delete contents of conditional fields if any added
+            self.form.widget.state = {
+                    "categorySubMultiResult": ""
+                }  
 
         if self.form.widget.state["category"] != "multi-result":
             self.toggle_widgets(keyText = "multi-result", desiredToggleState = "hide")
@@ -595,6 +609,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
                 # clear associatedFileResultsDependOn field (not sure the format for this, is it a list of lists?)
                 self.popFormField = []
+            if self.form.widget.state["categorySubMetadata"] != "other":
+                self.toggle_widgets(keyText = "subMetadataOther", desiredToggleState = "hide")
 
         if self.form.widget.state["category"] != "metadata":
             #if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
@@ -616,8 +632,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if self.form.widget.state["category"] == "metadata":
             self.toggle_widgets(keyText = "metadata", desiredToggleState = "show")
 
-        if self.form.widget.state["category"] in ["single-result","multi-result"]:
-            self.toggle_widgets(keyText = "results", desiredToggleState = "show")
+        # if self.form.widget.state["category"] in ["single-result","multi-result"]:
+        #     self.toggle_widgets(keyText = "results", desiredToggleState = "show")
+        if self.form.widget.state["category"] == "single-result":
+            self.toggle_widgets(keyText = "singleResult", desiredToggleState = "show")
+
+        if self.form.widget.state["category"] == "multi-result":
+            self.toggle_widgets(keyText = "multiResult", desiredToggleState = "show")
 
         if self.form.widget.state["category"] == "multi-result":
             self.toggle_widgets(keyText = "multi-result", desiredToggleState = "show")
@@ -626,6 +647,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if self.form.widget.state["category"] == "metadata":
             if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
                 self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "hide")
+            if self.form.widget.state["categorySubMetadata"] == "other":
+                self.toggle_widgets(keyText = "subMetadataOther", desiredToggleState = "show")
 
         #if changedFieldName == "access":
 

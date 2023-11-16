@@ -611,15 +611,22 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.popFormField = []
             if self.form.widget.state["categorySubMetadata"] != "other":
                 self.toggle_widgets(keyText = "subMetadataOther", desiredToggleState = "hide")
+                self.form.widget.state = {
+                "categorySubMetadataOther": ""
+                } 
 
         if self.form.widget.state["category"] != "metadata":
             #if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
-                self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
-                self.form.widget.state = {
-                    "categorySubMetadata": ""
-                } 
-                self.popFormField = []
-
+            self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
+            self.form.widget.state = {
+                "categorySubMetadata": ""
+            } 
+            self.popFormField = []
+            
+            self.toggle_widgets(keyText = "subMetadataOther", desiredToggleState = "hide")
+            self.form.widget.state = {
+                "categorySubMetadataOther": ""
+            } 
         ################### show field appropriate to current selection
             
         if self.form.widget.state["category"] == "tabular-data":

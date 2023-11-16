@@ -140,12 +140,19 @@ schema_resource_tracker = {
             "enum": ["","raw","processed-intermediate","processed-final"],
             "priority": "data, high"
         },
-        "categorySubResults": {
-            "title" : "Results Resource - Sub-Category",
-            "description": "Sub-category for a results resource",
+        "categorySubSingleResult": {
+            "title" : "Single-result Resource - Sub-Category",
+            "description": "Sub-category for a single-result resource",
             "type": "string",
-            "enum": ["","figure","table","text","draft-publication","publication","report","white-paper","presentation","poster"],
-            "priority": "results, high"
+            "enum": ["","figure","table","text"],
+            "priority": "singleResult, high"
+        },
+        "categorySubMultiResult": {
+            "title" : "Multi-result Resource - Sub-Category",
+            "description": "Sub-category for a multi-result resource",
+            "type": "string",
+            "enum": ["","peer-review-manuscript","report","white-paper","presentation","poster"],
+            "priority": "multiResult, high"
         },
         "associatedFileDataDict": {
             "title": "Associated Data Dictionary",

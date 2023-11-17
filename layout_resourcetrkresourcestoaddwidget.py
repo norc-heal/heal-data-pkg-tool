@@ -658,6 +658,11 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 
 
     def cleanup(self):
+        print("cleaning up and saving annotation mode and share status")
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
 
         cleanupOutputDir = os.path.join(self.workingDataPkgDir,"no-user-access")
         if not os.path.exists(cleanupOutputDir):

@@ -100,13 +100,13 @@ def get_added_resource_paths(self):
 
 def get_resources_to_add(self):
 #def get_resources_to_add():
-    print("hiiii")
+    print("hiiii; getting resource to add file")
     
-    getDir = self.workingDataPkgDir
+    getDir = os.path.join(self.workingDataPkgDir,"no-user-access")
     #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
     getResourcesToAdd = os.path.join(getDir,"resources-to-add.csv")
     
-
+    # prob need to change to os.path.exists
     if os.path.isfile(getResourcesToAdd):
         resourcesToAddDf = pd.read_csv(getResourcesToAdd)
         resourcesToAddDf.fillna("", inplace = True)
@@ -131,11 +131,12 @@ def get_resources_to_add(self):
 
 def get_resources_share_status(self):
     
-    getDir = self.workingDataPkgDir
+    #getDir = self.workingDataPkgDir
+    getDir = os.path.join(self.workingDataPkgDir,"no-user-access")
     #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
     getShareStatus = os.path.join(getDir,"share-status.csv")
     
-
+    # prob need to change to os.path.exists
     if os.path.isfile(getShareStatus):
         shareStatusDf = pd.read_csv(getShareStatus)
         shareStatusDf.fillna("", inplace = True)
@@ -160,11 +161,12 @@ def get_resources_share_status(self):
 def get_resources_annotation_mode_status(self):
 #def get_resources_annotation_mode_status():
     
-    getDir = self.workingDataPkgDir
+    #getDir = self.workingDataPkgDir
+    getDir = os.path.join(self.workingDataPkgDir,"no-user-access")
     #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
     getAnnotationModeStatus = os.path.join(getDir,"annotation-mode-status.csv")
     
-
+    # prob need to change to os.path.exists
     if os.path.isfile(getAnnotationModeStatus):
         annotationModeStatusDf = pd.read_csv(getAnnotationModeStatus)
         annotationModeStatusDf.fillna("", inplace = True)

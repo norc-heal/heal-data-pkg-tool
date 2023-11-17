@@ -177,7 +177,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # create drag and drop window for multiple file dependencies addition
         self.lstbox_view2 = ListboxWidget(self)
         self.lwModel2 = self.lstbox_view2.model()
-        self.items2 = []
+        self.items2 = [] # this will hold the values in the listbox widget
         self.programmaticListUpdate2 = False
         self.lwModel2.rowsInserted.connect(self.get_items_list2)
         self.lwModel2.rowsRemoved.connect(self.get_items_list2)
@@ -446,7 +446,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
 
         if self.form.widget.state["category"] == "multi-result":
-            messageText = "<br>You have indicated your resource is a multi-result resource. Please ensure that you add a result tracker for this multi-result resource in the Associated Result Tracker field in the form below. A result tracker is a HEAL formatted file to track all results in a multi-result file, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted result tracker, you can easily create one by visiting the Result Tracker tab of the DSC Packaging Desktop application. You can leave this form open, visit the Result Tracker tab to create and save your HEAL formatted result tracker, and then return to this form to add the result tracker you created."
+            messageText = "<br>You have indicated your resource is a multi-result resource. Please ensure that you add a results tracker for this multi-result resource in the Associated Results Tracker field in the form below. A results tracker is a HEAL formatted file to track all results in a multi-result file, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted results tracker, you can easily create one by visiting the Results Tracker tab of the DSC Data Packaging Desktop tool. You can leave this form open, visit the Results Tracker tab to create and save your HEAL formatted results tracker, and then return to this form to add the results tracker you created."
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 
@@ -576,12 +576,26 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     "categorySubMetadata": ""
                 } 
 
-        if self.form.widget.state["category"] not in ["single-result","multi-result"]:
-            self.toggle_widgets(keyText = "results", desiredToggleState = "hide")
+        # if self.form.widget.state["category"] not in ["single-result","multi-result"]:
+        #     self.toggle_widgets(keyText = "results", desiredToggleState = "hide")
+        #     # delete contents of conditional fields if any added
+        #     self.form.widget.state = {
+        #             "categorySubResults": ""
+        #         } 
+
+        if self.form.widget.state["category"] != "single-result":
+            self.toggle_widgets(keyText = "singleResult", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                    "categorySubResults": ""
-                } 
+                    "categorySubSingleResult": ""
+                }
+
+        if self.form.widget.state["category"] != "multi-result":
+            self.toggle_widgets(keyText = "multiResult", desiredToggleState = "hide")
+            # delete contents of conditional fields if any added
+            self.form.widget.state = {
+                    "categorySubMultiResult": ""
+                }  
 
         if self.form.widget.state["category"] != "multi-result":
             self.toggle_widgets(keyText = "multi-result", desiredToggleState = "hide")
@@ -595,15 +609,24 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
                 # clear associatedFileResultsDependOn field (not sure the format for this, is it a list of lists?)
                 self.popFormField = []
+            if self.form.widget.state["categorySubMetadata"] != "other":
+                self.toggle_widgets(keyText = "subMetadataOther", desiredToggleState = "hide")
+                self.form.widget.state = {
+                "categorySubMetadataOther": ""
+                } 
 
         if self.form.widget.state["category"] != "metadata":
             #if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
-                self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
-                self.form.widget.state = {
-                    "categorySubMetadata": ""
-                } 
-                self.popFormField = []
-
+            self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
+            self.form.widget.state = {
+                "categorySubMetadata": ""
+            } 
+            self.popFormField = []
+            
+            self.toggle_widgets(keyText = "subMetadataOther", desiredToggleState = "hide")
+            self.form.widget.state = {
+                "categorySubMetadataOther": ""
+            } 
         ################### show field appropriate to current selection
             
         if self.form.widget.state["category"] == "tabular-data":
@@ -616,8 +639,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if self.form.widget.state["category"] == "metadata":
             self.toggle_widgets(keyText = "metadata", desiredToggleState = "show")
 
-        if self.form.widget.state["category"] in ["single-result","multi-result"]:
-            self.toggle_widgets(keyText = "results", desiredToggleState = "show")
+        # if self.form.widget.state["category"] in ["single-result","multi-result"]:
+        #     self.toggle_widgets(keyText = "results", desiredToggleState = "show")
+        if self.form.widget.state["category"] == "single-result":
+            self.toggle_widgets(keyText = "singleResult", desiredToggleState = "show")
+
+        if self.form.widget.state["category"] == "multi-result":
+            self.toggle_widgets(keyText = "multiResult", desiredToggleState = "show")
 
         if self.form.widget.state["category"] == "multi-result":
             self.toggle_widgets(keyText = "multi-result", desiredToggleState = "show")
@@ -626,13 +654,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if self.form.widget.state["category"] == "metadata":
             if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
                 self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "hide")
+            if self.form.widget.state["categorySubMetadata"] == "other":
+                self.toggle_widgets(keyText = "subMetadataOther", desiredToggleState = "show")
 
         #if changedFieldName == "access":
 
         if "temporary-private" in self.form.widget.state["access"]:
             self.toggle_widgets(keyText = "temporary private", desiredToggleState = "show")
             
-            messageText = "<br>You have indicated your resource will be temporarily held as private. Please 1) use the Access field to indicate the access level at which you'll set this resource once the temporary private access setting expires (either public access, or restricted access), and 2) use the Access Date field to indicate the date at which the temporary private access level is expected to expire (You will not be held to this date - Estimated dates are appreciated)."
+            messageText = "<br>You have indicated your resource will be temporarily held as private. Please 1) use the Access field to indicate the access level at which you'll set this resource once the temporary private access setting expires (either open-access access, or restricted access), and 2) use the Access Date field to indicate the date at which the temporary private access level is expected to expire (You will not be held to this date - Estimated dates are appreciated)."
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 
@@ -847,11 +877,18 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         print(len(self.items2))
 
         if self.items2:
-            #updatePath = self.items2[0]
+            
             updateAssocFileMultiDepend = self.items2
+            # if self.form.widget.state["associatedFileDependsOn"]:
+            #     updateAssocFileMultiDepend = self.items2 + 
+            # else: 
+            #     updateAssocFileMultiDepend = self.items2
         else:
-            #updatePath = ""
+            
             updateAssocFileMultiDepend = []
+
+
+        #list(pd.unique(students))
 
         self.form.widget.state = {
             #"path": updatePath,
@@ -1006,6 +1043,17 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
+        # if in edit mode then resource path should already exist in resource tracker; if not in edit mode the resource path should
+        # not yet exist in tracker
+        if self.mode != "edit":
+            addedResourcePathsList = dsc_pkg_utils.get_added_resource_paths(self=self)
+            if self.form.widget.state["path"] in addedResourcePathsList:
+                messageText = "<br>You have already added a resource to the Resource Tracker with the file path indicated in this form. You must add a unique resource file path before saving your resource file. Please check your resource file path, add a unique resource file path, and then try saving again. <b>If you meant to edit an existing resource</b>, you can do that by closing this window, then navigating to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab, and clicking the \"Edit an existing resource\" push-button. " 
+                errorFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+                return
+
+
         # check that file path and at least a minimal description has been added to the form 
         # if not exit with informative error
         if not ((self.form.widget.state["path"]) and (self.form.widget.state["description"])):
@@ -1141,7 +1189,14 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 
                 resourceDependAllDf = pd.concat([resourceDependAllDf,resourceDependResultDependDf])
 
-            resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"resources-to-add.csv")
+            resourcesToAddOutputDir = os.path.join(self.workingDataPkgDir,"no-user-access")
+            if not os.path.exists(resourcesToAddOutputDir):
+                os.makedirs(resourcesToAddOutputDir)
+                print("creating no-user-access subdirectory")
+            else:
+                print("no-user-access subdirectory already exists")
+            
+            resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"no-user-access","resources-to-add.csv")
 
             # if not os.path.isfile(resourcesToAddOutputPath):
             #     f=open(resourcesToAddOutputPath,'w')
@@ -1152,6 +1207,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 # add timestamp at which time resource was added to the resources to add to tracker list
                 resourceDependAllDf["date-time"] = pd.Timestamp("now")
                 resourceDependAllDf["parent-resource-id"] = self.resource_id_list[0]
+                resourceDependAllDf["parent-resource-exp-name-belongs-to"] = self.form.widget.state["experimentNameBelongsTo"]
+                resourceDependAllDf["parent-resource-description"] = self.form.widget.state["description"]
+                resourceDependAllDf["parent-resource-path"] = self.form.widget.state["path"]
 
                 if os.path.isfile(resourcesToAddOutputPath):
 
@@ -1169,7 +1227,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     all_to_add_df = pd.read_csv(resourcesToAddOutputPath)
                     all_to_add_df["date-time"] = pd.to_datetime(all_to_add_df["date-time"])
                     all_to_add_df = pd.concat([all_to_add_df, resourceDependAllDf], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
-                    all_to_add_df.sort_values(by = ["date-time"], inplace=True)
+                    all_to_add_df.sort_values(by = ["date-time"], ascending=True, inplace=True)
                     # drop any exact duplicate rows
                     #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
                     # this current approach does not appear to be working at the moment
@@ -1225,16 +1283,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
             if "temporary-private" in self.form.widget.state["access"]:
-                if not any(map(lambda v: v in self.form.widget.state["access"], ["public","restricted-access"])):
+                if not any(map(lambda v: v in self.form.widget.state["access"], ["open-access","managed-access"])):
 
-                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'public\n' or to \n'restricted-access\n' once the temporary-private status expires. Please return to the form to indicate what the final access level of this resource will be by adding another value to the Access field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
+                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'open-access\n' or to \n'managed-access\n' once the temporary-private status expires. Please return to the form to indicate what the final access level of this resource will be by adding another value to the Access field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
                 if self.form.widget.state["accessDate"] == self.formDefaultState["accessDate"]:
 
-                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'public\n' or to \n'restricted-access\n'. Please return to the form to indicate the date at which temporary-provate access level will expire in the Access Date field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
+                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'open-access\n' or to \n'managed-access\n'. Please return to the form to indicate the date at which temporary-provate access level will expire in the Access Date field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)

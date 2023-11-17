@@ -225,7 +225,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             self.cleanup()
 
         # resource tracker and resources to add files are needed to populate the list of resources that need to be added so perform some checks
-        checkFileList = ["heal-csv-resource-tracker.csv","resources-to-add.csv"]
+        checkFileList = ["heal-csv-resource-tracker.csv",os.path.join("no-user-access","resources-to-add.csv")]
         checkFileNameList = ["Resource Tracker","Resources-to-Add"]
 
         for i,c in enumerate(checkFileList):
@@ -234,6 +234,11 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 messageText = "<br>There is no " + checkFileNameList[i] + " file in your working Data Package Directory; Your working Data Package Directory must contain a " +  checkFileNameList[i] + " file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br>"
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
+
+                if checkFileNameList[i] == "Resources-to-Add":
+                    messageText = "<br>You must add at least one study resource <b>with associated/dependency files</b> to the Resource Tracker, at which point this file will be automatically created for you. Try adding a study resource to the Resource Tracker by navigating to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and clicking on the \"Add a new resource\" push-button. Add at least one associated file/dependency for this resource in the appropriate form fields, save your resource, then come back here and try again!<br>"
+                    saveFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(saveFormat.format(messageText))
                 return
             
             # check that file is closed (user doesn't have it open in excel for example)
@@ -391,7 +396,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.vbox.addLayout(self.grid)
                         
         ################################## Update default settings of minimal annotation checkbox and share status checkboxes based on information either from this or previous/most recent session
-        if os.path.isfile(os.path.join(self.workingDataPkgDir,"annotation-mode-status.csv")):
+        if os.path.isfile(os.path.join(self.workingDataPkgDir,"no-user-access","annotation-mode-status.csv")):
             self.annotationModeStatus = dsc_pkg_utils.get_resources_annotation_mode_status(self=self)
             print("annotationModeStatus from file: ",self.annotationModeStatus)
         
@@ -402,7 +407,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 print("setting minimal annotation status from previous knowledge")
                 self.minimalAnnotationCheckbox.setChecked(True) 
 
-        if os.path.isfile(os.path.join(self.workingDataPkgDir,"share-status.csv")):
+        if os.path.isfile(os.path.join(self.workingDataPkgDir,"no-user-access","share-status.csv")):
             self.shareStatusDf = dsc_pkg_utils.get_resources_share_status(self=self)
             print("shareStatusDf from file: ",self.shareStatusDf)
 
@@ -455,15 +460,15 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 if setType == "associatedFileProtocol":
                     setCategorySubMetadata = "protocol"
                     setDescription = "protocol for " + setParent
-                    setAccess = ["public"]
+                    setAccess = ["open-access"]
                 elif setType == "associatedFileResultsTracker":
                     setCategorySubMetadata = "heal-formatted-results-tracker"
                     setDescription = "heal formatted results tracker for " + setParent
-                    setAccess = ["temporary-private","public"]
+                    setAccess = ["temporary-private","open-access"]
                 elif setType == "associatedFileDataDict":
                     setCategorySubMetadata = "heal-formatted-data-dictionary"
                     setDescription = "heal formatted data dictionary for " + setParent 
-                    setAccess = ["public"]
+                    setAccess = ["open-access"]
             else:
                 setCategory = ""
                 setCategorySubMetadata = ""
@@ -653,6 +658,14 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 
 
     def cleanup(self):
+
+        cleanupOutputDir = os.path.join(self.workingDataPkgDir,"no-user-access")
+        if not os.path.exists(cleanupOutputDir):
+            os.makedirs(cleanupOutputDir)
+            print("creating no-user-access subdirectory")
+        else:
+            print("no-user-access subdirectory already exists")
+        
         
         if self.shareStatusListChanged:
             self.shareStatusDf = pd.DataFrame(list(zip(self.pathShareStatusList, self.shareStatusList)),
@@ -660,14 +673,14 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             self.shareStatusDf["date-time"] = pd.Timestamp("now")
             
             # if there's already an existing share status df written to file, append the one from this call
-            if os.path.isfile(os.path.join(self.workingDataPkgDir,"share-status.csv")):
-                existingShareStatusDf = pd.read_csv(os.path.join(self.workingDataPkgDir,"share-status.csv"))
+            if os.path.isfile(os.path.join(self.workingDataPkgDir,"no-user-access","share-status.csv")):
+                existingShareStatusDf = pd.read_csv(os.path.join(self.workingDataPkgDir,"no-user-access","share-status.csv"))
                 pd.to_datetime(existingShareStatusDf["date-time"])
                 print(existingShareStatusDf.shape) 
                 
                 self.shareStatusDf = pd.concat([existingShareStatusDf,self.shareStatusDf],axis=0)
             
-            self.shareStatusDf.to_csv(os.path.join(self.workingDataPkgDir,"share-status.csv"), index=False)
+            self.shareStatusDf.to_csv(os.path.join(self.workingDataPkgDir,"no-user-access","share-status.csv"), index=False)
 
             self.shareStatusListChanged = False
 
@@ -677,14 +690,14 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
             df["date-time"] = pd.Timestamp("now")
 
             # if there's already an existing annotation mode status df written to file, append the one from this call
-            if os.path.isfile(os.path.join(self.workingDataPkgDir,"annotation-mode-status.csv")):
-                existingAnnotationModeStatusDf = pd.read_csv(os.path.join(self.workingDataPkgDir,"annotation-mode-status.csv"))
+            if os.path.isfile(os.path.join(self.workingDataPkgDir,"no-user-access","annotation-mode-status.csv")):
+                existingAnnotationModeStatusDf = pd.read_csv(os.path.join(self.workingDataPkgDir,"no-user-access","annotation-mode-status.csv"))
                 pd.to_datetime(existingAnnotationModeStatusDf["date-time"])
                 print(existingAnnotationModeStatusDf.shape) 
                 
                 df = pd.concat([existingAnnotationModeStatusDf,df],axis=0)
 
-            df.to_csv(os.path.join(self.workingDataPkgDir,"annotation-mode-status.csv"), index=False)
+            df.to_csv(os.path.join(self.workingDataPkgDir,"no-user-access","annotation-mode-status.csv"), index=False)
 
             self.annotationModeChanged = False
 
@@ -744,6 +757,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         # }
         
         print("formSetState passed to annotate resource fx: ",formSetState)
+        print("annotationMode passed to annotate resource fx: ", annotationMode)
         
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
@@ -754,7 +768,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         else:
             self.w.close()  # Close window.
             self.w = None  # Discard reference.
-            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add",formSetState=formSetState)
+            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add",formSetState=formSetState, annotationMode=annotationMode)
             self.w.show()
 
     # def checkboxChanged(self):

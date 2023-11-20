@@ -85,6 +85,9 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
 
         # start hidden - unhide when user loads list of resources to add
         self.optional_groupbox.hide()
+
+        self.labelResourceList = QtWidgets.QLabel(text = "<b>Resource List</b>", parent=self)
+        self.labelResourceList.hide()
         
         
         # self.listCheckBox    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ]
@@ -162,6 +165,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         # self.vbox.addWidget(self.minimalAnnotationCheckbox, Qt.AlignCenter)
         self.vbox.addWidget(self.optional_groupbox,Qt.AlignCenter)
         #self.vbox.addLayout(self.grid)
+        self.vbox.addWidget(self.labelResourceList)
         
         ################################## Set layout of the grouping widget as the vbox layout with widgets added
 
@@ -313,6 +317,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.fullPathCheckbox.show()
 
         self.optional_groupbox.show()
+        self.labelResourceList.show()
                         
         self.listCheckBox    = ['']*resourcesToAddDf.shape[0]
         self.listPath    = resourcesToAddDf["path"].tolist()

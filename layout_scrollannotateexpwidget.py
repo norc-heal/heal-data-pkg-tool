@@ -913,7 +913,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             textButton = "\"Edit an existing experiment\""
         elif self.mode == "add-based-on":
             textBit = "base a new experiment upon"
-            textButton = "\"Add a new experiment based upon an existing experiment\""
+            textButton = "\"Add a new experiment based on an existing experiment\""
 
         
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Experiment txt file you want to " + textBit,

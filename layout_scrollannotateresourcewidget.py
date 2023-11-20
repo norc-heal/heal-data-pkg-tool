@@ -1698,6 +1698,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 based_on_annotation_id = data["resourceId"]
 
             if self.mode == "edit": 
+                self.saveFilePath = ifileName # is this necessary?
+                print("setting saveFilePath to path of chosen file")
+                
                 self.resource_id = data["resourceId"]
                 self.resIdNum = int(self.resource_id.split("-")[1])
                 self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'

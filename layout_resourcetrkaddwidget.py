@@ -48,6 +48,9 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         self.buttonEditResource = QtWidgets.QPushButton(text="Edit an existing resource",parent=self)
         self.buttonEditResource.clicked.connect(self.edit_resource)
 
+        self.buttonAddBasedOnResource = QtWidgets.QPushButton(text="Add a new resource based on an existing resource",parent=self)
+        self.buttonAddBasedOnResource.clicked.connect(self.annotate_resource_based_on)
+
         self.buttonAddResource = QtWidgets.QPushButton(text="Batch add existing resource(s) to tracker",parent=self)
         self.buttonAddResource.clicked.connect(self.add_resource)
 
@@ -61,6 +64,7 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         layout = QtWidgets.QVBoxLayout()
 
         advanced_layout = QtWidgets.QVBoxLayout()
+        advanced_layout.addWidget(self.buttonAddBasedOnResource)
         advanced_layout.addWidget(self.buttonAddResource)
         advanced_groupbox = QtWidgets.QGroupBox("Advanced")
         advanced_groupbox.setLayout(advanced_layout)
@@ -142,6 +146,23 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
             self.w.show()
             self.w.load_file()
 
+
+        else:
+            self.w.close()  # Close window.
+            self.w = None  # Discard reference.
+
+    def annotate_resource_based_on(self,checked):
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
+        if self.w is None:
+            #self.w.editState = True
+            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add-based-on")
+            self.w.show()
+            self.w.load_file()
 
         else:
             self.w.close()  # Close window.

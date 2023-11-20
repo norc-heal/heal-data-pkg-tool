@@ -1648,20 +1648,38 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Resource Txt Data file you want to edit",
         #        (QtCore.QDir.homePath()), "Text (*.txt)")
 
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Resource Txt Data file you want to edit",
-               self.saveFolderPath, "Text (*.txt)")
+        
+        if self.mode == "edit":
+            textBit = "edit"
+            textButton = "\"Edit an existing resource\""
+        elif self.mode == "add-based-on":
+            textBit = "base a new resource upon"
+            textButton = "\"Add a new resource based upon an existing resource\""
+
+        
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Resource txt file you want to " + textBit,
+            self.saveFolderPath, "Text (*.txt)")
 
         if not ifileName: 
-            messageText = "<br>You have not selected a file; returning."
+            messageText = "<br>You have not selected a file to " + textBit + ". Close this form now. If you still want to " + textBit + " an existing resource, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button."
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText)) 
         else: 
             #self.editMode = True
                      
-            self.saveFilePath = ifileName
+            #self.saveFilePath = ifileName
             print("saveFilePath: ", self.saveFilePath)
             print(Path(ifileName).parent)
             print(Path(self.saveFolderPath))
+
+            # add check on if filename starts with resource-trk-resource?
+            if not Path(ifileName).stem.startswith("resource-trk-resource-"):
+                messageText = "<br>The file you selected may not be a resource txt file - a resource txt file will have a name that starts with \"resource-trk-resource-\" followed by a number which is that resource's ID number. You must select a resource txt file that is in your working Data Package Directory to proceed. <br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            # add check on if valid resource-trk file?
 
             # if user selects a resource txt file that is not in the working data pkg dir, return w informative message
             if Path(self.saveFolderPath) != Path(ifileName).parent:
@@ -1670,26 +1688,30 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return
 
-            self.saveFolderPath = Path(ifileName).parent
+            # self.saveFolderPath = Path(ifileName).parent
             print("saveFolderPath: ", self.saveFolderPath)
             
             with open(ifileName, 'r') as stream:
                 data = load(stream)
 
-            self.resource_id = data["resourceId"]
-            self.resIdNum = int(self.resource_id.split("-")[1])
-            self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
-            #self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
+            if self.mode == "add-based-on":
+                based_on_annotation_id = data["resourceId"]
 
-            # make sure an archive folder exists, if not create it
-            if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
-                os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+            if self.mode == "edit": 
+                self.resource_id = data["resourceId"]
+                self.resIdNum = int(self.resource_id.split("-")[1])
+                self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
+                #self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
 
-            # move the resource annotation file user opened for editing to archive folder
-            os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.resourceFileName))
-            messageText = "<br>Your original resource annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.resourceFileName) + "<br><br>"
-            saveFormat = '<span style="color:blue;">{}</span>'
-            self.userMessageBox.append(saveFormat.format(messageText))
+                # make sure an archive folder exists, if not create it
+                if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
+                    os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+
+                # move the resource annotation file user opened for editing to archive folder
+                os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.resourceFileName))
+                messageText = "<br>Your original resource annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.resourceFileName) + "<br><br>"
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
 
             if data["associatedFileResultsDependOn"]:
                 self.popFormField = data.pop("associatedFileResultsDependOn")
@@ -1704,6 +1726,12 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if len(data["associatedFileDependsOn"]) > 2: 
                 self.lstbox_view2.addItems(data["associatedFileDependsOn"])
                 self.add_multi_depend()
+
+            if self.mode == "add-based-on":
+                self.get_id()
+                messageText = "<br>Your new resource has been initialized based on information you entered for " + based_on_annotation_id + "<br><br>"
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
 
     def take_inputs(self):
 

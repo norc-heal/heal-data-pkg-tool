@@ -1022,23 +1022,37 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
         print("in load_file fx")
 
-        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
-        #        (QtCore.QDir.homePath()), "Text (*.txt)")
+        if self.mode == "edit":
+            textBit = "edit"
+            textButton = "\"Edit an existing result\""
+        elif self.mode == "add-based-on":
+            textBit = "base a new result upon"
+            textButton = "\"Add a new result based on an existing result\""
 
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
-               self.saveFolderPath, "Text (*.txt)")
+        
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result txt file you want to " + textBit,
+            self.saveFolderPath, "Text (*.txt)")
 
         if not ifileName: 
-            messageText = "<br>You have not selected a file; returning."
+            messageText = "<br>You have not selected a file to " + textBit + ". Close this form now. If you still want to " + textBit + " an existing result, Navigate to the \"Result Tracker\" tab >> \"Add Result\" sub-tab and click the " + textButton + " push-button."
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText)) 
         else: 
             #self.editMode = True
                      
-            self.saveFilePath = ifileName
+            #self.saveFilePath = ifileName
             print("saveFilePath: ", self.saveFilePath)
             print(Path(ifileName).parent)
             print(Path(self.saveFolderPath))
+
+            # add check on if filename starts with result-trk-result?
+            if not Path(ifileName).stem.startswith("result-trk-result-"):
+                messageText = "<br>The file you selected may not be a result txt file - a result txt file will have a name that starts with \"result-trk-result-\" followed by a number which is that result's ID number. You must select a result txt file that is in your working Data Package Directory to proceed. <br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            # add check on if valid result-trk file?
 
             # if user selects a result txt file that is not in the working data pkg dir, return w informative message
             if Path(self.saveFolderPath) != Path(ifileName).parent:
@@ -1053,26 +1067,36 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             with open(ifileName, 'r') as stream:
                 data = load(stream)
 
-            self.result_id = data["resultId"]
-            self.resIdNum = int(self.result_id.split("-")[1])
-            self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
-            #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
+            if self.mode == "add-based-on":
+                based_on_annotation_id = data["resourceId"]
 
-            # make sure an archive folder exists, if not create it
-            if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
-                os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+            if self.mode == "edit": 
+                self.result_id = data["resultId"]
+                self.resIdNum = int(self.result_id.split("-")[1])
+                self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
+                #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
 
-            # move the result annotation file user opened for editing to archive folder
-            os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.resultFileName))
-            messageText = "<br>Your original result annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.resultFileName) + "<br><br>"
-            saveFormat = '<span style="color:blue;">{}</span>'
-            self.userMessageBox.append(saveFormat.format(messageText))
+                # make sure an archive folder exists, if not create it
+                if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
+                    os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+
+                # move the result annotation file user opened for editing to archive folder
+                os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.resultFileName))
+                messageText = "<br>Your original result annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.resultFileName) + "<br><br>"
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
 
             self.form.widget.state = data
 
             if len(data["associatedFileDependsOn"]) > 2: 
                 self.lstbox_view2.addItems(data["associatedFileDependsOn"])
-                self.add_multi_depend()         
+                self.add_multi_depend()   
+
+            if self.mode == "add-based-on":
+                self.get_id()
+                messageText = "<br>Your new result has been initialized based on information you entered for " + based_on_annotation_id + "<br><br>"
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))      
 
         
 

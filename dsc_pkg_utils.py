@@ -12,6 +12,7 @@ from jsonschema import validate
 import re
 import itertools
 from copy import deepcopy
+from pathlib import Path
 
 from healdata_utils.schemas import healjsonschema, healcsvschema
 from healdata_utils.transforms.frictionless import conversion
@@ -205,7 +206,7 @@ def get_id(self, prefix, folderPath, firstIdNum=1):
             print(fileStemList)
             #idNumList = [int(filename.rsplit('-',1)[1]) for filename in fileStemList]
             idNumList = [int(filename.split(prefix)[1]) for filename in fileStemList]
-            print(resIdNumList)
+            print(idNumList)
             idNum = max(idNumList) + 1
             print(max(idNumList),idNum)
         else:

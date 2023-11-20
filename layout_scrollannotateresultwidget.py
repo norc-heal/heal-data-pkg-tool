@@ -1068,7 +1068,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 data = load(stream)
 
             if self.mode == "add-based-on":
-                based_on_annotation_id = data["resourceId"]
+                based_on_annotation_id = data["resultId"]
 
             if self.mode == "edit": 
                 self.result_id = data["resultId"]

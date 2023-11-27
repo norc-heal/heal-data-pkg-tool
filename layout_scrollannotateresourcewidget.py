@@ -1721,7 +1721,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     self.annotationArchiveFileNameNumber = 1
                     #self.annotationArchiveFileName = 'exp-trk-'+ self.annotation_id + '-0' + '.txt'
                 else: 
-                    print("at least one archived version/file for this annotation txt file already exists; getting next available archive id")
+                    print("checking if at least one archived version/file for this annotation txt file already exists; getting next available archive id")
                     # check for files that start with stem of ifileName
                     # get the string that follows the last hyphen in the stem of those files, convert that string to number
                     # get highest number, add 1 to that number

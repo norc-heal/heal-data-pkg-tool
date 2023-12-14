@@ -46,6 +46,7 @@ schema_resource_tracker = {
     "type": "object",
     "description": "HEAL DSC Core Metadata piece to track and provide basic information about resource(s)/file(s) that support/are produced by/result from experiments you perform/will perform as part of your HEAL study.Objective is to list at least all files that will be submitted to a data repository in order to describe what each file is, how they relate to each other/how to use them, and how they relate to results/publications shared by the study group. Files may include results files (e.g. publications or draft publications/pieces of publications), processed and raw data files, protocol and analytic plan files, data dictionaries for tabular data files, other metadata as appropriate to data/field type, etc.",
     "title": "HEAL Resource Tracker",
+    "version": "0.2.0",
     "properties": {
         "resourceId": {
             "title": "Resource ID",

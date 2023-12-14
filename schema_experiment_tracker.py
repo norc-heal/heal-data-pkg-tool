@@ -2,6 +2,7 @@ schema_experiment_tracker = {
     "type": "object",
     "description": "HEAL DSC Core Metadata piece to track and provide basic information about experiment(s) you will perform as part of your HEAL study. Clinical studies will often have only one experiment to report, while basic science studies often have several experiments that are grouped together under a single study.",
     "title": "HEAL Experiment Tracker",
+    "version": "0.2.0",
     "properties": {
         "experimentId": {
             "title": "Experiment ID",

@@ -5,6 +5,7 @@ schema_results_tracker = {
     "type": "object",
     "description": "HEAL DSC Core Metadata piece to track and provide basic information about results statements or figures in a multi-result file (e.g. a publication) that presents results from your HEAL study. Objective is to list at least all results that have been/will be published in order to describe each result, the data/non-data files each result depends on, and how to use these data/non-data files to reproduce published results.",
     "title": "HEAL Results Tracker",
+    "version": "0.2.0",
     "properties": {
         "resultId": {
             "title": "Result ID",

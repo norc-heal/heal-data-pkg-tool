@@ -104,6 +104,10 @@ fieldNameMap = {
             "formerNames": ["category.sub.data"],
             "deprecated": False
         },
+        "categorySubResults":{
+            "formerNames": ["category.sub.results"],
+            "deprecated": True
+        },
         "categorySubSingleResult":{
             "formerNames": ["categorySubResults","category.sub.results"],
             "deprecated": False,
@@ -138,7 +142,7 @@ fieldNameMap = {
             "deprecated": False
         },
         "associatedFileDependsOn":{
-            "formerNames": [],
+            "formerNames": ["assoc.file.depends.on"],
             "deprecated": False
         },
         "associatedFileResultsDependOn":{

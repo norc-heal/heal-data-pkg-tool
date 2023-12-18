@@ -7,7 +7,7 @@
 
 # upon adding resource check for:
 # if tabular data resource - info to create a dd, and come back to add ref to dd in this resource file
-# if multi-result resource - info to create a result tracker, and come back to add ref to result tracker in this resource file
+# if multi-result resource - info to create a results tracker, and come back to add ref to result tracker in this resource file
 # if expBelongsTo experiment id does not have an experiment file - info to create an experiment file for that experiment
 # if expBelongsTo is left as default - info to confirm that the resource pertains to more than one experiment or to the study as a whole rather than to one specific experiment
 # if temporary-private is selected in access field, check that either managed-access or open-access is also selected as the final access state
@@ -17,62 +17,62 @@
 from copy import deepcopy
 import json
 
-formSubProps = \
-    ["resourceId", 
-    "path", 
-    "description", 
-    "category", 
-    "experimentNameBelongsTo",
-    "expBelongsTo", 
-    "title", 
-    "descriptionFileNameConvention", 
-    "descriptionFile",
-    "descriptionRow",
-    "categorySubMetadata",
-    "categorySubData",
-    "categorySubResults",
-    "associatedFileDataDict",
-    "associatedFileProtocol",
-    "associatedFileResultsTracker",
-    "associatedFileDependsOn",
-    "associatedFileResultsDependOn",
-    "associatedFileMultiLikeFiles",
-    "access",
-    "accessDate",
-    "softwareUsed"]
+# formSubProps = \
+#     ["resourceId", 
+#     "path", 
+#     "description", 
+#     "category", 
+#     "experimentNameBelongsTo",
+#     "expBelongsTo", 
+#     "title", 
+#     "descriptionFileNameConvention", 
+#     "descriptionFile",
+#     "descriptionRow",
+#     "categorySubMetadata",
+#     "categorySubData",
+#     "categorySubResults",
+#     "associatedFileDataDict",
+#     "associatedFileProtocol",
+#     "associatedFileResultsTracker",
+#     "associatedFileDependsOn",
+#     "associatedFileResultsDependOn",
+#     "associatedFileMultiLikeFiles",
+#     "access",
+#     "accessDate",
+#     "softwareUsed"]
 
 
 schema_resource_tracker = {
     "type": "object",
-    "description": "HEAL DSC Core Metadata piece to track and provide basic information about resource(s)/file(s) that support/are produced by/result from experiments you perform/will perform as part of your HEAL study.Objective is to list at least all files that will be submitted to a data repository in order to describe what each file is, how they relate to each other/how to use them, and how they relate to results/publications shared by the study group. Files may include results files (e.g. publications or draft publications/pieces of publications), processed and raw data files, protocol and analytic plan files, data dictionaries for tabular data files, other metadata as appropriate to data/field type, etc.",
+    "description": "HEAL DSC Core Metadata piece to track and provide basic information about resource(s)/file(s) that support/are produced by/result from experiments you perform/will perform as part of your HEAL study. The objective is to list at least all files that will be submitted to a data repository in order to describe what each file is, how they relate to each other/how to use them, and how they relate to results/publications shared by the study group. Files may include results files (e.g. publications or draft publications/pieces of publications), processed and raw data files, protocol and analytic plan files, data dictionaries for tabular data files, other metadata as appropriate to data/field type, etc.",
     "title": "HEAL Resource Tracker",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "properties": {
         "resourceId": {
             "title": "Resource ID",
-            "description": "Unique ID assigned to each resource file; If using the DSC Packaging application to annotate your resource(s), these IDs will be auto-assigned when you use the Add DSC Package button above the form to add your DSC Package Directory. Auto-assignment of IDs occurs by searching the directory for any resource annotation files already saved, identifying the resource ID with the highest resource ID number, and adding 1 to that number to get the resource ID number and unique resource ID for the current resource.", 
+            "description": "Unique ID assigned to each resource file; If using the DSC Data Packaging Tool to annotate your resource(s), these IDs will be auto-assigned based on resources already existing in your working Data Package Directory. Auto-assignment of IDs occurs by searching the directory for any resource annotation files already saved, identifying the resource ID with the highest resource ID number, and adding 1 to that number to get the resource ID number and unique resource ID for the current resource.", 
             "type": "string",
             "pattern": "^resource-+-*[0-9]*[1-9][0-9]*$",
             "priority": "all, high, auto"
         },
         "path": {
             "title": "Resource File Path",
-            "description": "The full file path to your resource file. If you are using the DSC Packaging application and would like to use a single form to annotate multiple 'like' files, click the 'Add Multiple like Files' button above the form and drag and drop all of the like files you want to annotate together in that box. The file path for the first of the file paths you dropped in the box will be added to this field.",
+            "description": "The full file path to your resource file. If you are using the DSC Data Packaging Tool and would like to use a single form to annotate multiple 'like' files, click the 'Add Multiple like Files' button above the form and drag and drop all of the like files you want to annotate together in that box. The file path for the first of the file paths you dropped in the box will be added to this field.",
             "type": "string",
             "format": "path",
             "priority": "all, high"
         },
         "description": {
             "title": "Resource Description",
-            "description": "A description of your resource. For resources that consist of multiple 'like' files, provide a description of the multi-file resource here and use the Resource File Description field to provide any description specific to each/any one specific file in the set.",
+            "description": "A description of your resource. For resources that are part of a set of multiple 'like' files, provide a description of the multi-file resource here and use the Resource File Description field to provide any description specific to each/any one specific file in the set.",
             "type": "string",
             "priority": "all, high"
         },
         "category": {
             "title" : "Resource Category",
-            "description": "Broad category your resource falls into; Generally, these categories are: results, data, metadata, code. However, the actual category options parse the categories just a bit finer (e.g. options for data resources include either 'tabular-data' or 'non-tabular-data').",
+            "description": "Broad category your resource falls into; Generally, these categories are: results, data, metadata, code. However, the actual category options parse the categories just a bit finer (e.g. options for result resources include either 'result' or 'publication'; options for data resources include either 'tabular-data' or 'non-tabular-data').",
             "type": "string",
-            "enum": ["","multi-result","single-result","tabular-data","non-tabular-data","metadata","code"],
+            "enum": ["","publication","result","tabular-data","non-tabular-data","metadata","code"],
             "priority": "all, high"
         },
         # "expBelongsTo": {
@@ -104,7 +104,7 @@ schema_resource_tracker = {
         },
         "descriptionFileNameConvention": {
             "title": "Resource File Name Convention",
-            "description": "For multi-file resource containing multiple files of the same type (multiple 'like' files), provide the naming convention of the files (e.g. for a file set: [subject-01-protocol-A-day-2020-06-05.csv, subject-02-protocol-A-day-2020-06-05.csv, subject-02-protocol-B-day-2020-12-05.csv], you would specify the naming convention as: subject-{subject ID}-protocol-{protocol ID}-day-{date of measurment in YYYY-MM-DD}). If you are using the DSC Packaging application, you can use the Apply Name Convention button above the form to validate your name convention format and use a valid file name convention to generate a minimal 'Resource File Description' that is a minimal description specific to each file in the multi-file resource set.",
+            "description": "For multi-file resource containing multiple files of the same type (multiple 'like' files), provide the naming convention of the files (e.g. for a file set: [subject-01-protocol-A-day-2020-06-05.csv, subject-02-protocol-A-day-2020-06-05.csv, subject-02-protocol-B-day-2020-12-05.csv], you would specify the naming convention as: subject-{subject ID}-protocol-{protocol ID}-day-{date of measurment in YYYY-MM-DD}). If you are using the DSC Data Packaging Tool, you can use the Apply Name Convention button above the form to validate your name convention format and use a valid file name convention to generate a minimal 'Resource File Description' that is a minimal description specific to each file in the multi-file resource set.",
             "type": "string",
             "priority": "multiple like resource, high, hide-minimal"
         },
@@ -116,7 +116,7 @@ schema_resource_tracker = {
         },
         "descriptionRow": {
             "title": "Resource Row Description",
-            "description": "For a tabular data resource, a description of what one row in the tabular data resource represents; e.g. one row represents one subject at one timepoint",
+            "description": "For a tabular data resource, a description of what one row in the tabular data resource represents; e.g. one row per subject per timepoint",
             "type": "string",
             "priority": "tabular data, high, hide-minimal"
         },
@@ -124,7 +124,7 @@ schema_resource_tracker = {
             "title" : "Metadata Resource - Sub-Category",
             "description": "Sub-category for a metadata resource",
             "type": "string",
-            "enum": ["","heal-formatted-data-dictionary","other-formatted-data-dictionary","protocol","analysis-plan","heal-formatted-results-tracker","heal-formatted-experiment-tracker","other"],
+            "enum": ["","heal-formatted-data-dictionary","other-formatted-data-dictionary","protocol","analysis-plan","heal-formatted-results-tracker","other"],
             "priority": "metadata, high"
         },
         "categorySubMetadataOther": {
@@ -141,19 +141,19 @@ schema_resource_tracker = {
             "enum": ["","raw","processed-intermediate","processed-final"],
             "priority": "data, high"
         },
-        "categorySubSingleResult": {
-            "title" : "Single-result Resource - Sub-Category",
-            "description": "Sub-category for a single-result resource",
+        "categorySubResult": {
+            "title" : "Result Resource - Sub-Category",
+            "description": "Sub-category for a result resource",
             "type": "string",
-            "enum": ["","figure","table","text"],
-            "priority": "singleResult, high"
+            "enum": ["","single-panel-figure","multi-panel-figure","table","text"],
+            "priority": "result, high"
         },
-        "categorySubMultiResult": {
-            "title" : "Multi-result Resource - Sub-Category",
-            "description": "Sub-category for a multi-result resource",
+        "categorySubPublication": {
+            "title" : "Publication Resource - Sub-Category",
+            "description": "Sub-category for a publication resource",
             "type": "string",
             "enum": ["","peer-review-manuscript","report","white-paper","presentation","poster"],
-            "priority": "multiResult, high"
+            "priority": "publication, high"
         },
         "associatedFileDataDict": {
             "title": "Associated Data Dictionary",
@@ -177,13 +177,13 @@ schema_resource_tracker = {
         },
         "associatedFileResultsTracker": {
             "title": "Associated Results Tracker",
-            "description": "For a multi-result file resource, a reference/file path to associated HEAL results tracker file - HEAL results tracker is a file that tracks each result in a multi-result file (e.g. a publication, poster, etc.), along with the data and other supporting files that underly/support each result. If you are using the DSC Packaging Desktop Application, you can head to the Result Tracker tab of the application to create a HEAL formatted result tracker for your multi-result resource file(s).",
+            "description": "For a publication resource, a reference/file path to the associated HEAL-formatted Results Tracker file - HEAL-formatted Results Tracker is a file that inventories each result in a publication (e.g. a peer-review-manuscript, report, presentation, poster, etc.), along with the data and other supporting files that underly/support each result. If you are using the DSC Data Packaging Desktop Tool, you can head to the Results Tracker tab of the tool to create a HEAL-formatted Results Tracker for your publication(s).",
             "type": "array",
             "items": {
                 "type": "string",
                 "format": "path"
             },
-            "priority": "multi-result, high"
+            "priority": "publication, high"
         },
         #"assoc.file.id.map": {
         #    "title": "Data Resource - Associated ID Map",
@@ -197,17 +197,17 @@ schema_resource_tracker = {
         #},
         "associatedFileDependsOn": {
             "title": "Associated Files/Dependencies",
-            "description": "For all resource files, if the current resource file has dependencies/if other files are necessary to make this file (e.g. raw data file necessary to make processed data file), or to interpret/understand this file (e.g. protocol, analysis plan, etc.), list them here; if documenting resources wholistically (i.e. documenting all resources related to a study), only list dependencies one layer deep; if documenting resources minimally (i.e. only documenting resources that will be publicly shared), list dependencies liberally; dependencies can be data, code, protocol, etc.; if already listed under associatedFileDataDict, associatedFileProtocol, or assoc.file.id.map no need to repeat here.",
+            "description": "For all resource files, if the current resource file has dependencies/if other files are necessary to make this file (e.g. raw data file necessary to make processed data file), or to interpret/understand this file (e.g. protocol, analysis plan, etc.), list them here; only list dependencies one layer deep; dependencies can be data, code, protocol, etc.; if already listed under a more specialized fields such as associatedFileDataDict, associatedFileProtocol, no need to repeat here.",
             "type": "array",
             "items": {
                 "type": "string",
                 "format": "path"
             },
-            "priority": "all, high, not results-tracker, not multi-result"
+            "priority": "all, high, not results-tracker, not publication"
         },
         "associatedFileResultsDependOn": {
             "title": "Result-tracker - Associated Files/Dependencies",
-            "description": "if the current resource file is a heal formatted result tracker (this tracks the single results in a multi-result file, like a publication), use this field to list each result in the tracker along with its corresponding dependencies (i.e. files the result depends on, or are necessary to make/reach/interpret the result); if documenting resources wholistically (i.e. documenting all resources related to a study), only list dependencies one layer deep; if documenting resources minimally (i.e. only documenting resources that will be publicly shared), list dependencies liberally; dependencies can be data, code, protocol, etc.",
+            "description": "If the current resource file is a heal formatted result tracker (an file that inventories each of the results in a publication), use this field to list each result in the tracker along with its corresponding dependencies (i.e. files the result depends on, or are necessary to make/reach/interpret the result); for each result, only list dependencies one layer deep; dependencies can be data, code, protocol, etc.",
             "type": "array",
             "items": {
                 "type": "object",
@@ -225,7 +225,7 @@ schema_resource_tracker = {
         },
         "associatedFileMultiLikeFiles": {
             "title": "Multiple 'like' File Resource - Files",
-            "description": "if the current resource file is annotating a resource that is one of multiple 'like' files, this field will list all files that are part of the resources.",
+            "description": "If the current resource file is annotating a resource that is one of multiple 'like' files, this field will list all files that are part of the set of multiple 'like' file resources.",
             "type": "array",
             "items": {
                 "type": "string",
@@ -320,33 +320,33 @@ schema_resource_tracker = {
         },
         "annotationCreateDateTime": {
             "title": "Resource tracker entry creation datetime",
-            "description": "Date time at which the resource tracker file for the resource was created; auto-inferred",
+            "description": "Date time at which the resource annotation was created; auto-inferred",
             "type": "string",
             "priority": "resource tracker, auto"
         },
         "annotationModDateTime": {
             "title": "Resource tracker entry modification datetime",
-            "description": "Date time at which the resource tracker file for the resource was last modified; auto-inferred",
+            "description": "Date time at which the resource annotation was last modified; auto-inferred",
             "type": "string",
             "priority": "resource tracker, auto"
         }
     }
 }
 
-subProps = formSubProps
+# subProps = formSubProps
 
-allKeys = list(schema_resource_tracker["properties"].keys())
-#print(allKeys)
+# allKeys = list(schema_resource_tracker["properties"].keys())
+# #print(allKeys)
 
-keysToRemove = [x for x in allKeys if x not in subProps]
-#print(keysToRemove)
+# keysToRemove = [x for x in allKeys if x not in subProps]
+# #print(keysToRemove)
 
-form_schema_resource_tracker = deepcopy(schema_resource_tracker)
+# form_schema_resource_tracker = deepcopy(schema_resource_tracker)
 
-for k in keysToRemove:
-    form_schema_resource_tracker["properties"].pop(k)
+# for k in keysToRemove:
+#     form_schema_resource_tracker["properties"].pop(k)
 
-#print(form_schema_resource_tracker)
+# #print(form_schema_resource_tracker)
 
 
 

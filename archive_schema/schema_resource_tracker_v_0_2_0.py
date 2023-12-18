@@ -7,7 +7,7 @@
 
 # upon adding resource check for:
 # if tabular data resource - info to create a dd, and come back to add ref to dd in this resource file
-# if multi-result resource - info to create a results tracker, and come back to add ref to result tracker in this resource file
+# if multi-result resource - info to create a result tracker, and come back to add ref to result tracker in this resource file
 # if expBelongsTo experiment id does not have an experiment file - info to create an experiment file for that experiment
 # if expBelongsTo is left as default - info to confirm that the resource pertains to more than one experiment or to the study as a whole rather than to one specific experiment
 # if temporary-private is selected in access field, check that either managed-access or open-access is also selected as the final access state
@@ -46,6 +46,7 @@ schema_resource_tracker = {
     "type": "object",
     "description": "HEAL DSC Core Metadata piece to track and provide basic information about resource(s)/file(s) that support/are produced by/result from experiments you perform/will perform as part of your HEAL study.Objective is to list at least all files that will be submitted to a data repository in order to describe what each file is, how they relate to each other/how to use them, and how they relate to results/publications shared by the study group. Files may include results files (e.g. publications or draft publications/pieces of publications), processed and raw data files, protocol and analytic plan files, data dictionaries for tabular data files, other metadata as appropriate to data/field type, etc.",
     "title": "HEAL Resource Tracker",
+    "version": "0.2.0",
     "properties": {
         "resourceId": {
             "title": "Resource ID",
@@ -71,7 +72,7 @@ schema_resource_tracker = {
             "title" : "Resource Category",
             "description": "Broad category your resource falls into; Generally, these categories are: results, data, metadata, code. However, the actual category options parse the categories just a bit finer (e.g. options for data resources include either 'tabular-data' or 'non-tabular-data').",
             "type": "string",
-            "enum": ["","publication","result","tabular-data","non-tabular-data","metadata","code"],
+            "enum": ["","multi-result","single-result","tabular-data","non-tabular-data","metadata","code"],
             "priority": "all, high"
         },
         # "expBelongsTo": {
@@ -140,16 +141,16 @@ schema_resource_tracker = {
             "enum": ["","raw","processed-intermediate","processed-final"],
             "priority": "data, high"
         },
-        "categorySubResult": {
-            "title" : "Result Resource - Sub-Category",
-            "description": "Sub-category for a result resource",
+        "categorySubSingleResult": {
+            "title" : "Single-result Resource - Sub-Category",
+            "description": "Sub-category for a single-result resource",
             "type": "string",
             "enum": ["","figure","table","text"],
             "priority": "singleResult, high"
         },
-        "categorySubPublication": {
-            "title" : "Publication Resource - Sub-Category",
-            "description": "Sub-category for a publication resource",
+        "categorySubMultiResult": {
+            "title" : "Multi-result Resource - Sub-Category",
+            "description": "Sub-category for a multi-result resource",
             "type": "string",
             "enum": ["","peer-review-manuscript","report","white-paper","presentation","poster"],
             "priority": "multiResult, high"

@@ -46,7 +46,7 @@
 
 
 fieldNameMap = {
-    "latestVersion":"0.3.0",
+    "latestVersion":"0.2.0",
     "properties":{
         "resultId":{
             "formerNames": ["result.id"],
@@ -58,15 +58,14 @@ fieldNameMap = {
         },
         "category":{
             "formerNames":[],
-            "deprecated": False,
-            "deleteEnum":["figure"]
+            "deprecated": False
         },
         "experimentNameBelongsTo":{
             "formerNames": [],
             "deprecated": False
         },
-        "associatedFilePublication":{
-            "formerNames": ["associatedFileMultiResultFile","assoc.multi.result.file"],
+        "associatedFileMultiResultFile":{
+            "formerNames": ["assoc.multi.result.file"],
             "deprecated": False
         },
         "figureNumber":{

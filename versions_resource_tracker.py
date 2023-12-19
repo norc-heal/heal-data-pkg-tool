@@ -46,7 +46,7 @@
 
 
 fieldNameMap = {
-    "latestVersion":"0.2.0",
+    "latestVersion":"0.3.0",
     "properties":{
         "resourceId":{
             "formerNames": ["resource.id"],
@@ -62,7 +62,11 @@ fieldNameMap = {
         },
         "category":{
             "formerNames":[],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {
+                "publication":["multi-result"],
+                "result":["single-result"]
+            }
         },
         "expBelongsTo":{
             "formerNames": ["exp.belongs.to"],
@@ -94,7 +98,8 @@ fieldNameMap = {
         },
         "categorySubMetadata":{
             "formerNames": ["category.sub.metadata"],
-            "deprecated": False
+            "deprecated": False,
+            "deleteEnum": ["heal-formatted-experiment-tracker"]
         },
         "categorySubMetadataOther":{
             "formerNames": [],
@@ -108,26 +113,21 @@ fieldNameMap = {
             "formerNames": ["category.sub.results"],
             "deprecated": True
         },
-        "categorySubSingleResult":{
-            "formerNames": ["categorySubResults","category.sub.results"],
+        "categorySubResult":{
+            "formerNames": ["categorySubSingleResult","categorySubResults","category.sub.results"],
             "deprecated": False,
             "mapEnum": {
-                "figure":"figure",
-                "table":"table",
-                "text":"text"
-            }
+                "single-panel-figure":["figure"]
+            },
+            "deleteEnum":["draft-publication","publication","report","white-paper","presentation","poster"]
         },
-        "categorySubMultiResult":{
-            "formerNames": ["categorySubResults","category.sub.results"],
+        "categorySubPublication":{
+            "formerNames": ["categorySubMultiResult","categorySubResults","category.sub.results"],
             "deprecated": False,
             "mapEnum": {
-                "draft-publication":"peer-review-manuscript",
-                "publication":"peer-review-manuscript",
-                "report":"report",
-                "white-paper":"white-paper",
-                "presentation":"presentation",
-                "poster":"poster"
-            }
+                "peer-review-manuscript":["publication","draft-publication"]
+            },
+            "deleteEnum":["figure","table","text","draft-publication","publication"]
         },
         "associatedFileDataDict":{
             "formerNames": ["assoc.file.dd"],

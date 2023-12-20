@@ -570,10 +570,10 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
-        # check that file path and at least a minimal description has been added to the form 
+        # check that file path for at least one associated publication and at least a minimal description has been added to the form 
         # if not exit with informative error
-        if not ((self.form.widget.state["associatedFileMultiResultFile"]) and (self.form.widget.state["description"])):
-            messageText = "<br>You must add at least a minimal description of your result and at least one multi-result file in which this result is cited to your result file form before saving your result file. Please add at least a minimal description of your result in the Result Description field in the form, and add at least one multi-result file in which this result appears by browsing to a file path(s) in the Associated Multi-Result File(s) field in the form. Then try saving again." 
+        if not ((self.form.widget.state["associatedFilePublication"]) and (self.form.widget.state["description"])):
+            messageText = "<br>You must add at least a minimal description of your result and at least one associated publication file in which this result is shared/cited to your result annotation form before saving your result annotation form. Please add at least a minimal description of your result in the Result Description field in the form, and add at least one publication file in which this result appears by browsing to a file path(s) in the Associated Publication File(s) field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
@@ -856,13 +856,13 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             return
         else:
 
-            # add dummies for whether or not each result is associated with any of the unique multiresult files listed in any of the results files
-            # this will allow filtering to the df that should be written to each result tracker file (each result tracker file is named after a specific unique multi result file)
-            # if a result tracker does not yet exist in the dsc pkg dir for each unique multiresult file listed across all result files, this fx will create the appropriate results tracker file
+            # add dummies for whether or not each result is associated with any of the unique publication files listed in any of the result annotations
+            # this will allow filtering to the df that should be written to each result tracker file (each result tracker file is named after a specific unique publication file)
+            # if a result tracker does not yet exist in the dsc pkg dir for each unique publication file listed across all result files, this fx will create the appropriate results tracker file
             collect_df_cols = list(collect_df.columns)
             print("collect_df_cols: ", collect_df_cols)
 
-            myDummies = collect_df["associatedFileMultiResultFile"].str.join('|').str.get_dummies()
+            myDummies = collect_df["associatedFilePublication"].str.join('|').str.get_dummies()
             print(list(myDummies.columns))
 
             collect_df = pd.concat([collect_df, myDummies], axis = 1)
@@ -879,11 +879,11 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             #else:
             #    resultsTrkFileStemList = []
 
-            multiResultFileList = collect_df["associatedFileMultiResultFile"].explode().unique().tolist()
-            print("multi result file list: ",multiResultFileList)
-            multiResultFileStemList = [Path(filename).stem for filename in multiResultFileList]
-            print(multiResultFileStemList)
-            finalResultsTrkFileStemList = ["heal-csv-results-tracker-"+ filename + ".csv" for filename in multiResultFileStemList]
+            publicationFileList = collect_df["associatedFilePublication"].explode().unique().tolist()
+            print("publication file list: ",publicationFileList)
+            publicationFileStemList = [Path(filename).stem for filename in publicationFileList]
+            print(publicationFileStemList)
+            finalResultsTrkFileStemList = ["heal-csv-results-tracker-"+ filename + ".csv" for filename in publicationFileStemList]
             finalResultsTrkFileList = [os.path.join(dscDirPath,filename) for filename in finalResultsTrkFileStemList]
             print("result tracker file list: ", resultsTrkFileList)
             print("final result tracker file list: ", finalResultsTrkFileList)
@@ -921,7 +921,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             else: 
                 trkCreate = []
 
-            for m, t in zip(multiResultFileList, finalResultsTrkFileList):
+            for m, t in zip(publicationFileList, finalResultsTrkFileList):
                 print(m,"; ",t)
                 print_df = collect_df[collect_df[m] == 1]
                 print(print_df.shape)

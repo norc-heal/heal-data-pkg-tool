@@ -570,14 +570,39 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
-        # check that file path for at least one associated publication and at least a minimal description has been added to the form 
+        # # check that file path for at least one associated publication and at least a minimal description has been added to the form 
+        # # if not exit with informative error
+        # if not ((self.form.widget.state["associatedFilePublication"]) and (self.form.widget.state["description"])):
+        #     messageText = "<br>You must add at least a minimal description of your result and at least one associated publication file in which this result is shared/cited to your result annotation form before saving your result annotation form. Please add at least a minimal description of your result in the Result Description field in the form, and add at least one publication file in which this result appears by browsing to a file path(s) in the Associated Publication File(s) field in the form. Then try saving again." 
+        #     errorFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(errorFormat.format(messageText))
+        #     return
+
+        # remove requirement for providing at least one associated publication at time of starting a result annotation
+        # the idea here is that this allows flex for investigators to start annotating results as soon as they create a 
+        # figure/table/etc that is likely to make it into a manuscript but drafting of manuscript has not yet started
+        # if a user annotates a result prior to having a publication in which it is shared, they should leave the 
+        # associated publication field blank but then come back and edit the result annotation/add this result annotation 
+        # to the results tracker for the publication once they have started the publication or added this result definitively 
+        # to an existing publication - 
+        # now only check that at least a minimal description has been added to the form 
         # if not exit with informative error
-        if not ((self.form.widget.state["associatedFilePublication"]) and (self.form.widget.state["description"])):
-            messageText = "<br>You must add at least a minimal description of your result and at least one associated publication file in which this result is shared/cited to your result annotation form before saving your result annotation form. Please add at least a minimal description of your result in the Result Description field in the form, and add at least one publication file in which this result appears by browsing to a file path(s) in the Associated Publication File(s) field in the form. Then try saving again." 
+        if not self.form.widget.state["description"]:
+            messageText = "<br>You must add at least a minimal description of your result before saving your result annotation form. Please add at least a minimal description of your result in the Result Description field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
+        # if the user didn't add an associated publication, provide a little warning/informative message
+        # indicating that if they already know the associated pub they should add it right away by editing the result annotation
+        # and if they don't already know it that they should edit once they do in order to ensure the result is 
+        # appropriately added to the publication's results tracker
+        # importantly, this does not stop the user from saving the result annotation
+        if not self.form.widget.state["associatedFilePublication"]:
+            messageText = "<br><b>WARNING:</b> You did not indicate an associated publication file in which this result is or will be shared. If you already know which publication(s) this result will be shared in, please return to the \"Add Result\" tab and use the \"Edit an existing result\" push-button to edit this result annotation and add the publication(s) in which the result will be shared. You can add at least one publication file in which this result is/will be shared by browsing to a file path(s) in the Associated Publication File(s) field in the form. <br><br>If, at this time, you have not started drafting the publication in which this result will be shared, or don't know yet in which publication this result will be shared, please return to edit the result annotation once you have started drafting the publication or decided in which publication this result will be shared. Doing so will ensure that this result is added to the Results Tracker for the publication(s) in which it is shared!" 
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            #return
         
         # check if user has modified the result id from the one that was autogenerated when adding dsc data dir for saving
         # this may happen if for example a user annotates a result using the autogenerated id, then wants to keep 

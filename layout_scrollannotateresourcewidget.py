@@ -438,15 +438,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         #if changedFieldName == "category":
 
-        # reminder to add dd if tabular data; reminder to add result tracker if multi-result 
+        # reminder to add dd if tabular data; reminder to add result tracker if publication 
 
         if self.form.widget.state["category"] == "tabular-data":
             messageText = "<br>You have indicated your resource is a tabular data resource. Please ensure that you add a data dictionary for this tabular data resource in the Associated Data Dictionary field in the form below. A HEAL formatted data dictionary is highly preferred. If you don't already have a HEAL formatted data dictionary, you can easily create one directly from your tabular data file by visiting the Data Dictionary tab of the DSC Packaging Desktop application. You can leave this form open, visit the Data Dictionary tab to create and save your HEAL formatted data dictionary, and then return to this form to add the data dictionary you created."
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 
-        if self.form.widget.state["category"] == "multi-result":
-            messageText = "<br>You have indicated your resource is a multi-result resource. Please ensure that you add a results tracker for this multi-result resource in the Associated Results Tracker field in the form below. A results tracker is a HEAL formatted file to track all results in a multi-result file, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted results tracker, you can easily create one by visiting the Results Tracker tab of the DSC Data Packaging Desktop tool. You can leave this form open, visit the Results Tracker tab to create and save your HEAL formatted results tracker, and then return to this form to add the results tracker you created."
+        if self.form.widget.state["category"] == "publication":
+            messageText = "<br>You have indicated your resource is a publication resource. Please ensure that you add a results tracker for this publication resource in the Associated Results Tracker field in the form below. A results tracker is a HEAL formatted standard data package metadata file to track all results in a publication, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted results tracker, you can easily create one by visiting the Results Tracker tab of the DSC Data Packaging Desktop Tool. You can leave this form open, visit the Results Tracker tab to create and save your HEAL formatted results tracker, and then return to this form to add the results tracker you created."
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 
@@ -464,7 +464,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 if self.form.widget.state["path"]:
                     pathStem = Path(self.form.widget.state["path"]).stem
                     if not pathStem.startswith("heal-csv-results-tracker"):
-                        messageText = "<br>The resource file path you have added to the Resource File Path field in the form does not appear to be a HEAL formatted results tracker, or the tracker has been re-named. Please ensure that you have added a HEAL formatted Results Tracker to the Resource File Path field in the form, and that the Results tracker name follows the naming convention: heal-csv-results-tracker-(name of multi-result file with which the results tracker is associated)."
+                        messageText = "<br>The resource file path you have added to the Resource File Path field in the form does not appear to be a HEAL formatted results tracker, or the tracker has been re-named. Please ensure that you have added a HEAL formatted Results Tracker to the Resource File Path field in the form, and that the Results tracker name follows the naming convention: heal-csv-results-tracker-(name of publication file with which the results tracker is associated)."
                         errorFormat = '<span style="color:red;">{}</span>'
                         self.userMessageBox.append(errorFormat.format(messageText))
                     else: 
@@ -583,23 +583,23 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #             "categorySubResults": ""
         #         } 
 
-        if self.form.widget.state["category"] != "single-result":
-            self.toggle_widgets(keyText = "singleResult", desiredToggleState = "hide")
+        if self.form.widget.state["category"] != "result":
+            self.toggle_widgets(keyText = "result", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                    "categorySubSingleResult": ""
+                    "categorySubResult": ""
                 }
 
-        if self.form.widget.state["category"] != "multi-result":
-            self.toggle_widgets(keyText = "multiResult", desiredToggleState = "hide")
+        if self.form.widget.state["category"] != "publication":
+            self.toggle_widgets(keyText = "publication", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                    "categorySubMultiResult": ""
+                    "categorySubPublication": ""
                 }  
 
-        if self.form.widget.state["category"] != "multi-result":
-            self.toggle_widgets(keyText = "multi-result", desiredToggleState = "hide")
-            self.toggle_widgets(keyText = "not multi-result", desiredToggleState = "show")
+        if self.form.widget.state["category"] != "publication":
+            self.toggle_widgets(keyText = "publication", desiredToggleState = "hide")
+            self.toggle_widgets(keyText = "not publication", desiredToggleState = "show")
             self.form.widget.state = {
                     "associatedFileResultsTracker": []
                 } 
@@ -641,15 +641,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         # if self.form.widget.state["category"] in ["single-result","multi-result"]:
         #     self.toggle_widgets(keyText = "results", desiredToggleState = "show")
-        if self.form.widget.state["category"] == "single-result":
-            self.toggle_widgets(keyText = "singleResult", desiredToggleState = "show")
+        if self.form.widget.state["category"] == "result":
+            self.toggle_widgets(keyText = "result", desiredToggleState = "show")
 
-        if self.form.widget.state["category"] == "multi-result":
-            self.toggle_widgets(keyText = "multiResult", desiredToggleState = "show")
+        if self.form.widget.state["category"] == "publication":
+            self.toggle_widgets(keyText = "publication", desiredToggleState = "show")
 
-        if self.form.widget.state["category"] == "multi-result":
-            self.toggle_widgets(keyText = "multi-result", desiredToggleState = "show")
-            self.toggle_widgets(keyText = "not multi-result", desiredToggleState = "hide")
+        if self.form.widget.state["category"] == "publication":
+            self.toggle_widgets(keyText = "publication", desiredToggleState = "show")
+            self.toggle_widgets(keyText = "not publication", desiredToggleState = "hide")
 
         if self.form.widget.state["category"] == "metadata":
             if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
@@ -662,7 +662,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if "temporary-private" in self.form.widget.state["access"]:
             self.toggle_widgets(keyText = "temporary private", desiredToggleState = "show")
             
-            messageText = "<br>You have indicated your resource will be temporarily held as private. Please 1) use the Access field to indicate the access level at which you'll set this resource once the temporary private access setting expires (either open-access access, or restricted access), and 2) use the Access Date field to indicate the date at which the temporary private access level is expected to expire (You will not be held to this date - Estimated dates are appreciated)."
+            messageText = "<br>You have indicated your resource will be temporarily held as private. Please 1) use the Access field to indicate the access level at which you'll set this resource once the temporary private access setting expires (either open-access access, or managed-access), and 2) use the Access Date field to indicate the date at which the temporary private access level is expected to expire (You will not be held to this date - Estimated dates are appreciated)."
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 

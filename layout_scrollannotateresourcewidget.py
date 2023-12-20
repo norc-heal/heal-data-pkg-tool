@@ -9,7 +9,8 @@ from pyqtschema.builder import WidgetBuilder
 
 #from schema_resource_tracker import schema_resource_tracker
 #from form_schema_resource_tracker import form_schema_resource_tracker
-from schema_resource_tracker import form_schema_resource_tracker, schema_resource_tracker
+#from schema_resource_tracker import form_schema_resource_tracker, schema_resource_tracker
+from schema_resource_tracker import schema_resource_tracker
 from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions
 import pandas as pd
 import dsc_pkg_utils

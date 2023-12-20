@@ -621,7 +621,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # check if saveFilePath already exists (same as if a file for this resource id already exists); if exists, exit our with informative message;
         # otherwise go ahead and save
         if os.path.isfile(self.saveFilePath):
-            messageText = "A result file for a result with id " + self.result_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your result tracker file(s) and check which result IDs you've already used and added to your tracker(s), 2) Use File Explorer to navigate to your DSC Data Package Directory and check which result IDs you've already used and for which you've already created result files - these files will be called \'result-trk-result-{a number}.txt\'. While you perform these checks, your result tracker form will remain open unless you explicitly close it. You can come back to it, change your result ID, and hit the save button again to save with a result ID that is not already in use. If you meant to overwrite a result file you previously created for a result with this result ID, please delete the previously created result file and try saving again.<br><br>" 
+            messageText = "A result annotation for a result with id " + self.result_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your result tracker file(s) and check which result IDs you've already used and added to your tracker(s), 2) Use File Explorer to navigate to your DSC Data Package Directory and check which result IDs you've already used and for which you've already created result files - these files will be called \'result-trk-result-{a number}.txt\'. While you perform these checks, your result tracker form will remain open unless you explicitly close it. You can come back to it, change your result ID, and hit the save button again to save with a result ID that is not already in use. If you meant to overwrite a result file you previously created for a result with this result ID, please delete the previously created result file and try saving again.<br><br>" 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
@@ -881,6 +881,17 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             return
         else:
 
+            # # get the results with no assoc pub
+            # collect_df_no_assoc_pub = collect_df[collect_df["associatedFilePublication"].isnull()]
+            
+            # # drop the results with no assoc pub from collect_df
+            # collect_df = collect_df[~collect_df["associatedFilePublication"].isnull()]
+
+            # if assoc pub is empty replace with an empty list - i don't think this is necessary so commenting out for now
+            #d.loc[d['x'].isnull(),['x']] = d.loc[d['x'].isnull(),'x'].apply(lambda x: [])
+            #collect_df.loc[collect_df["associatedFilePublication"].isnull(),["associatedFilePublication"]] = collect_df.loc[collect_df["associatedFilePublication"].isnull(),"associatedFilePublication"].apply(lambda x: [])
+            
+
             # add dummies for whether or not each result is associated with any of the unique publication files listed in any of the result annotations
             # this will allow filtering to the df that should be written to each result tracker file (each result tracker file is named after a specific unique publication file)
             # if a result tracker does not yet exist in the dsc pkg dir for each unique publication file listed across all result files, this fx will create the appropriate results tracker file
@@ -891,6 +902,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             print(list(myDummies.columns))
 
             collect_df = pd.concat([collect_df, myDummies], axis = 1)
+            # add dummy var collect-all equal to 1 for all result entries; all results should be written to the collect-all results tracker
+            collect_df["collect-all"] = 1
 
             # get a list of any results trackers that already exist in dsc pkg dir
             resultsTrkFileList = [filename for filename in os.listdir(dscDirPath) if filename.startswith("heal-csv-results-tracker")]
@@ -909,6 +922,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             publicationFileStemList = [Path(filename).stem for filename in publicationFileList]
             print(publicationFileStemList)
             finalResultsTrkFileStemList = ["heal-csv-results-tracker-"+ filename + ".csv" for filename in publicationFileStemList]
+            # add the collect-all results tracker to the final results tracker list
+            finalResultsTrkFileStemList = finalResultsTrkFileStemList + ["heal-csv-results-tracker-collect-all.csv"]
             finalResultsTrkFileList = [os.path.join(dscDirPath,filename) for filename in finalResultsTrkFileStemList]
             print("result tracker file list: ", resultsTrkFileList)
             print("final result tracker file list: ", finalResultsTrkFileList)
@@ -946,6 +961,11 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             else: 
                 trkCreate = []
 
+            publicationFileList = publicationFileList + ["collect-all"]
+
+            print("publicationFileList: ", publicationFileList)
+            print("finalResultsTrkFileList: ",finalResultsTrkFileList)
+            
             for m, t in zip(publicationFileList, finalResultsTrkFileList):
                 print(m,"; ",t)
                 print_df = collect_df[collect_df[m] == 1]

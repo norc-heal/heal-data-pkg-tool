@@ -913,7 +913,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             textButton = "\"Edit an existing experiment\""
         elif self.mode == "add-based-on":
             textBit = "base a new experiment upon"
-            textButton = "\"Add a new experiment based upon an existing experiment\""
+            textButton = "\"Add a new experiment based on an existing experiment\""
 
         
         ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Experiment txt file you want to " + textBit,
@@ -968,13 +968,29 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
                 self.annotationFileName = 'exp-trk-'+ self.annotation_id + '.txt'
                 #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
 
+                archiveFileStartsWith = Path(ifileName).stem + "-"
+                print("archiveFileStartsWith: ",archiveFileStartsWith)
+
                 # make sure an archive folder exists, if not create it
                 if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
                     os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+                    # if an archive folder does not yet exist prior to this, then this will 
+                    # necessarily be the first time the user is editing an annotation file
+                    self.annotationArchiveFileNameNumber = 1
+                    #self.annotationArchiveFileName = 'exp-trk-'+ self.annotation_id + '-0' + '.txt'
+                else: 
+                    print("checking if at least one archived version/file for this annotation txt file already exists; getting next available archive id")
+                    # check for files that start with stem of ifileName
+                    # get the string that follows the last hyphen in the stem of those files, convert that string to number
+                    # get highest number, add 1 to that number
+                    self.annotationArchiveFileNameNumber = dsc_pkg_utils.get_id(self=self, prefix=archiveFileStartsWith, folderPath=os.path.join(self.saveFolderPath,"archive"), firstIdNum=1)
+                
+                #self.annotationArchiveFileName = 'exp-trk-'+ self.annotation_id + '-' + str(self.annotationArchiveFileNameNumber) + '.txt'    
+                self.annotationArchiveFileName = archiveFileStartsWith + str(self.annotationArchiveFileNameNumber) + '.txt'    
 
                 # move the experiment annotation file user opened for editing to archive folder
-                os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationFileName))
-                messageText = "<br>Your original experiment annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationFileName) + "<br><br>"
+                os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
+                messageText = "<br>Your original experiment annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName) + "<br><br>"
                 saveFormat = '<span style="color:blue;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
 

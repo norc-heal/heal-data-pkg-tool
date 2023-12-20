@@ -414,7 +414,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
         ################### hide fields that were revealed due to previous selection
 
-        if self.form.widget.state["category"] != "figure":
+        if self.form.widget.state["category"] not in ["single-panel-figure","figure-panel"]:
             self.toggle_widgets(keyText = "figure", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
@@ -430,7 +430,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             
         ################### show field appropriate to current selection
             
-        if self.form.widget.state["category"] == "figure":
+        if self.form.widget.state["category"] in ["single-panel-figure","figure-panel"]:
             self.toggle_widgets(keyText = "figure", desiredToggleState = "show")
 
         if self.form.widget.state["category"] == "table":
@@ -570,14 +570,39 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
-        # check that file path and at least a minimal description has been added to the form 
+        # # check that file path for at least one associated publication and at least a minimal description has been added to the form 
+        # # if not exit with informative error
+        # if not ((self.form.widget.state["associatedFilePublication"]) and (self.form.widget.state["description"])):
+        #     messageText = "<br>You must add at least a minimal description of your result and at least one associated publication file in which this result is shared/cited to your result annotation form before saving your result annotation form. Please add at least a minimal description of your result in the Result Description field in the form, and add at least one publication file in which this result appears by browsing to a file path(s) in the Associated Publication File(s) field in the form. Then try saving again." 
+        #     errorFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(errorFormat.format(messageText))
+        #     return
+
+        # remove requirement for providing at least one associated publication at time of starting a result annotation
+        # the idea here is that this allows flex for investigators to start annotating results as soon as they create a 
+        # figure/table/etc that is likely to make it into a manuscript but drafting of manuscript has not yet started
+        # if a user annotates a result prior to having a publication in which it is shared, they should leave the 
+        # associated publication field blank but then come back and edit the result annotation/add this result annotation 
+        # to the results tracker for the publication once they have started the publication or added this result definitively 
+        # to an existing publication - 
+        # now only check that at least a minimal description has been added to the form 
         # if not exit with informative error
-        if not ((self.form.widget.state["associatedFileMultiResultFile"]) and (self.form.widget.state["description"])):
-            messageText = "<br>You must add at least a minimal description of your result and at least one multi-result file in which this result is cited to your result file form before saving your result file. Please add at least a minimal description of your result in the Result Description field in the form, and add at least one multi-result file in which this result appears by browsing to a file path(s) in the Associated Multi-Result File(s) field in the form. Then try saving again." 
+        if not self.form.widget.state["description"]:
+            messageText = "<br>You must add at least a minimal description of your result before saving your result annotation form. Please add at least a minimal description of your result in the Result Description field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
+        # if the user didn't add an associated publication, provide a little warning/informative message
+        # indicating that if they already know the associated pub they should add it right away by editing the result annotation
+        # and if they don't already know it that they should edit once they do in order to ensure the result is 
+        # appropriately added to the publication's results tracker
+        # importantly, this does not stop the user from saving the result annotation
+        if not self.form.widget.state["associatedFilePublication"]:
+            messageText = "<br><b>WARNING:</b> You did not indicate an associated publication file in which this result is or will be shared. If you already know which publication(s) this result will be shared in, please return to the \"Add Result\" tab and use the \"Edit an existing result\" push-button to edit this result annotation and add the publication(s) in which the result will be shared. You can add at least one publication file in which this result is/will be shared by browsing to a file path(s) in the Associated Publication File(s) field in the form. <br><br>If, at this time, you have not started drafting the publication in which this result will be shared, or don't know yet in which publication this result will be shared, please return to edit the result annotation once you have started drafting the publication or decided in which publication this result will be shared. Doing so will ensure that this result is added to the Results Tracker for the publication(s) in which it is shared!" 
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            #return
         
         # check if user has modified the result id from the one that was autogenerated when adding dsc data dir for saving
         # this may happen if for example a user annotates a result using the autogenerated id, then wants to keep 
@@ -596,7 +621,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # check if saveFilePath already exists (same as if a file for this resource id already exists); if exists, exit our with informative message;
         # otherwise go ahead and save
         if os.path.isfile(self.saveFilePath):
-            messageText = "A result file for a result with id " + self.result_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your result tracker file(s) and check which result IDs you've already used and added to your tracker(s), 2) Use File Explorer to navigate to your DSC Data Package Directory and check which result IDs you've already used and for which you've already created result files - these files will be called \'result-trk-result-{a number}.txt\'. While you perform these checks, your result tracker form will remain open unless you explicitly close it. You can come back to it, change your result ID, and hit the save button again to save with a result ID that is not already in use. If you meant to overwrite a result file you previously created for a result with this result ID, please delete the previously created result file and try saving again.<br><br>" 
+            messageText = "A result annotation for a result with id " + self.result_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your result tracker file(s) and check which result IDs you've already used and added to your tracker(s), 2) Use File Explorer to navigate to your DSC Data Package Directory and check which result IDs you've already used and for which you've already created result files - these files will be called \'result-trk-result-{a number}.txt\'. While you perform these checks, your result tracker form will remain open unless you explicitly close it. You can come back to it, change your result ID, and hit the save button again to save with a result ID that is not already in use. If you meant to overwrite a result file you previously created for a result with this result ID, please delete the previously created result file and try saving again.<br><br>" 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
@@ -856,16 +881,29 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             return
         else:
 
-            # add dummies for whether or not each result is associated with any of the unique multiresult files listed in any of the results files
-            # this will allow filtering to the df that should be written to each result tracker file (each result tracker file is named after a specific unique multi result file)
-            # if a result tracker does not yet exist in the dsc pkg dir for each unique multiresult file listed across all result files, this fx will create the appropriate results tracker file
+            # # get the results with no assoc pub
+            # collect_df_no_assoc_pub = collect_df[collect_df["associatedFilePublication"].isnull()]
+            
+            # # drop the results with no assoc pub from collect_df
+            # collect_df = collect_df[~collect_df["associatedFilePublication"].isnull()]
+
+            # if assoc pub is empty replace with an empty list - i don't think this is necessary so commenting out for now
+            #d.loc[d['x'].isnull(),['x']] = d.loc[d['x'].isnull(),'x'].apply(lambda x: [])
+            #collect_df.loc[collect_df["associatedFilePublication"].isnull(),["associatedFilePublication"]] = collect_df.loc[collect_df["associatedFilePublication"].isnull(),"associatedFilePublication"].apply(lambda x: [])
+            
+
+            # add dummies for whether or not each result is associated with any of the unique publication files listed in any of the result annotations
+            # this will allow filtering to the df that should be written to each result tracker file (each result tracker file is named after a specific unique publication file)
+            # if a result tracker does not yet exist in the dsc pkg dir for each unique publication file listed across all result files, this fx will create the appropriate results tracker file
             collect_df_cols = list(collect_df.columns)
             print("collect_df_cols: ", collect_df_cols)
 
-            myDummies = collect_df["associatedFileMultiResultFile"].str.join('|').str.get_dummies()
+            myDummies = collect_df["associatedFilePublication"].str.join('|').str.get_dummies()
             print(list(myDummies.columns))
 
             collect_df = pd.concat([collect_df, myDummies], axis = 1)
+            # add dummy var collect-all equal to 1 for all result entries; all results should be written to the collect-all results tracker
+            collect_df["collect-all"] = 1
 
             # get a list of any results trackers that already exist in dsc pkg dir
             resultsTrkFileList = [filename for filename in os.listdir(dscDirPath) if filename.startswith("heal-csv-results-tracker")]
@@ -879,11 +917,13 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             #else:
             #    resultsTrkFileStemList = []
 
-            multiResultFileList = collect_df["associatedFileMultiResultFile"].explode().unique().tolist()
-            print("multi result file list: ",multiResultFileList)
-            multiResultFileStemList = [Path(filename).stem for filename in multiResultFileList]
-            print(multiResultFileStemList)
-            finalResultsTrkFileStemList = ["heal-csv-results-tracker-"+ filename + ".csv" for filename in multiResultFileStemList]
+            publicationFileList = collect_df["associatedFilePublication"].explode().unique().tolist()
+            print("publication file list: ",publicationFileList)
+            publicationFileStemList = [Path(filename).stem for filename in publicationFileList]
+            print(publicationFileStemList)
+            finalResultsTrkFileStemList = ["heal-csv-results-tracker-"+ filename + ".csv" for filename in publicationFileStemList]
+            # add the collect-all results tracker to the final results tracker list
+            finalResultsTrkFileStemList = finalResultsTrkFileStemList + ["heal-csv-results-tracker-collect-all.csv"]
             finalResultsTrkFileList = [os.path.join(dscDirPath,filename) for filename in finalResultsTrkFileStemList]
             print("result tracker file list: ", resultsTrkFileList)
             print("final result tracker file list: ", finalResultsTrkFileList)
@@ -921,7 +961,12 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             else: 
                 trkCreate = []
 
-            for m, t in zip(multiResultFileList, finalResultsTrkFileList):
+            publicationFileList = publicationFileList + ["collect-all"]
+
+            print("publicationFileList: ", publicationFileList)
+            print("finalResultsTrkFileList: ",finalResultsTrkFileList)
+            
+            for m, t in zip(publicationFileList, finalResultsTrkFileList):
                 print(m,"; ",t)
                 print_df = collect_df[collect_df[m] == 1]
                 print(print_df.shape)
@@ -1022,23 +1067,37 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
         print("in load_file fx")
 
-        # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
-        #        (QtCore.QDir.homePath()), "Text (*.txt)")
+        if self.mode == "edit":
+            textBit = "edit"
+            textButton = "\"Edit an existing result\""
+        elif self.mode == "add-based-on":
+            textBit = "base a new result upon"
+            textButton = "\"Add a new result based on an existing result\""
 
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
-               self.saveFolderPath, "Text (*.txt)")
+        
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result txt file you want to " + textBit,
+            self.saveFolderPath, "Text (*.txt)")
 
         if not ifileName: 
-            messageText = "<br>You have not selected a file; returning."
+            messageText = "<br>You have not selected a file to " + textBit + ". Close this form now. If you still want to " + textBit + " an existing result, Navigate to the \"Result Tracker\" tab >> \"Add Result\" sub-tab and click the " + textButton + " push-button."
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText)) 
         else: 
             #self.editMode = True
                      
-            self.saveFilePath = ifileName
+            #self.saveFilePath = ifileName
             print("saveFilePath: ", self.saveFilePath)
             print(Path(ifileName).parent)
             print(Path(self.saveFolderPath))
+
+            # add check on if filename starts with result-trk-result?
+            if not Path(ifileName).stem.startswith("result-trk-result-"):
+                messageText = "<br>The file you selected may not be a result txt file - a result txt file will have a name that starts with \"result-trk-result-\" followed by a number which is that result's ID number. You must select a result txt file that is in your working Data Package Directory to proceed. <br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            # add check on if valid result-trk file?
 
             # if user selects a result txt file that is not in the working data pkg dir, return w informative message
             if Path(self.saveFolderPath) != Path(ifileName).parent:
@@ -1053,26 +1112,57 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             with open(ifileName, 'r') as stream:
                 data = load(stream)
 
-            self.result_id = data["resultId"]
-            self.resIdNum = int(self.result_id.split("-")[1])
-            self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
-            #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
+            if self.mode == "add-based-on":
+                based_on_annotation_id = data["resultId"]
 
-            # make sure an archive folder exists, if not create it
-            if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
-                os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+            if self.mode == "edit": 
+                self.result_id = data["resultId"]
+                self.resIdNum = int(self.result_id.split("-")[1])
+                self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
+                #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
 
-            # move the result annotation file user opened for editing to archive folder
-            os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.resultFileName))
-            messageText = "<br>Your original result annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.resultFileName) + "<br><br>"
-            saveFormat = '<span style="color:blue;">{}</span>'
-            self.userMessageBox.append(saveFormat.format(messageText))
+                # # make sure an archive folder exists, if not create it
+                # if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
+                #     os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+
+                archiveFileStartsWith = Path(ifileName).stem + "-"
+                print("archiveFileStartsWith: ",archiveFileStartsWith)
+
+                # make sure an archive folder exists, if not create it
+                if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
+                    os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+                    # if an archive folder does not yet exist prior to this, then this will 
+                    # necessarily be the first time the user is editing an annotation file
+                    self.annotationArchiveFileNameNumber = 1
+                    #self.annotationArchiveFileName = 'exp-trk-'+ self.annotation_id + '-0' + '.txt'
+                else: 
+                    print("checking if at least one archived version/file for this annotation txt file already exists; getting next available archive id")
+                    # check for files that start with stem of ifileName
+                    # get the string that follows the last hyphen in the stem of those files, convert that string to number
+                    # get highest number, add 1 to that number
+                    self.annotationArchiveFileNameNumber = dsc_pkg_utils.get_id(self=self, prefix=archiveFileStartsWith, folderPath=os.path.join(self.saveFolderPath,"archive"), firstIdNum=1)
+                
+                #self.annotationArchiveFileName = 'exp-trk-'+ self.annotation_id + '-' + str(self.annotationArchiveFileNameNumber) + '.txt'    
+                self.annotationArchiveFileName = archiveFileStartsWith + str(self.annotationArchiveFileNameNumber) + '.txt'  
+
+
+                # move the result annotation file user opened for editing to archive folder
+                os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
+                messageText = "<br>Your original result annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName) + "<br><br>"
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
 
             self.form.widget.state = data
 
             if len(data["associatedFileDependsOn"]) > 2: 
                 self.lstbox_view2.addItems(data["associatedFileDependsOn"])
-                self.add_multi_depend()         
+                self.add_multi_depend()   
+
+            if self.mode == "add-based-on":
+                self.get_id()
+                messageText = "<br>Your new result has been initialized based on information you entered for " + based_on_annotation_id + "<br><br>"
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))      
 
         
 

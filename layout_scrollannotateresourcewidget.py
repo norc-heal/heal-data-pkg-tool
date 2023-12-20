@@ -9,7 +9,8 @@ from pyqtschema.builder import WidgetBuilder
 
 #from schema_resource_tracker import schema_resource_tracker
 #from form_schema_resource_tracker import form_schema_resource_tracker
-from schema_resource_tracker import form_schema_resource_tracker, schema_resource_tracker
+#from schema_resource_tracker import form_schema_resource_tracker, schema_resource_tracker
+from schema_resource_tracker import schema_resource_tracker
 from dsc_pkg_utils import qt_object_properties, get_multi_like_file_descriptions
 import pandas as pd
 import dsc_pkg_utils
@@ -438,15 +439,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         #if changedFieldName == "category":
 
-        # reminder to add dd if tabular data; reminder to add result tracker if multi-result 
+        # reminder to add dd if tabular data; reminder to add result tracker if publication 
 
         if self.form.widget.state["category"] == "tabular-data":
             messageText = "<br>You have indicated your resource is a tabular data resource. Please ensure that you add a data dictionary for this tabular data resource in the Associated Data Dictionary field in the form below. A HEAL formatted data dictionary is highly preferred. If you don't already have a HEAL formatted data dictionary, you can easily create one directly from your tabular data file by visiting the Data Dictionary tab of the DSC Packaging Desktop application. You can leave this form open, visit the Data Dictionary tab to create and save your HEAL formatted data dictionary, and then return to this form to add the data dictionary you created."
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 
-        if self.form.widget.state["category"] == "multi-result":
-            messageText = "<br>You have indicated your resource is a multi-result resource. Please ensure that you add a results tracker for this multi-result resource in the Associated Results Tracker field in the form below. A results tracker is a HEAL formatted file to track all results in a multi-result file, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted results tracker, you can easily create one by visiting the Results Tracker tab of the DSC Data Packaging Desktop tool. You can leave this form open, visit the Results Tracker tab to create and save your HEAL formatted results tracker, and then return to this form to add the results tracker you created."
+        if self.form.widget.state["category"] == "publication":
+            messageText = "<br>You have indicated your resource is a publication resource. Please ensure that you add a results tracker for this publication resource in the Associated Results Tracker field in the form below. A results tracker is a HEAL formatted standard data package metadata file to track all results in a publication, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted results tracker, you can easily create one by visiting the Results Tracker tab of the DSC Data Packaging Desktop Tool. You can leave this form open, visit the Results Tracker tab to create and save your HEAL formatted results tracker, and then return to this form to add the results tracker you created."
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 
@@ -464,7 +465,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 if self.form.widget.state["path"]:
                     pathStem = Path(self.form.widget.state["path"]).stem
                     if not pathStem.startswith("heal-csv-results-tracker"):
-                        messageText = "<br>The resource file path you have added to the Resource File Path field in the form does not appear to be a HEAL formatted results tracker, or the tracker has been re-named. Please ensure that you have added a HEAL formatted Results Tracker to the Resource File Path field in the form, and that the Results tracker name follows the naming convention: heal-csv-results-tracker-(name of multi-result file with which the results tracker is associated)."
+                        messageText = "<br>The resource file path you have added to the Resource File Path field in the form does not appear to be a HEAL formatted results tracker, or the tracker has been re-named. Please ensure that you have added a HEAL formatted Results Tracker to the Resource File Path field in the form, and that the Results tracker name follows the naming convention: heal-csv-results-tracker-(name of publication file with which the results tracker is associated)."
                         errorFormat = '<span style="color:red;">{}</span>'
                         self.userMessageBox.append(errorFormat.format(messageText))
                     else: 
@@ -583,23 +584,23 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         #             "categorySubResults": ""
         #         } 
 
-        if self.form.widget.state["category"] != "single-result":
-            self.toggle_widgets(keyText = "singleResult", desiredToggleState = "hide")
+        if self.form.widget.state["category"] != "result":
+            self.toggle_widgets(keyText = "result", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                    "categorySubSingleResult": ""
+                    "categorySubResult": ""
                 }
 
-        if self.form.widget.state["category"] != "multi-result":
-            self.toggle_widgets(keyText = "multiResult", desiredToggleState = "hide")
+        if self.form.widget.state["category"] != "publication":
+            self.toggle_widgets(keyText = "publication", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
-                    "categorySubMultiResult": ""
+                    "categorySubPublication": ""
                 }  
 
-        if self.form.widget.state["category"] != "multi-result":
-            self.toggle_widgets(keyText = "multi-result", desiredToggleState = "hide")
-            self.toggle_widgets(keyText = "not multi-result", desiredToggleState = "show")
+        if self.form.widget.state["category"] != "publication":
+            self.toggle_widgets(keyText = "publication", desiredToggleState = "hide")
+            self.toggle_widgets(keyText = "not publication", desiredToggleState = "show")
             self.form.widget.state = {
                     "associatedFileResultsTracker": []
                 } 
@@ -641,15 +642,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         # if self.form.widget.state["category"] in ["single-result","multi-result"]:
         #     self.toggle_widgets(keyText = "results", desiredToggleState = "show")
-        if self.form.widget.state["category"] == "single-result":
-            self.toggle_widgets(keyText = "singleResult", desiredToggleState = "show")
+        if self.form.widget.state["category"] == "result":
+            self.toggle_widgets(keyText = "result", desiredToggleState = "show")
 
-        if self.form.widget.state["category"] == "multi-result":
-            self.toggle_widgets(keyText = "multiResult", desiredToggleState = "show")
+        if self.form.widget.state["category"] == "publication":
+            self.toggle_widgets(keyText = "publication", desiredToggleState = "show")
 
-        if self.form.widget.state["category"] == "multi-result":
-            self.toggle_widgets(keyText = "multi-result", desiredToggleState = "show")
-            self.toggle_widgets(keyText = "not multi-result", desiredToggleState = "hide")
+        if self.form.widget.state["category"] == "publication":
+            self.toggle_widgets(keyText = "publication", desiredToggleState = "show")
+            self.toggle_widgets(keyText = "not publication", desiredToggleState = "hide")
 
         if self.form.widget.state["category"] == "metadata":
             if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
@@ -662,7 +663,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if "temporary-private" in self.form.widget.state["access"]:
             self.toggle_widgets(keyText = "temporary private", desiredToggleState = "show")
             
-            messageText = "<br>You have indicated your resource will be temporarily held as private. Please 1) use the Access field to indicate the access level at which you'll set this resource once the temporary private access setting expires (either open-access access, or restricted access), and 2) use the Access Date field to indicate the date at which the temporary private access level is expected to expire (You will not be held to this date - Estimated dates are appreciated)."
+            messageText = "<br>You have indicated your resource will be temporarily held as private. Please 1) use the Access field to indicate the access level at which you'll set this resource once the temporary private access setting expires (either open-access access, or managed-access), and 2) use the Access Date field to indicate the date at which the temporary private access level is expected to expire (You will not be held to this date - Estimated dates are appreciated)."
             errorFormat = '<span style="color:blue;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
 
@@ -1648,20 +1649,38 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Resource Txt Data file you want to edit",
         #        (QtCore.QDir.homePath()), "Text (*.txt)")
 
-        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Resource Txt Data file you want to edit",
-               self.saveFolderPath, "Text (*.txt)")
+        
+        if self.mode == "edit":
+            textBit = "edit"
+            textButton = "\"Edit an existing resource\""
+        elif self.mode == "add-based-on":
+            textBit = "base a new resource upon"
+            textButton = "\"Add a new resource based on an existing resource\""
+
+        
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Resource txt file you want to " + textBit,
+            self.saveFolderPath, "Text (*.txt)")
 
         if not ifileName: 
-            messageText = "<br>You have not selected a file; returning."
+            messageText = "<br>You have not selected a file to " + textBit + ". Close this form now. If you still want to " + textBit + " an existing resource, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button."
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText)) 
         else: 
             #self.editMode = True
                      
-            self.saveFilePath = ifileName
+            #self.saveFilePath = ifileName
             print("saveFilePath: ", self.saveFilePath)
             print(Path(ifileName).parent)
             print(Path(self.saveFolderPath))
+
+            # add check on if filename starts with resource-trk-resource?
+            if not Path(ifileName).stem.startswith("resource-trk-resource-"):
+                messageText = "<br>The file you selected may not be a resource txt file - a resource txt file will have a name that starts with \"resource-trk-resource-\" followed by a number which is that resource's ID number. You must select a resource txt file that is in your working Data Package Directory to proceed. <br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            # add check on if valid resource-trk file?
 
             # if user selects a resource txt file that is not in the working data pkg dir, return w informative message
             if Path(self.saveFolderPath) != Path(ifileName).parent:
@@ -1670,26 +1689,53 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return
 
-            self.saveFolderPath = Path(ifileName).parent
+            # self.saveFolderPath = Path(ifileName).parent
             print("saveFolderPath: ", self.saveFolderPath)
             
             with open(ifileName, 'r') as stream:
                 data = load(stream)
 
-            self.resource_id = data["resourceId"]
-            self.resIdNum = int(self.resource_id.split("-")[1])
-            self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
-            #self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
+            if self.mode == "add-based-on":
+                based_on_annotation_id = data["resourceId"]
 
-            # make sure an archive folder exists, if not create it
-            if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
-                os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+            if self.mode == "edit": 
+                self.saveFilePath = ifileName # is this necessary?
+                print("setting saveFilePath to path of chosen file")
+                
+                self.resource_id = data["resourceId"]
+                self.resIdNum = int(self.resource_id.split("-")[1])
+                self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
+                #self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
 
-            # move the resource annotation file user opened for editing to archive folder
-            os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.resourceFileName))
-            messageText = "<br>Your original resource annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.resourceFileName) + "<br><br>"
-            saveFormat = '<span style="color:blue;">{}</span>'
-            self.userMessageBox.append(saveFormat.format(messageText))
+                # # make sure an archive folder exists, if not create it
+                # if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
+                #     os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+
+                archiveFileStartsWith = Path(ifileName).stem + "-"
+                print("archiveFileStartsWith: ",archiveFileStartsWith)
+
+                # make sure an archive folder exists, if not create it
+                if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
+                    os.makedirs(os.path.join(self.saveFolderPath,"archive"))
+                    # if an archive folder does not yet exist prior to this, then this will 
+                    # necessarily be the first time the user is editing an annotation file
+                    self.annotationArchiveFileNameNumber = 1
+                    #self.annotationArchiveFileName = 'exp-trk-'+ self.annotation_id + '-0' + '.txt'
+                else: 
+                    print("checking if at least one archived version/file for this annotation txt file already exists; getting next available archive id")
+                    # check for files that start with stem of ifileName
+                    # get the string that follows the last hyphen in the stem of those files, convert that string to number
+                    # get highest number, add 1 to that number
+                    self.annotationArchiveFileNameNumber = dsc_pkg_utils.get_id(self=self, prefix=archiveFileStartsWith, folderPath=os.path.join(self.saveFolderPath,"archive"), firstIdNum=1)
+                
+                #self.annotationArchiveFileName = 'exp-trk-'+ self.annotation_id + '-' + str(self.annotationArchiveFileNameNumber) + '.txt'    
+                self.annotationArchiveFileName = archiveFileStartsWith + str(self.annotationArchiveFileNameNumber) + '.txt'  
+
+                # move the resource annotation file user opened for editing to archive folder
+                os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
+                messageText = "<br>Your original resource annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName) + "<br><br>"
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
 
             if data["associatedFileResultsDependOn"]:
                 self.popFormField = data.pop("associatedFileResultsDependOn")
@@ -1704,6 +1750,12 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if len(data["associatedFileDependsOn"]) > 2: 
                 self.lstbox_view2.addItems(data["associatedFileDependsOn"])
                 self.add_multi_depend()
+
+            if self.mode == "add-based-on":
+                self.get_id()
+                messageText = "<br>Your new resource has been initialized based on information you entered for " + based_on_annotation_id + "<br><br>"
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
 
     def take_inputs(self):
 

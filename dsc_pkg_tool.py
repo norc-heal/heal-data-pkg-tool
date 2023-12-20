@@ -81,27 +81,44 @@ class MainWindow(QMainWindow):
         self.workingDataPkgDirDisplay.setReadOnly(True)
         self.workingDataPkgDirDisplay.setText(self.workingDataPkgDirDisplayDefaultText)
         
-        tabs = QTabWidget()
-        tabs.setTabPosition(QTabWidget.West)
-        tabs.setMovable(True)
+        self.tabs = QTabWidget()
+        self.tabs.setTabPosition(QTabWidget.West)
+        self.tabs.setMovable(True)
 
-        tabs.addTab(PkgTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Data Package")
-        tabs.addTab(ExpTrkTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Experiment Tracker")
-        tabs.addTab(ResourceTrkTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Resource Tracker")
-        tabs.addTab(ResultsTrkTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Results Tracker")
-        tabs.addTab(VLMDTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Data Dictionary")
+        self.tabs.addTab(PkgTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Data Package")
+        self.tabs.addTab(ExpTrkTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Experiment Tracker")
+        self.tabs.addTab(ResourceTrkTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Resource Tracker")
+        self.tabs.addTab(ResultsTrkTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Results Tracker")
+        self.tabs.addTab(VLMDTabsWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay), "Data Dictionary")
         
         
         #for n, color in enumerate(["red", "green", "blue", "yellow"]):
         #    tabs.addTab(Color(color), color)
         self.layout.addWidget(self.workingDataPkgDirLabel)
         self.layout.addWidget(self.workingDataPkgDirDisplay)
-        self.layout.addWidget(tabs)
+        self.layout.addWidget(self.tabs)
 
         self.showMaximized()
         
         #self.setCentralWidget(self.layout)
+    
+    def closeEvent(self, event):
+        print("resource tracker tabs widget: ",self.tabs.widget(2))
+        resTrkTabWidget = self.tabs.widget(2)
+        resTrkResToAddWidget = resTrkTabWidget.tabs.widget(2)
+        print("resource tracker resources to add widget: ",resTrkResToAddWidget)
 
+        # print(self.workingDataPkgDirDisplay.toPlainText())
+        # print(self.workingDataPkgDirDisplayDefaultText)
+
+        #if self.workingDataPkgDirDisplay.toPlainText() != self.workingDataPkgDirDisplayDefaultText:
+        if not self.workingDataPkgDirDisplay.toPlainText().startswith("Set a working data package directory!"):
+        #if resTrkResToAddWidget.workingDataPkgDir:
+            resTrkResToAddWidget.cleanup()
+        else:
+            print("no working data pkg dir set")
+        # if self.w:
+        #     self.w.close()
 
 #app = QApplication(sys.argv)
 

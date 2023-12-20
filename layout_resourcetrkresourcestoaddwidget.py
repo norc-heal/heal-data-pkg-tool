@@ -85,6 +85,9 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
 
         # start hidden - unhide when user loads list of resources to add
         self.optional_groupbox.hide()
+
+        self.labelResourceList = QtWidgets.QLabel(text = "<b>Resource List</b>", parent=self)
+        self.labelResourceList.hide()
         
         
         # self.listCheckBox    = ['', '', '', '', '', '', '', '', '', '','', '', '', '', '', '', '', '', '', '', ]
@@ -162,6 +165,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         # self.vbox.addWidget(self.minimalAnnotationCheckbox, Qt.AlignCenter)
         self.vbox.addWidget(self.optional_groupbox,Qt.AlignCenter)
         #self.vbox.addLayout(self.grid)
+        self.vbox.addWidget(self.labelResourceList)
         
         ################################## Set layout of the grouping widget as the vbox layout with widgets added
 
@@ -170,7 +174,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         ################################## Set widget of the scroll area as the grouping widget 
         #Scroll Area Properties
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        #self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.widget)
 
@@ -313,6 +318,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         self.fullPathCheckbox.show()
 
         self.optional_groupbox.show()
+        self.labelResourceList.show()
                         
         self.listCheckBox    = ['']*resourcesToAddDf.shape[0]
         self.listPath    = resourcesToAddDf["path"].tolist()
@@ -658,6 +664,11 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                 
 
     def cleanup(self):
+        print("cleaning up and saving annotation mode and share status")
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
 
         cleanupOutputDir = os.path.join(self.workingDataPkgDir,"no-user-access")
         if not os.path.exists(cleanupOutputDir):

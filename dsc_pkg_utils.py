@@ -12,6 +12,7 @@ from jsonschema import validate
 import re
 import itertools
 from copy import deepcopy
+from pathlib import Path
 
 from healdata_utils.schemas import healjsonschema, healcsvschema
 from healdata_utils.transforms.frictionless import conversion
@@ -190,7 +191,8 @@ def get_resources_annotation_mode_status(self):
     
             
 
-def get_id(self, prefix, fileExt, folderPath):
+#def get_id(self, prefix, fileExt, folderPath, firstIdNum=1):
+def get_id(self, prefix, folderPath, firstIdNum=1):
 
     if folderPath:
 
@@ -204,18 +206,16 @@ def get_id(self, prefix, fileExt, folderPath):
             print(fileStemList)
             #idNumList = [int(filename.rsplit('-',1)[1]) for filename in fileStemList]
             idNumList = [int(filename.split(prefix)[1]) for filename in fileStemList]
-            print(resIdNumList)
+            print(idNumList)
             idNum = max(idNumList) + 1
             print(max(idNumList),idNum)
         else:
-            idNum = 1
+            #idNum = 1
+            idNum = firstIdNum
 
-        #self.resIdNum = resIdNum
-        #self.result_id = 'result-'+ str(self.resIdNum)
-        #self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
-        fileName = prefix + str(idNum) + fileExt
-        #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
-        saveFilePath = os.path.join(folderPath,fileName)
+        #fileName = prefix + str(idNum) + fileExt
+        #saveFilePath = os.path.join(folderPath,fileName)
+        return idNum
 
        
 

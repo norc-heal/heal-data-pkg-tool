@@ -414,7 +414,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
         ################### hide fields that were revealed due to previous selection
 
-        if self.form.widget.state["category"] != "figure":
+        if self.form.widget.state["category"] not in ["single-panel-figure","figure-panel"]:
             self.toggle_widgets(keyText = "figure", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
             self.form.widget.state = {
@@ -430,7 +430,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             
         ################### show field appropriate to current selection
             
-        if self.form.widget.state["category"] == "figure":
+        if self.form.widget.state["category"] in ["single-panel-figure","figure-panel"]:
             self.toggle_widgets(keyText = "figure", desiredToggleState = "show")
 
         if self.form.widget.state["category"] == "table":

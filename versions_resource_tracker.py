@@ -48,6 +48,10 @@
 fieldNameMap = {
     "latestVersion":"0.3.0",
     "properties":{
+        "schemaVersionField":{
+            "formerNames": [],
+            "deprecated": False
+        },
         "resourceId":{
             "formerNames": ["resource.id"],
             "deprecated": False
@@ -169,7 +173,10 @@ fieldNameMap = {
             "formerNames": [],
             "deprecated": False
         },
-        "softwareUsed":["format.software"],
+        "softwareUsed":{
+            "formerNames": ["format.software"],
+            "deprecated": False
+        },
         "profile":{
             "formerNames": [],
             "deprecated": False
@@ -200,6 +207,18 @@ fieldNameMap = {
         },
         "annotationModDateTime":{
             "formerNames": ["restrk.mod.date.time"],
+            "deprecated": False
+        },
+        "resourceIdNumber":{
+            "formerNames": ["resource.id.num"],
+            "deprecated": False
+        },
+        "resourceModTimeStamp":{
+            "formerNames": ["resource.mod.time.stamp"],
+            "deprecated": False
+        },
+        "annotationModTimeStamp":{
+            "formerNames": ["restrk.mod.time.stamp"],
             "deprecated": False
         }
     }

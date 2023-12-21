@@ -1494,7 +1494,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                                     "resourceIdNumber": [int(resIdNumStr)],  
                                     #"resourceCreateDateTime": [res_c_datetime],
                                     #"resourceModDateTime": [res_m_datetime],
-                                    "resource.mod.time.stamp": [res_m_timestamp],
+                                    "resourceModTimeStamp": [res_m_timestamp],
                                     #"annotationCreateDateTime": [restrk_c_datetime],
                                     #"annotationModDateTime": [restrk_m_datetime],
                                     "annotationModTimeStamp": [restrk_m_timestamp]}

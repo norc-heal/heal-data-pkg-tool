@@ -4,7 +4,9 @@ import os
 from versions_resource_tracker import fieldNameMap
 from schema_resource_tracker import schema_resource_tracker
 
-# step 0-1: import resource tracker
+# print(key,"; ",fieldNameMap["properties"][key]["formerNames"])
+
+# step 0: import resource tracker
 
 
 getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg-first"
@@ -20,6 +22,8 @@ if os.path.isfile(getResourceTrk):
     print(resourceTrackerDf)
 
     collectAllFormerNames = []
+
+    # step 1: for each schena property, delete deprecated fields, copy/rename undeprecated fields with former names, add new fields  
 
     for key in fieldNameMap["properties"]:
 
@@ -38,7 +42,7 @@ if os.path.isfile(getResourceTrk):
 
         # if deprecated is false
         else:
-            
+
             # if field with current field name exists
             if key in resourceTrackerDf.columns: 
                 
@@ -91,8 +95,38 @@ if os.path.isfile(getResourceTrk):
                     elif propertyType == "array":
                         resourceTrackerDf[key] = np.empty((len(resourceTrackerDf),0)).tolist()
 
-                               
-                     
+    # while looping through properties, if there were undeprecated fields still using a former field name,
+    # that field was copied into a new field with the updated field name (instead of straight re-naming);
+    # this is done in case an old field is parsed out into two new fields for which you might still want to 
+    # copy the old values and map to new values for each new field (for example, this happened with the split from 
+    # category sub results to category single result and category multi result)
+    # HOWEVER, this approach means that following the loop through of properties, you have to go ahead and 
+    # delete all fields with a former field name that remain in the df
+    if collectAllFormerNames:
+        resourceTrackerDf.drop(columns=collectAllFormerNames, inplace=True, errors="ignore")
+
+    # step 2: update enums
+
+    # for each (non-deprecated) schema property:
+    for key in fieldNameMap["properties"]:
+
+        if not fieldNameMap["properties"][key]["deprecated"]:
+
+            # if mapEnums is not empty
+            if fieldNameMap["properties"][key]["mapEnum"]:
+                # get df column for this field
+                resourceTrackerDf
+            #   if enum value is in keys of mapEnums
+            #       replace enum value with value specified by corresponding key of mapEnums
+            #   if enum value is not in keys of mapEnums
+            #       replace enum value with empty/null
+            
+            # if mapEnums is empty
+            else: 
+
+                #   do nothing
+                print("no enums to map")
+                             
 
 
 #           
@@ -100,7 +134,7 @@ if os.path.isfile(getResourceTrk):
 #            
 
 
-        #print(key,"; ",fieldNameMap["properties"][key]["formerNames"])
+        
 # # step 1: delete deprecated fields, rename fields, add new fields  
 
 # for each schema property:

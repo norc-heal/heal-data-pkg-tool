@@ -1,6 +1,8 @@
 import pandas as pd
+import numpy as np
 import os
 from versions_resource_tracker import fieldNameMap
+from schema_resource_tracker import schema_resource_tracker
 
 # step 0-1: import resource tracker
 
@@ -17,7 +19,14 @@ if os.path.isfile(getResourceTrk):
 
     print(resourceTrackerDf)
 
+    collectAllFormerNames = []
+
     for key in fieldNameMap["properties"]:
+
+        # if the property has former names, add them to a list that will collect all former field names 
+        # across all properties for deletion all at once after looping through each property
+        if fieldNameMap["properties"][key]["formerNames"]:
+            collectAllFormerNames.extend(fieldNameMap["properties"][key]["formerNames"])
 
         # if deprecated is true
         #   delete any field with current or former field name(s) 
@@ -29,11 +38,12 @@ if os.path.isfile(getResourceTrk):
 
         # if deprecated is false
         else:
+            
             # if field with current field name exists
+            if key in resourceTrackerDf.columns: 
+                
                 # leave field with current field name alone
                 # delete any field with a former field name
-            if key in resourceTrackerDf.columns: 
-
                 if fieldNameMap["properties"][key]["formerNames"]:
                     deleteFieldNames = fieldNameMap["properties"][key]["formerNames"]
                     resourceTrackerDf.drop(columns=deleteFieldNames, inplace=True, errors="ignore")     
@@ -59,12 +69,27 @@ if os.path.isfile(getResourceTrk):
                             resourceTrackerDf[key] = resourceTrackerDf[f] 
                     
                     # if field with former field name does not exist
-                        # create new field with current field name
+                        # create new field with current field name; fill with appropriate empty value
                     if i==0:
+                        propertyType = schema_resource_tracker["properties"][key]["type"]
+
+                        if propertyType == "string":
+                            resourceTrackerDf[key] = "" # if the property is a string, empty is empty string
+                        elif propertyType == "array":
+                            resourceTrackerDf[key] = np.empty((len(resourceTrackerDf),0)).tolist() # if the property is an array, empty is empty list
+                        else:
+                            print("the following schema property is not a string or array type so i don't know how to create a new field with appropriate empty values: ", key)
+                            return
 
                 # if no former field name(s)
-                #   create new field with current field name
+                #   create new field with current field name; fill with appropriate empty value
                 else: 
+                    propertyType = schema_resource_tracker["properties"][key]["type"]
+                        
+                    if propertyType == "string":
+                        resourceTrackerDf[key] = "" # if the property is a string, empty is empty string
+                    elif propertyType == "array":
+                        resourceTrackerDf[key] = np.empty((len(resourceTrackerDf),0)).tolist()
 
                                
                      

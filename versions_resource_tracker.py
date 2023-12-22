@@ -50,19 +50,27 @@ fieldNameMap = {
     "properties":{
         "schemaVersion":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "resourceId":{
             "formerNames": ["resource.id"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "path":{
             "formerNames":[],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "description":{
             "formerNames":[],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "category":{
             "formerNames":[],
@@ -70,53 +78,75 @@ fieldNameMap = {
             "mapEnum": {
                 "publication":["multi-result"],
                 "result":["single-result"]
-            }
+            },
+            "deleteEnum":[]
         },
         "expBelongsTo":{
             "formerNames": ["exp.belongs.to"],
-            "deprecated": True
+            "deprecated": True,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "experimentNameBelongsTo":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "name":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "title":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "descriptionFileNameConvention":{
             "formerNames": ["description.file.name.convention"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "descriptionFile":{
             "formerNames": ["description.file"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },    
         "descriptionRow":{
             "formerNames": ["description.row"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "categorySubMetadata":{
             "formerNames": ["category.sub.metadata"],
             "deprecated": False,
+            "mapEnum": {},
             "deleteEnum": ["heal-formatted-experiment-tracker"]
         },
         "categorySubMetadataOther":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "categorySubData":{
             "formerNames": ["category.sub.data"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
-        "categorySubResults":{
-            "formerNames": ["category.sub.results"],
-            "deprecated": True
-        },
+        # "categorySubResults":{
+        #     "formerNames": ["category.sub.results"],
+        #     "deprecated": True,
+        #     "mapEnum": {},
+        #     "deleteEnum":[]
+        # },
         "categorySubResult":{
             "formerNames": ["categorySubSingleResult","categorySubResults","category.sub.results"],
             "deprecated": False,
@@ -131,27 +161,37 @@ fieldNameMap = {
             "mapEnum": {
                 "peer-review-manuscript":["publication","draft-publication"]
             },
-            "deleteEnum":["figure","table","text","draft-publication","publication"]
+            "deleteEnum":["figure","table","text"]
         },
         "associatedFileDataDict":{
             "formerNames": ["assoc.file.dd"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "associatedFileProtocol":{
             "formerNames": ["assoc.file.protocol"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "associatedFileResultsTracker":{
             "formerNames": ["assoc.file.result.tracker"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "associatedFileDependsOn":{
             "formerNames": ["assoc.file.depends.on"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "associatedFileResultsDependOn":{
             "formerNames": ["assoc.file.result.depends.on"],
             "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
             "formerSubNames": {
                 "resultId":["result.id"],
                 "resultIdDependsOn":["result.id.depends.on"]
@@ -159,67 +199,102 @@ fieldNameMap = {
         },
         "associatedFileMultiLikeFiles":{
             "formerNames": ["assoc.file.multi.like.file"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "access":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {
+                "open-access":["public"],
+                "managed-access":["restricted-access"]
+            },
+            "deleteEnum":[]
         },
         "accessDate":{
             "formerNames": ["access.date"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "format":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "softwareUsed":{
             "formerNames": ["format.software"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "profile":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "mediatype":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "encoding":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "schema":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "resourceCreateDateTime":{
             "formerNames": ["resource.create.date.time"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "resourceModDateTime":{
             "formerNames": ["resource.mod.date.time"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "annotationCreateDateTime":{
             "formerNames": ["restrk.create.date.time"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "annotationModDateTime":{
             "formerNames": ["restrk.mod.date.time"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "resourceIdNumber":{
             "formerNames": ["resource.id.num"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "resourceModTimeStamp":{
             "formerNames": ["resource.mod.time.stamp"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         },
         "annotationModTimeStamp":{
             "formerNames": ["restrk.mod.time.stamp"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[]
         }
     }
 }

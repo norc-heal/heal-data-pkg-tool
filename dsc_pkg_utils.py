@@ -21,6 +21,21 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+def renameDictKeys(myDictionary,keyRenameDictionary):
+    print("myDictionary: ",myDictionary)
+    for k, v in list(myDictionary.items()):
+        myDictionary[keyRenameDictionary.get(k, k)] = myDictionary.pop(k)
+
+def renameListOfDictKeys(myDictionaryList,keyRenameDictionary):
+    print("myDictionaryList: ",myDictionaryList)
+    if not bool(myDictionaryList):
+        print("value is an empty list")
+        return [] 
+    else: 
+        for d in myDictionaryList:
+            print("value is not an empty list:", d)
+            for k, v in list(d.items()):
+                d[keyRenameDictionary.get(k, k)] = d.pop(k)
 
 def getPositionOfWidgetInLayout(layout,getWidget):
     if layout is not None:

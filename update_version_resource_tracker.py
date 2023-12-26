@@ -112,20 +112,52 @@ if os.path.isfile(getResourceTrk):
 
         if not fieldNameMap["properties"][key]["deprecated"]:
 
-            # if mapEnums is not empty
-            if fieldNameMap["properties"][key]["mapEnum"]:
-                # get df column for this field
-                resourceTrackerDf
-            #   if enum value is in keys of mapEnums
-            #       replace enum value with value specified by corresponding key of mapEnums
-            #   if enum value is not in keys of mapEnums
-            #       replace enum value with empty/null
-            
-            # if mapEnums is empty
-            else: 
+            # if either deleteEnums or mapEnums is not empty
+            if ((fieldNameMap["properties"][key]["mapEnum"]) | (fieldMap["properties"][key]["deleteEnum"])):
+                
+                # get type of schema property
+                propertyType = schema_resource_tracker["properties"][key]["type"]
+                
+                # if deleteEnums is not empty
+                if fieldMap["properties"][key]["deleteEnum"]:
+                    
+                    deleteDict = dict.fromkeys(fieldMap["properties"][key]["deleteEnum"],"")
+                    
+                    if propertyType == "string":
+                        # if string value is equal to any of the values from delete list, replace string with empty string
+                        resourceTrackerDf[key] = resourceTrackerDf[key].replace(deleteDict)
+                        
+                    elif propertyType == "array":
+                        
+                        # check list/array for any values in delete list, and replace with empty string
+                        # then remove any empty strings from list/array 
+                        resourceTrackerDf[key] = [[deleteDict.get(i,i) for i in x] for x in resourceTrackerDf[key]]
+                        resourceTrackerDf[key] = [[i for i in x if i] for x in resourceTrackerDf[key]]
 
-                #   do nothing
-                print("no enums to map")
+                if fieldMap["properties"][key]["mapEnum"]: 
+
+                    mapDict = {}
+                    for mapKey in fieldMap["properties"][key]["mapEnum"]:
+                        mapDict.update(dict.fromkeys(fieldMap["properties"][key]["mapEnum"][mapKey],mapKey))
+                    
+                    print("key: ",key,"; mapDict: ", mapDict)
+
+                    if propertyType == "string":
+                        # check if string is equal to any of the former values that have a mapping, if so, replace with mapping
+                        resourceTrackerDf[key] = resourceTrackerDf[key].replace(mapDict)
+                        
+                    elif propertyType == "array":
+                        
+                        # check list/array for any former values that have a mapping, if so, replace with mapping
+                        resourceTrackerDf[key] = [[mapDict.get(i,i) for i in x] for x in resourceTrackerDf[key]]
+
+        else:
+            print(key, " is deprecated, no deletions or mapping of enums necessary")                
+
+            else:
+                print(key, "has no enum deletions or mappings")    
+                
+            
                              
 
 

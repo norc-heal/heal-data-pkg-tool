@@ -75,7 +75,7 @@ if os.path.isfile(getResourceTrk):
                             i+=1
                             if i>1:
                                 print("there is more than one field with a former name for the field currently named: ",key)
-                                return 
+                                #return 
                             resourceTrackerDf[key] = resourceTrackerDf[f] 
                     
                     # if field with former field name does not exist
@@ -89,7 +89,7 @@ if os.path.isfile(getResourceTrk):
                             resourceTrackerDf[key] = np.empty((len(resourceTrackerDf),0)).tolist() # if the property is an array, empty is empty list
                         else:
                             print("the following schema property is not a string or array type so i don't know how to create a new field with appropriate empty values: ", key)
-                            return
+                            #return
 
                 # if no former field name(s)
                 #   create new field with current field name; fill with appropriate empty value
@@ -121,15 +121,16 @@ if os.path.isfile(getResourceTrk):
         if not fieldNameMap["properties"][key]["deprecated"]:
 
             # if either deleteEnums or mapEnums is not empty
-            if ((fieldNameMap["properties"][key]["mapEnum"]) | (fieldMap["properties"][key]["deleteEnum"])):
+            #if ((fieldNameMap["properties"][key]["mapEnum"]) or (fieldNameMap["properties"][key]["deleteEnum"])):
+            if ((bool(fieldNameMap["properties"][key]["mapEnum"])) or (bool(fieldNameMap["properties"][key]["deleteEnum"]))):
                 
                 # get type of schema property
                 propertyType = schema_resource_tracker["properties"][key]["type"]
                 
                 # if deleteEnums is not empty
-                if fieldMap["properties"][key]["deleteEnum"]:
+                if fieldNameMap["properties"][key]["deleteEnum"]:
                     
-                    deleteDict = dict.fromkeys(fieldMap["properties"][key]["deleteEnum"],"")
+                    deleteDict = dict.fromkeys(fieldNameMap["properties"][key]["deleteEnum"],"")
                     
                     if propertyType == "string": # each value in this column of the df is a string
                         # if string value is equal to any of the values from delete list, replace string with empty string
@@ -148,11 +149,11 @@ if os.path.isfile(getResourceTrk):
                 else:
                     print(key, " has no enum deletions to review")
 
-                if fieldMap["properties"][key]["mapEnum"]: 
+                if fieldNameMap["properties"][key]["mapEnum"]: 
 
                     mapDict = {}
-                    for mapKey in fieldMap["properties"][key]["mapEnum"]:
-                        mapDict.update(dict.fromkeys(fieldMap["properties"][key]["mapEnum"][mapKey],mapKey))
+                    for mapKey in fieldNameMap["properties"][key]["mapEnum"]:
+                        mapDict.update(dict.fromkeys(fieldNameMap["properties"][key]["mapEnum"][mapKey],mapKey))
                     
                     print("key: ",key,"; mapDict: ", mapDict)
 
@@ -191,8 +192,8 @@ if os.path.isfile(getResourceTrk):
             if fieldNameMap["properties"][key]["formerSubNames"]:
 
                 subNameDict = {}
-                for subNameKey in fieldMap["properties"][key]["formerSubNames"]:
-                    subNameDict.update(dict.fromkeys(fieldMap["properties"][key]["formerSubNames"][subNameKey],subNameKey))
+                for subNameKey in fieldNameMap["properties"][key]["formerSubNames"]:
+                    subNameDict.update(dict.fromkeys(fieldNameMap["properties"][key]["formerSubNames"][subNameKey],subNameKey))
                 
                 print("key: ",key,"; subNameDict: ", subNameDict)
                 
@@ -206,11 +207,13 @@ if os.path.isfile(getResourceTrk):
 
                 # if value is a list of dictionaries                     
                 elif propertyType == "array": # each value in this column of the df is an array of dictionaries
-
-                    resourceTrackerDf[key] = [{dsc_pkg_utils.renameDictKeys(i,subNameDict) for i in x} for x in resourceTrackerDf[key]]
-
+                    print(key)
+                    #resourceTrackerDf[key] = [{dsc_pkg_utils.renameDictKeys(i,subNameDict) for i in x} for x in resourceTrackerDf[key]]
+                    #resourceTrackerDf.loc[bool(resourceTrackerDf[key]),resourceTrackerDf[key]] = [{dsc_pkg_utils.renameDictKeys(i,subNameDict) for i in x} for x in resourceTrackerDf[key]]
+                    resourceTrackerDf.loc[bool(resourceTrackerDf[key]),resourceTrackerDf[key]] = [dsc_pkg_utils.renameListOfDictKeys(x,subNameDict) for x in resourceTrackerDf[key]]
+                    
                 else:
-                        print(key, " is not a dictionary object or an arrary of dictionary objects - I don't know how to map former sub field names for any other property types yet!")
+                    print(key, " is not a dictionary object or an arrary of dictionary objects - I don't know how to map former sub field names for any other property types yet!")
 
     print("done updating; reordering to correct order")
     resourceTrackerDf = resourceTrackerDf[collectAllCurrentNamesOrdered]

@@ -133,6 +133,12 @@ if os.path.isfile(getResourceTrk):
                         # then remove any empty strings from list/array 
                         resourceTrackerDf[key] = [[deleteDict.get(i,i) for i in x] for x in resourceTrackerDf[key]]
                         resourceTrackerDf[key] = [[i for i in x if i] for x in resourceTrackerDf[key]]
+                    
+                    else:
+                        print(key, " is not a string or array of strings - I don't know how to delete enums for any other property types yet!")
+                
+                else:
+                    print(key, " has no enum deletions to review")
 
                 if fieldMap["properties"][key]["mapEnum"]: 
 
@@ -151,14 +157,38 @@ if os.path.isfile(getResourceTrk):
                         # check list/array for any former values that have a mapping, if so, replace with mapping
                         resourceTrackerDf[key] = [[mapDict.get(i,i) for i in x] for x in resourceTrackerDf[key]]
 
-        else:
-            print(key, " is deprecated, no deletions or mapping of enums necessary")                
+                    else:
+                        print(key, " is not a string or array of strings - I don't know how to map enums for any other property types yet!")
+                
+                else:
+                    print(key, " has no enum mappings to review")
 
             else:
-                print(key, "has no enum deletions or mappings")    
+                print(key, "has no enum deletions or mappings") 
+
+        else:
+            print(key, " is deprecated, no deletions or mapping of enums necessary")    
                 
             
-                             
+    # step 3: update subfield names
+    
+    # for each (non-deprecated) schema property:
+    for key in fieldNameMap["properties"]:
+
+        if not fieldNameMap["properties"][key]["deprecated"]:
+
+            # if formerSubNames is not empty
+            if fieldNameMap["properties"][key]["formerSubNames"]:
+                
+                # get type of schema property
+                propertyType = schema_resource_tracker["properties"][key]["type"]
+
+# for each (non-deprecated) schema property:
+
+# if formerSubNames is not empty
+#   if value is a list of dictionaries
+#       replace keys in list of dictionaries according to the mapping in formerSubNames
+#       (https://stackoverflow.com/questions/54637847/how-to-change-dictionary-keys-in-a-list-of-dictionaries)                         
 
 
 #           

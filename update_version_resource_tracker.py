@@ -3,6 +3,7 @@ import numpy as np
 import os
 from versions_resource_tracker import fieldNameMap
 from schema_resource_tracker import schema_resource_tracker
+import dsc_pkg_utils
 
 # print(key,"; ",fieldNameMap["properties"][key]["formerNames"])
 
@@ -22,9 +23,12 @@ if os.path.isfile(getResourceTrk):
     print(resourceTrackerDf)
 
     collectAllFormerNames = []
-
+    collectAllCurrentNamesOrdered = [] # collect a list of current (non-deprecated) property names so that you can re-order based on the 'correct' order at the end of the update
+    
     # step 1: for each schena property, delete deprecated fields, copy/rename undeprecated fields with former names, add new fields  
-
+    
+    print("working on step 1: updating field names")
+    
     for key in fieldNameMap["properties"]:
 
         # if the property has former names, add them to a list that will collect all former field names 
@@ -42,7 +46,9 @@ if os.path.isfile(getResourceTrk):
 
         # if deprecated is false
         else:
-
+            
+            collectAllCurrentNamesOrdered.append(key) # collect a list of current (non-deprecated) property names so that you can re-order based on the 'correct' order at the end of the update
+            
             # if field with current field name exists
             if key in resourceTrackerDf.columns: 
                 
@@ -106,7 +112,9 @@ if os.path.isfile(getResourceTrk):
         resourceTrackerDf.drop(columns=collectAllFormerNames, inplace=True, errors="ignore")
 
     # step 2: update enums
-
+    
+    print("working on step 2: updating enums")
+    
     # for each (non-deprecated) schema property:
     for key in fieldNameMap["properties"]:
 
@@ -123,11 +131,11 @@ if os.path.isfile(getResourceTrk):
                     
                     deleteDict = dict.fromkeys(fieldMap["properties"][key]["deleteEnum"],"")
                     
-                    if propertyType == "string":
+                    if propertyType == "string": # each value in this column of the df is a string
                         # if string value is equal to any of the values from delete list, replace string with empty string
                         resourceTrackerDf[key] = resourceTrackerDf[key].replace(deleteDict)
                         
-                    elif propertyType == "array":
+                    elif propertyType == "array": # each value in this column of the df is an array of strings
                         
                         # check list/array for any values in delete list, and replace with empty string
                         # then remove any empty strings from list/array 
@@ -148,11 +156,11 @@ if os.path.isfile(getResourceTrk):
                     
                     print("key: ",key,"; mapDict: ", mapDict)
 
-                    if propertyType == "string":
+                    if propertyType == "string": # each value in this column of the df is a string
                         # check if string is equal to any of the former values that have a mapping, if so, replace with mapping
                         resourceTrackerDf[key] = resourceTrackerDf[key].replace(mapDict)
                         
-                    elif propertyType == "array":
+                    elif propertyType == "array": # each value in this column of the df is an array of strings
                         
                         # check list/array for any former values that have a mapping, if so, replace with mapping
                         resourceTrackerDf[key] = [[mapDict.get(i,i) for i in x] for x in resourceTrackerDf[key]]
@@ -172,6 +180,8 @@ if os.path.isfile(getResourceTrk):
             
     # step 3: update subfield names
     
+    print("working on step 3: updating subfield names")
+    
     # for each (non-deprecated) schema property:
     for key in fieldNameMap["properties"]:
 
@@ -179,65 +189,37 @@ if os.path.isfile(getResourceTrk):
 
             # if formerSubNames is not empty
             if fieldNameMap["properties"][key]["formerSubNames"]:
+
+                subNameDict = {}
+                for subNameKey in fieldMap["properties"][key]["formerSubNames"]:
+                    subNameDict.update(dict.fromkeys(fieldMap["properties"][key]["formerSubNames"][subNameKey],subNameKey))
+                
+                print("key: ",key,"; subNameDict: ", subNameDict)
                 
                 # get type of schema property
                 propertyType = schema_resource_tracker["properties"][key]["type"]
 
-# for each (non-deprecated) schema property:
+                # if value is a dictionary
+                if propertyType == "object": # each value in this column of the df is a dictionary
+                    
+                    resourceTrackerDf[key] = [dsc_pkg_utils.renameDictKeys(x,subNameDict) for x in resourceTrackerDf[key]]
 
-# if formerSubNames is not empty
-#   if value is a list of dictionaries
+                # if value is a list of dictionaries                     
+                elif propertyType == "array": # each value in this column of the df is an array of dictionaries
+
+                    resourceTrackerDf[key] = [{dsc_pkg_utils.renameDictKeys(i,subNameDict) for i in x} for x in resourceTrackerDf[key]]
+
+                else:
+                        print(key, " is not a dictionary object or an arrary of dictionary objects - I don't know how to map former sub field names for any other property types yet!")
+
+    print("done updating; reordering to correct order")
+    resourceTrackerDf = resourceTrackerDf[collectAllCurrentNamesOrdered]
+    
+    print("done updating; getting ready to save")          
+    getResourceTrkUpdated = os.path.join(getDir,"heal-csv-resource-tracker-updated.csv")
+    resourceTrackerDf.to_csv(getResourceTrkUpdated, index=False)
+
+
 #       replace keys in list of dictionaries according to the mapping in formerSubNames
 #       (https://stackoverflow.com/questions/54637847/how-to-change-dictionary-keys-in-a-list-of-dictionaries)                         
-
-
-#           
-#       
-#            
-
-
-        
-# # step 1: delete deprecated fields, rename fields, add new fields  
-
-# for each schema property:
-
-# if deprecated is true
-#   delete any field with current or former field name(s)
-# if deprecated is false
-#   if field with current field name exists
-#       leave field with current field name alone
-#       delete any field with a former field name
-#   if field with current field name does not exist
-#       if former field name(s)
-#           if field with former field name exists
-#               copy field with former field name and rename to current field name
-#           if field with former field name does not exist
-#               create new field with current field name
-#       if no former field name(s)
-#           create new field with current field name
-#
-# after looping through all schema properties with above,
-# for all schema properties where deprecated is False, collect all former field names,
-# and delete any fields with a former field name
-
-# step 2: update enums
-
-# for each (non-deprecated) schema property:
-
-# if mapEnums is not empty
-#   if enum value is in keys of mapEnums
-#       replace enum value with value specified by corresponding key of mapEnums
-#   if enum value is not in keys of mapEnums
-#       replace enum value with empty/null
-# if mapEnums is empty
-#   do nothing
-
-# step 3: update subfield names
-
-# for each (non-deprecated) schema property:
-
-# if formerSubNames is not empty
-#   if value is a list of dictionaries
-#       replace keys in list of dictionaries according to the mapping in formerSubNames
-#       (https://stackoverflow.com/questions/54637847/how-to-change-dictionary-keys-in-a-list-of-dictionaries)
 

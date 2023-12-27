@@ -28,14 +28,36 @@ def renameDictKeys(myDictionary,keyRenameDictionary):
 
 def renameListOfDictKeys(myDictionaryList,keyRenameDictionary):
     print("myDictionaryList: ",myDictionaryList)
-    if not bool(myDictionaryList):
+    if myDictionaryList == '[]':
         print("value is an empty list")
-        return [] 
+        return []  
     else: 
+        myDictionaryList = list(eval(myDictionaryList))
         for d in myDictionaryList:
             print("value is not an empty list:", d)
             for k, v in list(d.items()):
                 d[keyRenameDictionary.get(k, k)] = d.pop(k)
+
+        return myDictionaryList
+
+def mapArrayOfStrings(myStringArray,stringMapDictionary):
+    print("myStringArray: ",myStringArray)
+    print(type(myStringArray))
+    if myStringArray == '[]':
+        print("value is an empty list")
+        return []  
+    else: 
+        #myStringArray = myStringArray.strip('][').split(', ') # convert to true list instead of stringified list
+        myStringArray = myStringArray.replace("'","\"")
+        print("myStringArray: ",myStringArray)
+        print(type(myStringArray))
+        myStringArray = json.loads(myStringArray)
+        print("myStringArray: ",myStringArray)
+        print(type(myStringArray))
+        myStringArray = [stringMapDictionary.get(i,i) for i in myStringArray]
+        print("myStringArray updated: ",myStringArray)
+
+        return myStringArray
 
 def getPositionOfWidgetInLayout(layout,getWidget):
     if layout is not None:

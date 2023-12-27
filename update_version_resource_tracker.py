@@ -4,6 +4,7 @@ import os
 from versions_resource_tracker import fieldNameMap
 from schema_resource_tracker import schema_resource_tracker
 import dsc_pkg_utils
+import json
 
 # print(key,"; ",fieldNameMap["properties"][key]["formerNames"])
 
@@ -164,7 +165,9 @@ if os.path.isfile(getResourceTrk):
                     elif propertyType == "array": # each value in this column of the df is an array of strings
                         
                         # check list/array for any former values that have a mapping, if so, replace with mapping
-                        resourceTrackerDf[key] = [[mapDict.get(i,i) for i in x] for x in resourceTrackerDf[key]]
+                        #resourceTrackerDf[key] = [[mapDict.get(i,i) for i in x] for x in resourceTrackerDf[key]]
+                        resourceTrackerDf[key] = [dsc_pkg_utils.mapArrayOfStrings(x,mapDict) for x in resourceTrackerDf[key]]
+
 
                     else:
                         print(key, " is not a string or array of strings - I don't know how to map enums for any other property types yet!")
@@ -210,7 +213,8 @@ if os.path.isfile(getResourceTrk):
                     print(key)
                     #resourceTrackerDf[key] = [{dsc_pkg_utils.renameDictKeys(i,subNameDict) for i in x} for x in resourceTrackerDf[key]]
                     #resourceTrackerDf.loc[bool(resourceTrackerDf[key]),resourceTrackerDf[key]] = [{dsc_pkg_utils.renameDictKeys(i,subNameDict) for i in x} for x in resourceTrackerDf[key]]
-                    resourceTrackerDf.loc[bool(resourceTrackerDf[key]),resourceTrackerDf[key]] = [dsc_pkg_utils.renameListOfDictKeys(x,subNameDict) for x in resourceTrackerDf[key]]
+                    #resourceTrackerDf.loc[resourceTrackerDf[key] != '[]',resourceTrackerDf[key]] = [dsc_pkg_utils.renameListOfDictKeys(x,subNameDict) for x in resourceTrackerDf[key]]
+                    resourceTrackerDf[key] = [dsc_pkg_utils.renameListOfDictKeys(x,subNameDict) for x in resourceTrackerDf[key]]
                     
                 else:
                     print(key, " is not a dictionary object or an arrary of dictionary objects - I don't know how to map former sub field names for any other property types yet!")

@@ -141,8 +141,12 @@ if os.path.isfile(getResourceTrk):
                         
                         # check list/array for any values in delete list, and replace with empty string
                         # then remove any empty strings from list/array 
-                        resourceTrackerDf[key] = [[deleteDict.get(i,i) for i in x] for x in resourceTrackerDf[key]]
-                        resourceTrackerDf[key] = [[i for i in x if i] for x in resourceTrackerDf[key]]
+                        #resourceTrackerDf[key] = [[deleteDict.get(i,i) for i in x] for x in resourceTrackerDf[key]]
+                        resourceTrackerDf[key] = [dsc_pkg_utils.mapArrayOfStrings(x,deleteDict) for x in resourceTrackerDf[key]]
+
+                        #resourceTrackerDf[key] = [[i for i in x if i] for x in resourceTrackerDf[key]]
+                        resourceTrackerDf[key] = [dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(x) for x in resourceTrackerDf[key]]
+                        
                     
                     else:
                         print(key, " is not a string or array of strings - I don't know how to delete enums for any other property types yet!")

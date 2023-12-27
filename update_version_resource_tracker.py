@@ -219,12 +219,20 @@ if os.path.isfile(getResourceTrk):
                 else:
                     print(key, " is not a dictionary object or an arrary of dictionary objects - I don't know how to map former sub field names for any other property types yet!")
 
-    print("done updating; reordering to correct order")
+    print("reordering to correct order")
     resourceTrackerDf = resourceTrackerDf[collectAllCurrentNamesOrdered]
     
+    print("adding updated schema version")
+    if "schemaVersion" in resourceTrackerDf.columns:
+        resourceTrackerDf["schemaVersion"] = fieldNameMap["latestVersion"]
+    else:
+        print("has the name of the schema version property changed from schemaVersion? if so update the script to the new name to add the updated schema version")
+
     print("done updating; getting ready to save")          
     getResourceTrkUpdated = os.path.join(getDir,"heal-csv-resource-tracker-updated.csv")
     resourceTrackerDf.to_csv(getResourceTrkUpdated, index=False)
+
+    print("saved")
 
 
 #       replace keys in list of dictionaries according to the mapping in formerSubNames

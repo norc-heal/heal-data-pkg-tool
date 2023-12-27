@@ -9,6 +9,7 @@ import versions_results_tracker
 from packaging import version
 import pandas as pd
 import os
+import json
 
 # get the working data package dir path
 getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg-first"
@@ -20,26 +21,26 @@ trkDict = {
         "updateSchemaMap": versions_experiment_tracker.fieldNameMap,
         "oneOrMulti":"one",
         "trackerName":"heal-csv-experiment-tracker.csv",
-        "txtJsonPrefix": "exp-trk-exp-"
+        "jsonTxtPrefix": "exp-trk-exp-"
     },
     "resourceTracker":{
         "schema": schema_resource_tracker.schema_resource_tracker,
         "updateSchemaMap": versions_resource_tracker.fieldNameMap,
         "oneOrMulti": "one",
         "trackerName":"heal-csv-resource-tracker.csv",
-        "txtJsonPrefix": "resource-trk-resource-"
+        "jsonTxtPrefix": "resource-trk-resource-"
     },
     "resultsTracker":{
         "schema": schema_results_tracker.schema_results_tracker,
         "updateSchemaMap": versions_results_tracker.fieldNameMap,
         "oneOrMulti": "multi",
         "trackerName":"heal-csv-results-tracker-",
-        "txtJsonPrefix": "result-trk-result-"
+        "jsonTxtPrefix": "result-trk-result-"
     }
     
 }
 
-cols = ["trackerType","schemaVersion","schemaMapVersion","file","fileSchemaVersion","upToDate","canBeUpdated","canBeUpdatedFully","message"]
+cols = ["trackerType","fileType","schemaVersion","schemaMapVersion","file","fileSchemaVersion","upToDate","canBeUpdated","canBeUpdatedFully","message"]
 collectDf = pd.DataFrame([],columns=cols)
 
 for key in trkDict:
@@ -68,27 +69,62 @@ for key in trkDict:
     elif trkDict[key]["oneOrMulti"] == "multi":
         trkPathList = [os.path.join(getDir,f) for f in os.listdir(getDir) if f.startswith(trkDict[key]["trackerName"])]
 
-    for t in trkPathList:    
-        trkDf = pd.read_csv(t)
-        if "schemaVersion" not in trkDf:
-            trkVersion = "0.1.0" 
+    print("trkPathList: ", trkPathList)
+
+    if trkPathList:
+        trkTypeList = ["tracker"] * len(trkPathList)
+    
+    jsonTxtPathList = [os.path.join(getDir,f) for f in os.listdir(getDir) if f.startswith(trkDict[key]["jsonTxtPrefix"])]
+    print("jsonTxtPathList: ", jsonTxtPathList)
+
+    if jsonTxtPathList:
+        jsonTxtTypeList = ["json txt"] * len(jsonTxtPathList)
+
+    if ((trkPathList) and (jsonTxtPathList)):
+        pathList = trkPathList + jsonTxtPathList
+        typeList = trkTypeList + jsonTxtTypeList
+    else:
+        if trkPathList:
+            pathList = trkPathList
+            typeList = trkTypeList
+        elif jsonTxtPathList:
+            pathList = jsonTxtPathList
+            typeList = jsonTxtTypeList
         else:
-            trkVersion = trkDf["schemaVersion"][0]
+            print("no files for ",key,"; moving on to next file type")
+            continue
 
-        trkVersionParse = version.parse(trkVersion)
+    for p,t in zip(pathList,typeList):  
+        if t == "tracker":
+            trkDf = pd.read_csv(p)
+            if "schemaVersion" not in trkDf:
+                fileVersion = "0.1.0" 
+            else:
+                fileVersion = trkDf["schemaVersion"][0]
+        elif t == "json txt":
+            with open(p, 'r') as file:
+                # Load JSON data from file
+                data = json.load(file)
+            if "schemaVersion" not in list(data.keys()):
+                fileVersion = "0.1.0" 
+            else:
+                fileVersion = data["schemaVersion"]
 
-        if trkVersionParse == schemaVersionParse:
+
+        fileVersionParse = version.parse(fileVersion)
+
+        if fileVersionParse == schemaVersionParse:
             upToDate = "Yes"
             canBeUpdated = "Not Applicable"
             canBeUpdatedFully = "Not Applicable"
             message = "File is up to date"
-        elif trkVersionParse < schemaVersionParse:
+        elif fileVersionParse < schemaVersionParse:
             upToDate = "No"
-            if trkVersionParse == schemaMapVersionParse:
+            if fileVersionParse == schemaMapVersionParse:
                 canBeUpdated = "No"
                 canBeUpdatedFully = "Not Applicable"
                 message = "File is NOT up to date, but it cannot be updated at this time because the current schema mapping file does not allow updating beyond the file's current schema version"
-            elif trkVersionParse < schemaMapVersionParse:
+            elif fileVersionParse < schemaMapVersionParse:
                 canBeUpdated = "Yes"
                 if schemaMapVersionParse == schemaVersionParse:
                     canBeUpdatedFully = "Yes"
@@ -98,12 +134,14 @@ for key in trkDict:
                     canBeUpdatedFully = "No"
                     message = "File is NOT up to date - It can be updated, but it cannot be FULLY updated at this time because the current mapping file does allow updating beyond the file's current version but does NOT allow updating to the latest schema version - Updating will update this file to the latest schema version for which the schema mapping file has been completed"
             
-        addDf = pd.DataFrame([[key,schemaVersionParse,schemaMapVersionParse,t,trkVersionParse,upToDate,canBeUpdated,canBeUpdatedFully,message]], columns=cols)
+        addDf = pd.DataFrame([[key,t,schemaVersionParse,schemaMapVersionParse,p,fileVersionParse,upToDate,canBeUpdated,canBeUpdatedFully,message]], columns=cols)
         collectDf = pd.concat([collectDf,addDf],axis=0)
         
     
 collectDf['updateCheckDateTime'] = pd.Timestamp("now")
-print(collectDf)    
+strTimeStamp = str(pd.Timestamp("now")).replace(" ","-").replace(":","-").replace(".","-")
+outFilename = "update-check-" + strTimeStamp + ".csv"
+collectDf.to_csv(os.path.join(getDir,outFilename), index = False)  
 
 
 

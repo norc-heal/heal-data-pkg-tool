@@ -21,6 +21,68 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+def renameDictKeys(myDictionary,keyRenameDictionary):
+    print("myDictionary: ",myDictionary)
+    for k, v in list(myDictionary.items()):
+        myDictionary[keyRenameDictionary.get(k, k)] = myDictionary.pop(k)
+
+def renameListOfDictKeys(myDictionaryList,keyRenameDictionary):
+    print("myDictionaryList: ",myDictionaryList)
+    if myDictionaryList == '[]':
+        print("value is an empty list")
+        return []  
+    else: 
+        myDictionaryList = list(eval(myDictionaryList))
+        for d in myDictionaryList:
+            print("value is not an empty list:", d)
+            for k, v in list(d.items()):
+                d[keyRenameDictionary.get(k, k)] = d.pop(k)
+
+        return myDictionaryList
+
+def mapArrayOfStrings(myStringArray,stringMapDictionary):
+    print("myStringArray: ",myStringArray)
+    print(type(myStringArray))
+    if myStringArray == '[]':
+        print("value is an empty list")
+        return []  
+    else: 
+        #myStringArray = myStringArray.strip('][').split(', ') # convert to true list instead of stringified list
+        myStringArray = myStringArray.replace("'","\"")
+        print("myStringArray: ",myStringArray)
+        print(type(myStringArray))
+        myStringArray = json.loads(myStringArray)
+        print("myStringArray: ",myStringArray)
+        print(type(myStringArray))
+        myStringArray = [stringMapDictionary.get(i,i) for i in myStringArray]
+        print("myStringArray updated: ",myStringArray)
+        return myStringArray
+
+def deleteEmptyStringInArrayOfStrings(myStringArray):
+    print("myStringArray: ",myStringArray)
+    print(type(myStringArray))
+    if myStringArray:
+        if myStringArray == '[]':
+            print("value is an empty list")
+            return []  
+        else: 
+            if not isinstance(myStringArray, list):
+                print("array is not a list type - converting to list")
+                myStringArray = myStringArray.replace("'","\"") # shouldn't be harmful to run this even if no single quotes
+                print("myStringArray: ",myStringArray)
+                print(type(myStringArray))
+                myStringArray = json.loads(myStringArray)
+                print("myStringArray: ",myStringArray)
+                print(type(myStringArray))
+            else: 
+                print("array is a list type")
+            
+            myStringArray = [i for i in myStringArray if i]
+            print("myStringArray updated: ",myStringArray)
+            return myStringArray
+    else: 
+        print("value is an empty list")
+        return []
 
 def getPositionOfWidgetInLayout(layout,getWidget):
     if layout is not None:

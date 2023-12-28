@@ -48,6 +48,13 @@ schema_resource_tracker = {
     "title": "HEAL Resource Tracker",
     "version": "0.3.0",
     "properties": {
+        "schemaVersion": {
+            "title": "Schema version",
+            "description": "Version of the overall schema (for each entry/row in the tracker) used at time of annotation; auto-populated equal to the value of the schemaVersion key for the overall schema.",
+            "type": "string",
+            #"const": "v0.3.0",
+            "priority": "schema, auto"
+        },
         "resourceId": {
             "title": "Resource ID",
             "description": "Unique ID assigned to each resource file; If using the DSC Data Packaging Tool to annotate your resource(s), these IDs will be auto-assigned based on resources already existing in your working Data Package Directory. Auto-assignment of IDs occurs by searching the directory for any resource annotation files already saved, identifying the resource ID with the highest resource ID number, and adding 1 to that number to get the resource ID number and unique resource ID for the current resource.", 
@@ -330,6 +337,7 @@ schema_resource_tracker = {
             "type": "string",
             "priority": "resource tracker, auto"
         }
+        
     }
 }
 

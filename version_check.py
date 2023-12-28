@@ -163,7 +163,29 @@ def version_check(workingDataPkgDir):
     strTimeStamp = str(pd.Timestamp("now")).replace(" ","-").replace(":","-").replace(".","-")
     outFilename = "update-check-" + strTimeStamp + ".csv"
     collectDf.to_csv(os.path.join(saveUpdateStatusDir,outFilename), index = False)  
+    
+    message = ""
+    if "No" in collectDf["upToDate"].values:
+        messageDf1 = collectDf[collectDf["upToDate"] == "No"]
+        message = message + "<br>1. Out of " + collectDf.shape[0] + " total files, " + messageDf1.shape[0] + " files are NOT up to date."
+        
+        if "Yes" in messageDf1["canBeUpdated"]:
+            messageDf2 = messageDf1[messageDf1["canBeUpdated"] == "Yes"]
+            message = message + "<br>2. Out of " + messageDf1.shape[0] + " total files that are NOT up to date, " + messageDf2.shape[0] + " files can be updated based on available version mapping files."
+        
+            if "Yes" in messageDf2["canBeUpdatedFully"]:
+                messageDf3 = messageDf2[messageDf2["canBeUpdatedFully"] == "Yes"]
+                message = message + "<br>2. Out of " + messageDf2.shape[0] + " total files that are NOT up to date and can be updated, " + messageDf3.shape[0] + " files can be fully updated based on available version mapping files - Updating will update these files to the latest/current schema version."
+
+            else: 
+                message = message + "<br>2. Out of " + messageDf2.shape[0] + " total files that are NOT up to date and can be update, 0 files can be fully updated based on available version mapping files - Updating these files to latest/current schema version will require that version mapping files be updated to reflect mapping to latest/current schema versions."
 
 
+        else:
+            message = message + "<br>2. Out of " + messageDf1.shape[0] + " total files that are NOT up to date, 0 files can be updated based on available version mapping files."
+        
+    else: 
+        message = message + "All files are up to date"        
 
+    return message
     

@@ -165,31 +165,35 @@ def version_check(workingDataPkgDir):
     collectDf.to_csv(os.path.join(saveUpdateStatusDir,outFilename), index = False)  
     
     message = ""
+
+    print(collectDf.shape[0])
+
     if "No" in collectDf["upToDate"].values:
 
         allUpToDate = False
 
         messageDf1 = collectDf[collectDf["upToDate"] == "No"]
-        message = message + "<br>1. Out of " + collectDf.shape[0] + " total files, " + messageDf1.shape[0] + " files are NOT up to date."
+        message = message + "<br>1. Out of " + str(collectDf.shape[0]) + " total dsc-pkg files, " + str(messageDf1.shape[0]) + " files are NOT up to date."
         
-        if "Yes" in messageDf1["canBeUpdated"]:
+        if "Yes" in messageDf1["canBeUpdated"].values:
             messageDf2 = messageDf1[messageDf1["canBeUpdated"] == "Yes"]
-            message = message + "<br>2. Out of " + messageDf1.shape[0] + " total files that are NOT up to date, " + messageDf2.shape[0] + " files can be updated based on available version mapping files."
+            message = message + "<br>2. Out of " + str(messageDf1.shape[0]) + " total dsc-pkg files that are NOT up to date, " + str(messageDf2.shape[0]) + " files can be updated based on available version mapping files."
         
-            if "Yes" in messageDf2["canBeUpdatedFully"]:
+            if "Yes" in messageDf2["canBeUpdatedFully"].values:
                 messageDf3 = messageDf2[messageDf2["canBeUpdatedFully"] == "Yes"]
-                message = message + "<br>2. Out of " + messageDf2.shape[0] + " total files that are NOT up to date and can be updated, " + messageDf3.shape[0] + " files can be fully updated based on available version mapping files - Updating will update these files to the latest/current schema version."
+                message = message + "<br>2. Out of " + str(messageDf2.shape[0]) + " total dsc-pkg files that are NOT up to date and can be updated, " + str(messageDf3.shape[0]) + " files can be fully updated based on available version mapping files - Updating will update these files to the latest/current schema version."
 
             else: 
-                message = message + "<br>2. Out of " + messageDf2.shape[0] + " total files that are NOT up to date and can be update, 0 files can be fully updated based on available version mapping files - Updating these files to latest/current schema version will require that version mapping files be updated to reflect mapping to latest/current schema versions."
+                message = message + "<br>2. Out of " + str(messageDf2.shape[0]) + " total dsc-pkg files that are NOT up to date and can be updated, 0 files can be fully updated based on available version mapping files - Updating these files to latest/current schema version will require that version mapping files be updated to reflect mapping to latest/current schema versions."
 
 
         else:
-            message = message + "<br>2. Out of " + messageDf1.shape[0] + " total files that are NOT up to date, 0 files can be updated based on available version mapping files."
-        
+            message = message + "<br>2. Out of " + str(messageDf1.shape[0]) + " total dsc-pkg files that are NOT up to date, 0 files can be updated based on available version mapping files."
+            print(messageDf1["canBeUpdated"])
+            print("Yes" in messageDf1["canBeUpdated"])
     else: 
         allUpToDate = True
-        message = message + "All files are up to date"        
+        message = message + "All dsc-pkg files are up to date"        
 
     return [allUpToDate, message]
     

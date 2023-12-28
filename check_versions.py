@@ -16,11 +16,20 @@ getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-
 # you're going to save this in the no user access folder since this is essentially an operational file
 saveUpdateStatusDir = os.path.join(getDir,"no-user-access")
 
+# add a little check to make sure the operational file no user access folder exists and if not, create it
+# these operational files and the folder to store them were a later addition
 if os.path.isdir(saveUpdateStatusDir):
     print("Exists")
 else:
     print("Doesn't exists")
     os.mkdir(saveUpdateStatusDir)
+
+# add a little check to make sure all the operational files are in the operational file no user access folder
+# since these were saved outside in the working data pkg dir for a short while
+operationalFilesList = ["resources-to-add.csv","annotation-mode-status.csv","share-status.csv"]
+for f in operationalFilesList:
+    if f in os.listdir(getDir):
+        os.rename(os.path.join(getDir,f), os.path.join(saveUpdateStatusDir,f))
 
 trkDict = {
     

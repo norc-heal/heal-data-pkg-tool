@@ -23,6 +23,7 @@ from schema_results_tracker import schema_results_tracker
 
 def read_last_line_txt_file(txtFile):
     #import os
+    #https://www.logilax.com/python-read-last-line-of-file/
     with open(txtFile, "rb") as file:
         try:
             file.seek(-2, os.SEEK_END)

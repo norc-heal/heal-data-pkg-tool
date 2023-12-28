@@ -21,6 +21,19 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+def read_last_line_txt_file(txtFile):
+    #import os
+    with open(txtFile, "rb") as file:
+        try:
+            file.seek(-2, os.SEEK_END)
+            while file.read(1) != b'\n':
+                file.seek(-2, os.SEEK_CUR)
+        except OSError:
+            file.seek(0)
+        last_line = file.readline().decode()
+    
+    return last_line
+
 def unique_cols(df):
     a = df.to_numpy() # df.values (pandas<0.24)
     return (a[0] == a).all(0)

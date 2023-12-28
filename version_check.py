@@ -10,6 +10,7 @@ from packaging import version
 import pandas as pd
 import os
 import json
+import dsc_pkg_utils
 
 def version_check(workingDataPkgDir):
 
@@ -18,22 +19,23 @@ def version_check(workingDataPkgDir):
     getDir = workingDataPkgDir
 
     # you're going to save this in the no user access folder since this is essentially an operational file
-    saveUpdateStatusDir = os.path.join(getDir,"no-user-access")
+    #saveUpdateStatusDir = os.path.join(getDir,"no-user-access")
+    operationalFileSubDir = os.path.join(getDir,"no-user-access")
 
     # add a little check to make sure the operational file no user access folder exists and if not, create it
     # these operational files and the folder to store them were a later addition
-    if os.path.isdir(saveUpdateStatusDir):
+    if os.path.isdir(operationalFileSubDir):
         print("Exists")
     else:
         print("Doesn't exists")
-        os.mkdir(saveUpdateStatusDir)
+        os.mkdir(operationalFileSubDir)
 
     # add a little check to make sure all the operational files are in the operational file no user access folder
     # since these were saved outside in the working data pkg dir for a short while
     operationalFilesList = ["resources-to-add.csv","annotation-mode-status.csv","share-status.csv"]
     for f in operationalFilesList:
         if f in os.listdir(getDir):
-            os.rename(os.path.join(getDir,f), os.path.join(saveUpdateStatusDir,f))
+            os.rename(os.path.join(getDir,f), os.path.join(operationalFileSubDir,f))
 
     trkDict = {
         
@@ -42,6 +44,7 @@ def version_check(workingDataPkgDir):
             "updateSchemaMap": versions_experiment_tracker.fieldNameMap,
             "oneOrMulti":"one",
             "trackerName":"heal-csv-experiment-tracker.csv",
+            "trackerTypeHyphen":"experiment-tracker",
             "jsonTxtPrefix": "exp-trk-exp-"
         },
         "resourceTracker":{
@@ -49,6 +52,7 @@ def version_check(workingDataPkgDir):
             "updateSchemaMap": versions_resource_tracker.fieldNameMap,
             "oneOrMulti": "one",
             "trackerName":"heal-csv-resource-tracker.csv",
+            "trackerTypeHyphen":"resource-tracker",
             "jsonTxtPrefix": "resource-trk-resource-"
         },
         "resultsTracker":{
@@ -56,6 +60,7 @@ def version_check(workingDataPkgDir):
             "updateSchemaMap": versions_results_tracker.fieldNameMap,
             "oneOrMulti": "multi",
             "trackerName":"heal-csv-results-tracker-",
+            "trackerTypeHyphen":"results-tracker",
             "jsonTxtPrefix": "result-trk-result-"
         }
         
@@ -102,32 +107,54 @@ def version_check(workingDataPkgDir):
             jsonTxtTypeList = ["json txt"] * len(jsonTxtPathList)
 
         if ((trkPathList) and (jsonTxtPathList)):
+            print("both")
             pathList = trkPathList + jsonTxtPathList
             typeList = trkTypeList + jsonTxtTypeList
         else:
             if trkPathList:
+                print("only trk")
                 pathList = trkPathList
                 typeList = trkTypeList
             elif jsonTxtPathList:
+                print("only json txt")
                 pathList = jsonTxtPathList
                 typeList = jsonTxtTypeList
             else:
+                print("neither")
                 print("no files for ",key,"; moving on to next file type")
                 continue
 
         for p,t in zip(pathList,typeList):  
             if t == "tracker":
                 trkDf = pd.read_csv(p)
-                if "schemaVersion" not in trkDf:
-                    fileVersion = "0.1.0" 
+                if "schemaVersion" not in trkDf.columns:
+                    print("schemaVersion NOT in df cols")
+                    fileVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
                 else:
-                    fileVersion = trkDf["schemaVersion"][0]
+                    print("schemaVersion in df cols")
+                    if trkDf.empty:
+                        print("df empty")
+
+                        refSchemaVersionFileName = "schema-version-" + trkDict[key]["trackerTypeHyphen"] + ".txt"
+                        refSchemaVersionFilePath = os.path.join(operationalFileSubDir,refSchemaVersionFileName)
+                        print(refSchemaVersionFilePath)
+
+                        if os.path.isfile(refSchemaVersionFilePath):
+                            print("ref schema version file exists")
+                            fileVersion = dsc_pkg_utils.read_last_line_txt_file(refSchemaVersionFilePath)
+                            print("fileVersion: ",fileVersion)
+                        else:
+                            print("ref schema version file does NOT exist")
+                            fileVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
+                    else:
+                        print("df not empty") 
+                        fileVersion = trkDf["schemaVersion"][0]
             elif t == "json txt":
                 with open(p, 'r') as file:
                     # Load JSON data from file
                     data = json.load(file)
                 if "schemaVersion" not in list(data.keys()):
-                    fileVersion = "0.1.0" 
+                    fileVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
                 else:
                     fileVersion = data["schemaVersion"]
 
@@ -162,7 +189,7 @@ def version_check(workingDataPkgDir):
     collectDf['updateCheckDateTime'] = pd.Timestamp("now")
     strTimeStamp = str(pd.Timestamp("now")).replace(" ","-").replace(":","-").replace(".","-")
     outFilename = "update-check-" + strTimeStamp + ".csv"
-    collectDf.to_csv(os.path.join(saveUpdateStatusDir,outFilename), index = False)  
+    collectDf.to_csv(os.path.join(operationalFileSubDir,outFilename), index = False)  
     
     message = ""
 

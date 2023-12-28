@@ -899,6 +899,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             print("collect_df_cols: ", collect_df_cols)
 
             # check if none of the resulst have an associated pub - if none have an associated pub, set explode to False
+            explode = True
             if collect_df["associatedFilePublication"][0] == []:
                 if collect_df.shape[0] == 1:
                     explode = False
@@ -980,7 +981,10 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             else: 
                 trkCreate = []
 
-            publicationFileList = publicationFileList + ["collect-all"]
+            if explode:
+                publicationFileList = publicationFileList + ["collect-all"]
+            else:
+                publicationFileList = ["collect-all"] 
 
             print("publicationFileList: ", publicationFileList)
             print("finalResultsTrkFileList: ",finalResultsTrkFileList)

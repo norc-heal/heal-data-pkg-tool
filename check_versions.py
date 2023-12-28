@@ -13,6 +13,14 @@ import json
 
 # get the working data package dir path
 getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg-first"
+# you're going to save this in the no user access folder since this is essentially an operational file
+saveUpdateStatusDir = os.path.join(getDir,"no-user-access")
+
+if os.path.isdir(saveUpdateStatusDir):
+    print("Exists")
+else:
+    print("Doesn't exists")
+    os.mkdir(saveUpdateStatusDir)
 
 trkDict = {
     
@@ -141,7 +149,7 @@ for key in trkDict:
 collectDf['updateCheckDateTime'] = pd.Timestamp("now")
 strTimeStamp = str(pd.Timestamp("now")).replace(" ","-").replace(":","-").replace(".","-")
 outFilename = "update-check-" + strTimeStamp + ".csv"
-collectDf.to_csv(os.path.join(getDir,outFilename), index = False)  
+collectDf.to_csv(os.path.join(saveUpdateStatusDir,outFilename), index = False)  
 
 
 

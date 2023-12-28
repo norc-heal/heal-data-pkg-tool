@@ -21,6 +21,10 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+def unique_cols(df):
+    a = df.to_numpy() # df.values (pandas<0.24)
+    return (a[0] == a).all(0)
+    
 def renameDictKeys(myDictionary,keyRenameDictionary):
     print("myDictionary: ",myDictionary)
     for k, v in list(myDictionary.items()):

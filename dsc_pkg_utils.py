@@ -564,15 +564,27 @@ def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path
         print("Directory '%s' can not be created - check to see if the directory already exists")
         return
 
+    # create a no user access subdir in working data pkg dir for operational files
+    operationalFileSubDir = os.path.join(pkg_path,"no-user-access")
+    os.mkdir(os.path.join(operationalFileSubDir))
+        
+    metadataTypeList = ["experiment-tracker", "resource-tracker","results-tracker"]
+    metadataSchemaVersionList = [schema_experiment_tracker["version"], schema_resource_tracker["version"], schema_results_tracker["version"]]
     
-    #destination_folder = pkg_path
-    
+    for metadataType, metadataSchemaVersion in zip(metadataTypeList,metadataSchemaVersionList):
 
-    for metadataType in ["experiment-tracker", "resource-tracker"]:
+        versionTxtFileName = "schema-version-" + metadataType + ".txt"
+        with open(os.path.join(operationalFileSubDir,versionTxtFileName), "w") as text_file:
+            text_file.write(metadataSchemaVersion)
+
         props = heal_metadata_json_schema_properties(metadataType=metadataType)
         df = empty_df_from_json_schema_properties(jsonSchemaProperties=props)
 
-        fName = "heal-csv-" + metadataType + ".csv"
+        if metadataType == "results-tracker":
+            fName = "heal-csv-" + metadataType + "-collect-all.csv"
+        else:
+            fName = "heal-csv-" + metadataType + ".csv"
+        
         df.to_csv(os.path.join(pkg_path, fName), index = False) 
 
     return pkg_path

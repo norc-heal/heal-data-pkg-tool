@@ -181,10 +181,10 @@ def version_check(workingDataPkgDir):
         
             if "Yes" in messageDf2["canBeUpdatedFully"].values:
                 messageDf3 = messageDf2[messageDf2["canBeUpdatedFully"] == "Yes"]
-                message = message + "<br>2. Out of " + str(messageDf2.shape[0]) + " total dsc-pkg files that are NOT up to date and can be updated, " + str(messageDf3.shape[0]) + " files can be fully updated based on available version mapping files - Updating will update these files to the latest/current schema version."
+                message = message + "<br>3. Out of " + str(messageDf2.shape[0]) + " total dsc-pkg files that are NOT up to date and can be updated, " + str(messageDf3.shape[0]) + " files can be fully updated based on available version mapping files - Updating will update these files to the latest/current schema version."
 
             else: 
-                message = message + "<br>2. Out of " + str(messageDf2.shape[0]) + " total dsc-pkg files that are NOT up to date and can be updated, 0 files can be fully updated based on available version mapping files - Updating these files to latest/current schema version will require that version mapping files be updated to reflect mapping to latest/current schema versions."
+                message = message + "<br>3. Out of " + str(messageDf2.shape[0]) + " total dsc-pkg files that are NOT up to date and can be updated, 0 files can be fully updated based on available version mapping files - Updating these files to latest/current schema version will require that version mapping files be updated to reflect mapping to latest/current schema versions."
 
 
         else:

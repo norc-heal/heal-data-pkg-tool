@@ -898,10 +898,21 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             collect_df_cols = list(collect_df.columns)
             print("collect_df_cols: ", collect_df_cols)
 
-            myDummies = collect_df["associatedFilePublication"].str.join('|').str.get_dummies()
-            print(list(myDummies.columns))
+            # check if none of the resulst have an associated pub - if none have an associated pub, set explode to False
+            if collect_df["associatedFilePublication"][0] == []:
+                if collect_df.shape[0] == 1:
+                    explode = False
+                elif collect_df.shape[0] > 1:
+                    check = all([True if v==[] else False for v in df2["file_list"]])
+                    if check:
+                        explode = False
 
-            collect_df = pd.concat([collect_df, myDummies], axis = 1)
+            # if at least one result has at least one associated pub create dummies for associated pub and add them to the collect df
+            if explode: 
+                myDummies = collect_df["associatedFilePublication"].str.join('|').str.get_dummies()
+                print(list(myDummies.columns))
+                collect_df = pd.concat([collect_df, myDummies], axis = 1)
+            
             # add dummy var collect-all equal to 1 for all result entries; all results should be written to the collect-all results tracker
             collect_df["collect-all"] = 1
 
@@ -917,13 +928,21 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             #else:
             #    resultsTrkFileStemList = []
 
-            publicationFileList = collect_df["associatedFilePublication"].explode().unique().tolist()
-            print("publication file list: ",publicationFileList)
-            publicationFileStemList = [Path(filename).stem for filename in publicationFileList]
-            print(publicationFileStemList)
-            finalResultsTrkFileStemList = ["heal-csv-results-tracker-"+ filename + ".csv" for filename in publicationFileStemList]
-            # add the collect-all results tracker to the final results tracker list
-            finalResultsTrkFileStemList = finalResultsTrkFileStemList + ["heal-csv-results-tracker-collect-all.csv"]
+            # if at least one result has at least one assoc pub get the list of unique assoc pubs and 
+            # unique results tracker file names needed to accomodate these results, then add the collect all results tracker
+            # if none of the results have any assoc pub, just add the collect all results tracker to the list of 
+            # unique results tracker file names needed to accomodate these results
+            if explode: 
+                publicationFileList = collect_df["associatedFilePublication"].explode().unique().tolist()
+                print("publication file list: ",publicationFileList)
+                publicationFileStemList = [Path(filename).stem for filename in publicationFileList]
+                print(publicationFileStemList)
+                finalResultsTrkFileStemList = ["heal-csv-results-tracker-"+ filename + ".csv" for filename in publicationFileStemList]
+                # add the collect-all results tracker to the final results tracker list
+                finalResultsTrkFileStemList = finalResultsTrkFileStemList + ["heal-csv-results-tracker-collect-all.csv"]
+            else:
+                finalResultsTrkFileStemList = ["heal-csv-results-tracker-collect-all.csv"]
+            
             finalResultsTrkFileList = [os.path.join(dscDirPath,filename) for filename in finalResultsTrkFileStemList]
             print("result tracker file list: ", resultsTrkFileList)
             print("final result tracker file list: ", finalResultsTrkFileList)

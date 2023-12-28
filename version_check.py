@@ -166,6 +166,9 @@ def version_check(workingDataPkgDir):
     
     message = ""
     if "No" in collectDf["upToDate"].values:
+
+        allUpToDate = False
+
         messageDf1 = collectDf[collectDf["upToDate"] == "No"]
         message = message + "<br>1. Out of " + collectDf.shape[0] + " total files, " + messageDf1.shape[0] + " files are NOT up to date."
         
@@ -185,7 +188,8 @@ def version_check(workingDataPkgDir):
             message = message + "<br>2. Out of " + messageDf1.shape[0] + " total files that are NOT up to date, 0 files can be updated based on available version mapping files."
         
     else: 
+        allUpToDate = True
         message = message + "All files are up to date"        
 
-    return message
+    return [allUpToDate, message]
     

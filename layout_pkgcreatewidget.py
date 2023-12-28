@@ -120,8 +120,8 @@ class PkgCreateWindow(QtWidgets.QMainWindow):
 
         versionCheck = version_check.version_check(self.pkgPath)
         
-        versionCheckAllUpToDate = version_check[0]
-        versionCheckMessageText = version_check[1]
+        versionCheckAllUpToDate = versionCheck[0]
+        versionCheckMessageText = versionCheck[1]
 
         messageText = "<br>" + versionCheckMessageText
         

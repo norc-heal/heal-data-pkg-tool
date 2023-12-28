@@ -25,6 +25,8 @@ import pipe
 import dsc_pkg_utils # local module, no pip install needed
 from layout_csveditwidget import CSVEditWindow
 
+import version_check
+
 class PkgCreateWindow(QtWidgets.QMainWindow):
 
     def __init__(self, workingDataPkgDirDisplay):
@@ -115,5 +117,19 @@ class PkgCreateWindow(QtWidgets.QMainWindow):
 
         self.pkgPath = pkgPath
         self.workingDataPkgDirDisplay.setText(self.pkgPath)
+
+        versionCheck = version_check.version_check(self.pkgPath)
+        
+        versionCheckAllUpToDate = version_check[0]
+        versionCheckMessageText = version_check[1]
+
+        messageText = "<br>" + versionCheckMessageText
+        
+        if versionCheckAllUpToDate:
+            saveFormat = '<span style="color:green;">{}</span>'
+        else:
+            saveFormat = '<span style="color:red;">{}</span>'
+
+        self.userMessageBox.append(saveFormat.format(messageText)) 
 
     

@@ -737,23 +737,25 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
                     restrk_m_datetime = datetime.datetime.fromtimestamp(restrk_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
                     print("restrk_m_datetime: ", restrk_m_datetime)
 
-                    add_to_df_dict = {#"resultId":[resource_id],
-                                    "experimentIdNumber": [int(IdNumStr)],  
-                                    #"annotationCreateDateTime": [restrk_c_datetime],
-                                    #"annotationModDateTime": [restrk_m_datetime],
-                                    "annotationModTimeStamp": [restrk_m_timestamp]}
+                    # add_to_df_dict = {#"resultId":[resource_id],
+                    #                 "experimentIdNumber": [int(IdNumStr)],  
+                    #                 #"annotationCreateDateTime": [restrk_c_datetime],
+                    #                 #"annotationModDateTime": [restrk_m_datetime],
+                    #                 "annotationModTimeStamp": [restrk_m_timestamp]}
 
 
-                    add_to_df = pd.DataFrame(add_to_df_dict)
+                    # add_to_df = pd.DataFrame(add_to_df_dict)
 
                     # convert json to pd df
                     df = pd.json_normalize(data) # df is a one row dataframe
                     print(df)
                     df["annotationCreateDateTime"][0] = restrk_c_datetime
                     df["annotationModDateTime"][0] = restrk_m_datetime
+                    df["experimentIdNumber"][0] = int(IdNumStr)
+                    df["annotationModTimeStamp"] = restrk_m_timestamp
                     print(df)
-                    df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
-                    print(df)
+                    # df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
+                    # print(df)
 
                     collect_df = pd.concat([collect_df,df], axis=0) # add this files data to the dataframe that will collect data across all valid data files
                     print("collect_df rows: ", collect_df.shape[0])

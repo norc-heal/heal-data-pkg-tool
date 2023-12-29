@@ -23,6 +23,36 @@ from schema_results_tracker import schema_results_tracker
 
 from packaging import version
 
+
+
+
+def copyDataPkgDirToUpdate(workingDataPkgDir):
+    getDir = workingDataPkgDir
+    getDirPath = pathlib.Path(getDir)
+
+    # get the stem/name of the working data package dir so that can reproduce it (e.g. may be dsc-pkg-my-study instead of just dsc-pkg, or dsc-pkg name may change over time)
+    getDirName = getDirPath.stem
+
+    # get the parent dir of the working data package dir path (should be the overall study folder)
+    getParentOfDirPath = getDirPath.parent
+
+    # in the overall study folder copy the working data pkg dir contents to an update in progress version of the working data pkg dir
+    getUpdateDirName = getDirName + "-update-in-progress" 
+    getUpdateDirPath = os.path.join(getParentOfDirPath,getUpdateDirName)
+
+    # path to source directory
+    src_dir = getDir
+    # path to destination directory
+    dest_dir = getUpdateDirPath
+
+    if os.path.isdir(dest_dir):
+        return False
+    else:
+        # copy all contents of src to dest
+        shutil.copytree(src_dir, dest_dir)
+        return True
+
+
 def checkTrackerCreatedSchemaVersionAgainstCurrent(self,trackerTypeFileNameString,trackerTypeMessageString):
     # check self.schemaVersion against version in operational schema version file 
     # if no operational schema version file exists OR 

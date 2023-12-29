@@ -54,7 +54,7 @@ def checkTrackerCreatedSchemaVersionAgainstCurrent(self,trackerTypeFileNameStrin
 
     if trackerCreatedSchemaVersionParse != currentTrackerVersionParse:
         if trackerCreatedSchemaVersionParse < currentTrackerVersionParse:
-            messageText = "<br>The " + trackerTypeMessageString + " file in your working Data Package Directory was created under an outdated schema version. Update of tracker version is needed before new annotations can be added. Head to the \"Data Package\" tab >> \"Audit & Update\" sub-tab to update, then come back and try again. <br>"
+            messageText = "<br>The " + trackerTypeMessageString + " file in your working Data Package Directory was created under an outdated schema version. Update of tracker version is needed before new annotations can be added or existing annotations can be edited. Head to the \"Data Package\" tab >> \"Audit & Update\" sub-tab to update, then come back and try again. <br>"
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
             return False

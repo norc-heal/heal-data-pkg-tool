@@ -48,6 +48,13 @@
 fieldNameMap = {
     "latestVersion":"0.3.0",
     "properties":{
+        "schemaVersion":{
+            "formerNames": [],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
+        },
         "resultId":{
             "formerNames": ["result.id"],
             "deprecated": False

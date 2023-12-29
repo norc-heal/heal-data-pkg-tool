@@ -46,8 +46,15 @@
 
 
 fieldNameMap = {
-    "latestVersion":"0.2.0",
+    "latestVersion":"0.3.0",
     "properties":{
+        "schemaVersion":{
+            "formerNames": [],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
+        },
         "experimentId":{
             "formerNames": ["experiment.id"],
             "deprecated": False

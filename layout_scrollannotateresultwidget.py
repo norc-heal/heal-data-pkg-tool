@@ -39,6 +39,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         self.workingDataPkgDir = workingDataPkgDir
         self.mode = mode
+        self.schemaVersion = schema_results_tracker["version"]
         self.initUI()
 
     def initUI(self):
@@ -73,6 +74,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         self.form = self.builder.create_form(self.ui_schema)
         
         self.formDefaultState = {
+            "schemaVersion": self.schemaVersion,
             "resultId": "result-1",
             "experimentNameBelongsTo": "default-experiment-name"
         }

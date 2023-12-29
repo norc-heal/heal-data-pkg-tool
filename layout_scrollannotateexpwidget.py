@@ -40,6 +40,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         self.workingDataPkgDir = workingDataPkgDir
         self.mode = mode
+        self.schemaVersion = schema_experiment_tracker["version"]
         self.initUI()
 
     def initUI(self):
@@ -62,6 +63,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         self.form = self.builder.create_form(self.ui_schema)
         
         self.formDefaultState = {
+            "schemaVersion": self.schemaVersion,
             "experimentId": "exp-1",
             "experimentName": "default-experiment-name"
         }

@@ -47,6 +47,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         else:
             self.resetForFormSetState = False
         self.annotationMode = annotationMode
+        self.schemaVersion = schema_resource_tracker["version"]
         self.initUI()
         #self.load_file()
 
@@ -81,6 +82,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.form = self.builder.create_form(self.ui_schema)
         
         self.formDefaultState = {
+            "schemaVersion": self.schemaVersion,
             "resourceId": "resource-1",
             "experimentNameBelongsTo": "default-experiment-name",
             #"expBelongsTo": "exp-999",

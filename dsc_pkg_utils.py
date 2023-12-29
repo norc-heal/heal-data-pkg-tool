@@ -17,11 +17,47 @@ from pathlib import Path
 from healdata_utils.schemas import healjsonschema, healcsvschema
 from healdata_utils.transforms.frictionless import conversion
 
-from schema_resource_tracker import schema_resource_tracker
+from versions_experiment_tracker import fieldNameMap
+from versions_resource_tracker import fieldNameMap
+from versions_results_tracker import fieldNameMap
+
 from schema_experiment_tracker import schema_experiment_tracker
+from schema_resource_tracker import schema_resource_tracker
 from schema_results_tracker import schema_results_tracker
 
 from packaging import version
+
+trkDict = {
+        
+    "experimentTracker":{
+        "schema":schema_experiment_tracker.schema_experiment_tracker,
+        "updateSchemaMap": versions_experiment_tracker.fieldNameMap,
+        "oneOrMulti":"one",
+        "trackerName":"heal-csv-experiment-tracker.csv",
+        "trackerTypeHyphen":"experiment-tracker",
+        "trackerTypeMessageString":"Experiment Tracker",
+        "jsonTxtPrefix": "exp-trk-exp-"
+    },
+    "resourceTracker":{
+        "schema": schema_resource_tracker.schema_resource_tracker,
+        "updateSchemaMap": versions_resource_tracker.fieldNameMap,
+        "oneOrMulti": "one",
+        "trackerName":"heal-csv-resource-tracker.csv",
+        "trackerTypeHyphen":"resource-tracker",
+        "trackerTypeMessageString":"Resource Tracker",
+        "jsonTxtPrefix": "resource-trk-resource-"
+    },
+    "resultsTracker":{
+        "schema": schema_results_tracker.schema_results_tracker,
+        "updateSchemaMap": versions_results_tracker.fieldNameMap,
+        "oneOrMulti": "multi",
+        "trackerName":"heal-csv-results-tracker-",
+        "trackerTypeHyphen":"results-tracker",
+        "trackerTypeMessageString":"Results Tracker",
+        "jsonTxtPrefix": "result-trk-result-"
+    }
+    
+}
 
 def getDataPkgDirStem(workingDataPkgDir):
     getDir = workingDataPkgDir
@@ -52,7 +88,7 @@ def getDataPkgDirToUpdate(workingDataPkgDir):
     # get the parent dir of the working data package dir path (should be the overall study folder)
     #getParentOfDirPath = getDirPath.parent
     getParentOfDirPath = getDataPkgDirParent(workingDataPkgDir=getDir)
-    
+
     # in the overall study folder copy the working data pkg dir contents to an update in progress version of the working data pkg dir
     getUpdateDirName = getDirName + "-update-in-progress" 
     getUpdateDirPath = os.path.join(getParentOfDirPath,getUpdateDirName)

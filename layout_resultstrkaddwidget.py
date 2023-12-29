@@ -32,6 +32,8 @@ from schema_results_tracker import schema_results_tracker
 from healdata_utils.validators.jsonschema import validate_against_jsonschema
 import datetime
 
+from packaging import version
+
 
 class ResultsTrkAddWindow(QtWidgets.QMainWindow):
 
@@ -39,6 +41,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.w = None  # No external window yet.
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
+        self.schemaVersion = schema_results_tracker["version"]
         
         widget = QtWidgets.QWidget()
         
@@ -100,6 +103,39 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         # check if user has set a working data package dir - if not exit gracefully with informative message
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
+
+        
+        # check self.schemaVersion against version in operational schema version file 
+        # if no operational schema version file exists OR 
+        # if version in operational schema version file is less than self.schemaVersion 
+        # return with message that update of tracker version is needed before new annotations can be added
+        operationalFileSubDir = os.path.join(self.workingDataPkgDir,"no-user-access")
+        trackerCreatedSchemaVersionFile = os.path.join(operationalFileSubDir,"schema-version-results-tracker.csv")
+        if os.isdir(operationalFileSubDir):
+            if os.isfile(trackerCreatedSchemaVersionFile):
+                trackerCreatedSchemaVersion = dsc_pkg_utils.read_last_line_txt_file(trackerCreatedSchemaVersionFile)
+            else:
+                trackerCreatedSchemaVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
+        else: 
+            trackerCreatedSchemaVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
+
+        trackerCreatedSchemaVersionParse = version.parse(trackerCreatedSchemaVersion)
+        currentTrackerVersionParse = version.parse(self.schemaVersion)
+
+        if trackerCreatedSchemaVersionParse != currentTrackerVersionParse:
+            if trackerCreatedSchemaVersionParse < currentTrackerVersionParse:
+                messageText = "<br>The Results Tracker file in your working Data Package Directory was created under an outdated schema version. Update of tracker version is needed before new annotations can be added. Head to the \"Data Package\" tab >> \"Audit & Update\" sub-tab to update, then come back and try again. <br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+            else:
+                messageText = "<br>It appears that The Results Tracker file in your working Data Package Directory was created under a schema version that is later than the current schema version. Something is not right. Please reach out to the DSC team for help. <br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+
+         
 
         # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property (in this case for validation purposes) so perform some checks
 

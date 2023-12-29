@@ -57,11 +57,17 @@ fieldNameMap = {
         },
         "resultId":{
             "formerNames": ["result.id"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "description":{
             "formerNames":[],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "category":{
             "formerNames":[],
@@ -99,6 +105,20 @@ fieldNameMap = {
         "annotationModDateTime":{
             "formerNames": ["restrk.mod.date.time"],
             "deprecated": False
+        },
+        "resultIdNumber":{
+            "formerNames": ["result.id.num"],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
+        },
+        "annotationModTimeStamp":{
+            "formerNames": ["restrk.mod.time.stamp"],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         }
     }
 }

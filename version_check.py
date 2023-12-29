@@ -222,5 +222,5 @@ def version_check(workingDataPkgDir):
         allUpToDate = True
         message = message + "All dsc-pkg files are up to date"        
 
-    return [allUpToDate, message]
+    return [allUpToDate, message, collectDf]
     

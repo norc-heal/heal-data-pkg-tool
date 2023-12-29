@@ -6,9 +6,8 @@ schema_experiment_tracker = {
     "properties": {
         "schemaVersion": {
             "title": "Schema version",
-            "description": "Version of the overall schema (for each entry/row in the tracker) used at time of annotation; auto-populated equal to the value of the schemaVersion key for the overall schema.",
+            "description": "Version of the overall schema (for each entry/row in the tracker) used at time of annotation; auto-populated equal to the value of the version key for the overall schema; should be constant for all rows in tracker.",
             "type": "string",
-            #"const": "v0.3.0",
             "priority": "schema, auto"
         },
         "experimentId": {

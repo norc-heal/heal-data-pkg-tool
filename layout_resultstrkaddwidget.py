@@ -109,7 +109,6 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         # if no operational schema version file exists OR 
         # if version in operational schema version file is less than self.schemaVersion 
         # return with message that update of tracker version is needed before new annotations can be added
-
         if not dsc_pkg_utils.checkTrackerCreatedSchemaVersionAgainstCurrent(self=self,trackerTypeFileNameString="results-tracker",trackerTypeMessageString="Results Tracker"):
             return
 
@@ -175,6 +174,13 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
 
+        # check self.schemaVersion against version in operational schema version file 
+        # if no operational schema version file exists OR 
+        # if version in operational schema version file is less than self.schemaVersion 
+        # return with message that update of tracker version is needed before new annotations can be added
+        if not dsc_pkg_utils.checkTrackerCreatedSchemaVersionAgainstCurrent(self=self,trackerTypeFileNameString="results-tracker",trackerTypeMessageString="Results Tracker"):
+            return
+
         # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property (in this case for validation purposes) so perform some checks
 
         # check that experiment tracker exists in working data pkg dir, if not, return
@@ -209,6 +215,13 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
 
         # check if user has set a working data package dir - if not exit gracefully with informative message
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        # check self.schemaVersion against version in operational schema version file 
+        # if no operational schema version file exists OR 
+        # if version in operational schema version file is less than self.schemaVersion 
+        # return with message that update of tracker version is needed before new annotations can be added
+        if not dsc_pkg_utils.checkTrackerCreatedSchemaVersionAgainstCurrent(self=self,trackerTypeFileNameString="results-tracker",trackerTypeMessageString="Results Tracker"):
             return
 
         # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property so perform some checks

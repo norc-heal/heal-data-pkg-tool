@@ -23,36 +23,51 @@ from schema_results_tracker import schema_results_tracker
 
 from packaging import version
 
-def checkTrackerCreatedSchemaVersionAgainstCurrent(self,trackerTypeString):
+def checkTrackerCreatedSchemaVersionAgainstCurrent(self,trackerTypeFileNameString,trackerTypeMessageString):
     # check self.schemaVersion against version in operational schema version file 
     # if no operational schema version file exists OR 
     # if version in operational schema version file is less than self.schemaVersion 
     # return with message that update of tracker version is needed before new annotations can be added
     operationalFileSubDir = os.path.join(self.workingDataPkgDir,"no-user-access")
-    trackerCreatedSchemaVersionFile = os.path.join(operationalFileSubDir,"schema-version-results-tracker.csv")
-    if os.isdir(operationalFileSubDir):
-        if os.isfile(trackerCreatedSchemaVersionFile):
-            trackerCreatedSchemaVersion = dsc_pkg_utils.read_last_line_txt_file(trackerCreatedSchemaVersionFile)
+    fname = "schema-version-" + trackerTypeFileNameString + ".txt"
+    trackerCreatedSchemaVersionFile = os.path.join(operationalFileSubDir,fname)
+    print(trackerCreatedSchemaVersionFile)
+    if os.path.isdir(operationalFileSubDir):
+        print("oper dir exists")
+        if os.path.isfile(trackerCreatedSchemaVersionFile):
+            print("version file exists")
+            #trackerCreatedSchemaVersion = dsc_pkg_utils.read_last_line_txt_file(trackerCreatedSchemaVersionFile)
+            trackerCreatedSchemaVersion = read_last_line_txt_file(trackerCreatedSchemaVersionFile)
         else:
+            print("version file does not exist")
             trackerCreatedSchemaVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
     else: 
+        print("oper dir does not exist")
         trackerCreatedSchemaVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
 
+    
     trackerCreatedSchemaVersionParse = version.parse(trackerCreatedSchemaVersion)
     currentTrackerVersionParse = version.parse(self.schemaVersion)
 
+    print("trackerCreatedSchemaVersionParse: ",trackerCreatedSchemaVersionParse)
+    print("currentTrackerVersionParse: ",currentTrackerVersionParse)
+
     if trackerCreatedSchemaVersionParse != currentTrackerVersionParse:
         if trackerCreatedSchemaVersionParse < currentTrackerVersionParse:
-            messageText = "<br>The Results Tracker file in your working Data Package Directory was created under an outdated schema version. Update of tracker version is needed before new annotations can be added. Head to the \"Data Package\" tab >> \"Audit & Update\" sub-tab to update, then come back and try again. <br>"
+            messageText = "<br>The " + trackerTypeMessageString + " file in your working Data Package Directory was created under an outdated schema version. Update of tracker version is needed before new annotations can be added. Head to the \"Data Package\" tab >> \"Audit & Update\" sub-tab to update, then come back and try again. <br>"
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
-            return
+            return False
         else:
-            messageText = "<br>It appears that The Results Tracker file in your working Data Package Directory was created under a schema version that is later than the current schema version. Something is not right. Please reach out to the DSC team for help. <br>"
+            messageText = "<br>It appears that the " + trackerTypeMessageString + " file in your working Data Package Directory was created under a schema version that is later than the current schema version. Something is not right. Please reach out to the DSC team for help. <br>"
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
-            return
-
+            return False
+    else:
+        messageText = "<br>The " + trackerTypeMessageString + " file in your working Data Package Directory was created under the current schema version. You may proceed with adding new items.<br>"
+        saveFormat = '<span style="color:green;">{}</span>'
+        self.userMessageBox.append(saveFormat.format(messageText)) 
+        return True
 
 def read_last_line_txt_file(txtFile):
     #import os

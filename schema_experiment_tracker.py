@@ -2,8 +2,15 @@ schema_experiment_tracker = {
     "type": "object",
     "description": "HEAL DSC Core Metadata piece to track and provide basic information about experiment(s) you will perform as part of your HEAL study. Clinical studies will often have only one experiment to report, while basic science studies often have several experiments that are grouped together under a single study.",
     "title": "HEAL Experiment Tracker",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "properties": {
+        "schemaVersion": {
+            "title": "Schema version",
+            "description": "Version of the overall schema (for each entry/row in the tracker) used at time of annotation; auto-populated equal to the value of the schemaVersion key for the overall schema.",
+            "type": "string",
+            #"const": "v0.3.0",
+            "priority": "schema, auto"
+        },
         "experimentId": {
             "title": "Experiment ID",
             "description": "ID assigned to each experiment relevant to the data package; prefix is 'exp-' followed by a number starting with 1 for the first experiment, and iterating by 1 for each successive experiment (i.e. exp-1, exp-2, etc.)",

@@ -7,6 +7,12 @@ schema_results_tracker = {
     "title": "HEAL Results Tracker",
     "version": "0.3.0",
     "properties": {
+        "schemaVersion": {
+            "title": "Schema version",
+            "description": "Version of the overall schema (for each entry/row in the tracker) used at time of annotation; auto-populated equal to the value of the version key for the overall schema; should be constant for all rows in tracker.",
+            "type": "string",
+            "priority": "schema, auto"
+        },
         "resultId": {
             "title": "Result ID",
             "description": "Unique ID assigned to each result; If using the DSC Data Packaging Tool to annotate your result(s), these IDs will be auto-assigned when you use the Add Result Tracker function. Auto-assignment of IDs occurs by searching you working Data Package Directory for any result annotation files already saved, identifying the result ID with the highest result ID number, and adding 1 to that number to get the result ID number and unique result ID for the current result.", 

@@ -21,6 +21,39 @@ from schema_resource_tracker import schema_resource_tracker
 from schema_experiment_tracker import schema_experiment_tracker
 from schema_results_tracker import schema_results_tracker
 
+from packaging import version
+
+def checkTrackerCreatedSchemaVersionAgainstCurrent(self,trackerTypeString):
+    # check self.schemaVersion against version in operational schema version file 
+    # if no operational schema version file exists OR 
+    # if version in operational schema version file is less than self.schemaVersion 
+    # return with message that update of tracker version is needed before new annotations can be added
+    operationalFileSubDir = os.path.join(self.workingDataPkgDir,"no-user-access")
+    trackerCreatedSchemaVersionFile = os.path.join(operationalFileSubDir,"schema-version-results-tracker.csv")
+    if os.isdir(operationalFileSubDir):
+        if os.isfile(trackerCreatedSchemaVersionFile):
+            trackerCreatedSchemaVersion = dsc_pkg_utils.read_last_line_txt_file(trackerCreatedSchemaVersionFile)
+        else:
+            trackerCreatedSchemaVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
+    else: 
+        trackerCreatedSchemaVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
+
+    trackerCreatedSchemaVersionParse = version.parse(trackerCreatedSchemaVersion)
+    currentTrackerVersionParse = version.parse(self.schemaVersion)
+
+    if trackerCreatedSchemaVersionParse != currentTrackerVersionParse:
+        if trackerCreatedSchemaVersionParse < currentTrackerVersionParse:
+            messageText = "<br>The Results Tracker file in your working Data Package Directory was created under an outdated schema version. Update of tracker version is needed before new annotations can be added. Head to the \"Data Package\" tab >> \"Audit & Update\" sub-tab to update, then come back and try again. <br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        else:
+            messageText = "<br>It appears that The Results Tracker file in your working Data Package Directory was created under a schema version that is later than the current schema version. Something is not right. Please reach out to the DSC team for help. <br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+
+
 def read_last_line_txt_file(txtFile):
     #import os
     #https://www.logilax.com/python-read-last-line-of-file/

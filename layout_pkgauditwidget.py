@@ -26,6 +26,7 @@ import dsc_pkg_utils # local module, no pip install needed
 from layout_csveditwidget import CSVEditWindow
 
 import version_check
+import version_update_tracker
 
 class PkgAuditWindow(QtWidgets.QMainWindow):
 
@@ -108,6 +109,9 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
 
                         messageText = "<br>The following csv trackers need to be updated AND can be updated:<br>" + "<br>".join(trackerDfCanBeUpdated["file"].tolist())
                         self.userMessageBox.append(messageText)
+
+                        # update the trackers here
+
                     else:
                         messageText = "<br>None of the csv trackers that need to be updated can be updated. This is likely because schema version mapping files for these trackers are not up to date."
                         self.userMessageBox.append(messageText)

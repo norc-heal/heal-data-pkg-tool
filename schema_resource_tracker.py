@@ -344,6 +344,12 @@ schema_resource_tracker = {
             #"pattern": "^resource-+-*[0-9]*[1-9][0-9]*$",
             "priority": "resource tracker, auto"
         },
+        "resourceModTimeStamp": {
+            "title": "Resource modification datetime timestamp",
+            "description": "Date time at which the resource was last modified, converted to timestamp for easy sorting on datetime; auto-inferred",
+            "type": "string",
+            "priority": "resource tracker, auto"
+        },
         "annotationModTimeStamp": {
             "title": "Resource tracker entry modification datetime timestamp",
             "description": "Date time at which the resource annotation was last modified, converted to timestamp for easy sorting by datetime; auto-inferred",

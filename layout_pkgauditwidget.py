@@ -111,7 +111,26 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                         self.userMessageBox.append(messageText)
 
                         # update the trackers here
+                        trkPathList = trackerDfCanBeUpdated["file"].tolist()
+                        trkTypeCamelCaseList = trackerDfCanBeUpdated["trackerType"].tolist()
+                        trkUpdateStatusList = []
+                        for p,t in zip(trkPathList,trkTypeCamelCaseList):
+                            trkUpdateStatus = version_update_tracker.version_update_tracker(getTrk=p,trackerTypeCamelCase=t)
+                            trkUpdateStatusList.append(trkUpdateStatus)
+                            if trkUpdateStatus:
+                                messageText = "<br>The following " + t + " was successfully updated:<br>" + p + "<br>"
+                                saveFormat = '<span style="color:green;">{}</span>'
+                                self.userMessageBox.append(saveFormat.format(messageText))
+                            else:
+                                messageText = "<br>The following " + t + " was NOT successfully updated:<br>" + p + "<br>"
+                                saveFormat = '<span style="color:red;">{}</span>'
+                                self.userMessageBox.append(saveFormat.format(messageText))
 
+                        # if all trackers of a specific type are successfully updated, update the schema version operational txt file
+                        trkUpdateStatusDf = pd.DataFrame({"trackerType":trkTypeCamelCaseList,"file":trkPathList,"updateStatus":trkUpdateStatusList}) 
+                        for t in trkUpdateStatusDf["trackerType"].unique().tolist():
+                            filterDf = trkUpdateStatusDf[trkUpdateStatusDf["trackerType"] == t]
+                            
                     else:
                         messageText = "<br>None of the csv trackers that need to be updated can be updated. This is likely because schema version mapping files for these trackers are not up to date."
                         self.userMessageBox.append(messageText)

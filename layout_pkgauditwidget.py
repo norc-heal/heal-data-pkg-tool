@@ -91,7 +91,17 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                 saveFormat = '<span style="color:green;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
 
+                # a copy of the working data package dir and the operational subdir has been created in the update in progress dir
+                # need to update the tracker and json txt file paths in collectDf to reflect the versions in the update in progress dir
+                # so that updates will be made to the versions in that dir instead of the original working data pkg dir
+                updateDir = dsc_pkg_utils.getDataPkgDirToUpdate(self.workingDataPkgDir)
 
+                # strip original working data pkg dir from filenames
+                collectDf["file"] = [os.path.basename(p) for p in collectDf["file"]]
+                # add update in progress working data pkg dir to filenames
+                collectDf["file"] = [os.path.join(updateDir,p) for p in collectDf["file"]]
+
+                
             if "tracker" in collectDf["fileType"].values:
                 trackerDf = collectDf[collectDf["fileType"] == "tracker"]
                 
@@ -130,7 +140,12 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                         trkUpdateStatusDf = pd.DataFrame({"trackerType":trkTypeCamelCaseList,"file":trkPathList,"updateStatus":trkUpdateStatusList}) 
                         for t in trkUpdateStatusDf["trackerType"].unique().tolist():
                             filterDf = trkUpdateStatusDf[trkUpdateStatusDf["trackerType"] == t]
-                            
+                            if filterDf["updateStatus"].all():
+                                trackerTypeHypen = dsc_pkg_utils.trkDict[t]["trackerTypeHyphen"]
+                                versionTxtFileName = "schema-version-" + trackerTypeHyphen + ".txt"
+
+                                with open(os.path.join(operationalFileSubDir,versionTxtFileName), "w") as text_file:
+                                    text_file.write(metadataSchemaVersion)
                     else:
                         messageText = "<br>None of the csv trackers that need to be updated can be updated. This is likely because schema version mapping files for these trackers are not up to date."
                         self.userMessageBox.append(messageText)

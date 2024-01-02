@@ -7,36 +7,44 @@ import dsc_pkg_utils
 import json
 import pathlib
 
-from versions_experiment_tracker import fieldNameMap
-from versions_resource_tracker import fieldNameMap
-from versions_results_tracker import fieldNameMap
+# from versions_experiment_tracker import fieldNameMap
+# from versions_resource_tracker import fieldNameMap
+# from versions_results_tracker import fieldNameMap
 
-from schema_experiment_tracker import schema_experiment_tracker
-from schema_resource_tracker import schema_resource_tracker
-from schema_results_tracker import schema_results_tracker
+# from schema_experiment_tracker import schema_experiment_tracker
+# from schema_resource_tracker import schema_resource_tracker
+# from schema_results_tracker import schema_results_tracker
 
-trkDict = dsc_pkg_utils.trkDict
 
-getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg-first"
-getUpdateDir = dsc_pkg_utils.getDataPkgDirToUpdate(workingDataPkgDir=getDir)
 
-getTrk = os.path.join(getUpdateDir,"heal-csv-resource-tracker.csv")
+# getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg-first"
+# getUpdateDir = dsc_pkg_utils.getDataPkgDirToUpdate(workingDataPkgDir=getDir)
+# getTrk = os.path.join(getUpdateDir,"heal-csv-resource-tracker.csv")
 
-def version_update_tracker(getTrk,trackerType):
+def version_update_tracker(getTrk,trackerTypeCamelCase):
 
     # step 0: import tracker
     
     if os.path.isfile(getTrk):
-        print("hi")
+
+        # print("reading in tracker reference dictionary")
+        # trkDict = dsc_pkg_utils.trkDict
+        # print(trkDict)
+        
+        print("reading in tracker")
         trackerDf = pd.read_csv(getTrk)
         trackerDf.fillna("", inplace = True)
-
         print(trackerDf)
+
+        # get the latest schema map version (this could be behind the latest schema version if 
+        # there's not yet a map to the latest version available)
+        #updateSchemaMap = trkDict[trackerTypeCamelCase]["updateSchemaMap"]
+        fieldNameMap = dsc_pkg_utils.trkDict[trackerTypeCamelCase]["updateSchemaMap"]
 
         collectAllFormerNames = []
         collectAllCurrentNamesOrdered = [] # collect a list of current (non-deprecated) property names so that you can re-order based on the 'correct' order at the end of the update
         
-        # step 1: for each schena property, delete deprecated fields, copy/rename undeprecated fields with former names, add new fields  
+        # step 1: for each schema property, delete deprecated fields, copy/rename undeprecated fields with former names, add new fields  
         
         print("working on step 1: updating field names")
         
@@ -53,7 +61,7 @@ def version_update_tracker(getTrk,trackerType):
                 deleteFieldNames = [key]
                 if fieldNameMap["properties"][key]["formerNames"]:
                     deleteFieldNames.extend(fieldNameMap["properties"][key]["formerNames"])
-                resourceTrackerDf.drop(columns=deleteFieldNames, inplace=True, errors="ignore")
+                trackerDf.drop(columns=deleteFieldNames, inplace=True, errors="ignore")
 
             # if deprecated is false
             else:
@@ -67,7 +75,7 @@ def version_update_tracker(getTrk,trackerType):
                     # delete any field with a former field name
                     if fieldNameMap["properties"][key]["formerNames"]:
                         deleteFieldNames = fieldNameMap["properties"][key]["formerNames"]
-                        resourceTrackerDf.drop(columns=deleteFieldNames, inplace=True, errors="ignore")     
+                        trackerDf.drop(columns=deleteFieldNames, inplace=True, errors="ignore")     
                 
                 # if field with current field name does not exist
                 else:
@@ -86,31 +94,34 @@ def version_update_tracker(getTrk,trackerType):
                                 i+=1
                                 if i>1:
                                     print("there is more than one field with a former name for the field currently named: ",key)
-                                    #return 
-                                resourceTrackerDf[key] = resourceTrackerDf[f] 
+                                    return False
+                                trackerDf[key] = trackerDf[f] 
                         
                         # if field with former field name does not exist
                             # create new field with current field name; fill with appropriate empty value
                         if i==0:
-                            propertyType = schema_resource_tracker["properties"][key]["type"]
+                            #propertyType = schema_resource_tracker["properties"][key]["type"]
+                            propertyType = dsc_pkg_utils.trkDict[trackerTypeCamelCase]["schema"]["properties"][key]["type"]
 
                             if propertyType == "string":
-                                resourceTrackerDf[key] = "" # if the property is a string, empty is empty string
+                                trackerDf[key] = "" # if the property is a string, empty is empty string
                             elif propertyType == "array":
-                                resourceTrackerDf[key] = np.empty((len(resourceTrackerDf),0)).tolist() # if the property is an array, empty is empty list
+                                trackerDf[key] = np.empty((len(trackerDf),0)).tolist() # if the property is an array, empty is empty list
                             else:
                                 print("the following schema property is not a string or array type so i don't know how to create a new field with appropriate empty values: ", key)
-                                #return
+                                return False
 
                     # if no former field name(s)
                     #   create new field with current field name; fill with appropriate empty value
                     else: 
-                        propertyType = schema_resource_tracker["properties"][key]["type"]
+                        #propertyType = schema_resource_tracker["properties"][key]["type"]
+                        propertyType = dsc_pkg_utils.trkDict[trackerTypeCamelCase]["schema"]["properties"][key]["type"]
+
                             
                         if propertyType == "string":
-                            resourceTrackerDf[key] = "" # if the property is a string, empty is empty string
+                            trackerDf[key] = "" # if the property is a string, empty is empty string
                         elif propertyType == "array":
-                            resourceTrackerDf[key] = np.empty((len(resourceTrackerDf),0)).tolist()
+                            trackerDf[key] = np.empty((len(trackerDf),0)).tolist()
 
         # while looping through properties, if there were undeprecated fields still using a former field name,
         # that field was copied into a new field with the updated field name (instead of straight re-naming);
@@ -120,7 +131,7 @@ def version_update_tracker(getTrk,trackerType):
         # HOWEVER, this approach means that following the loop through of properties, you have to go ahead and 
         # delete all fields with a former field name that remain in the df
         if collectAllFormerNames:
-            resourceTrackerDf.drop(columns=collectAllFormerNames, inplace=True, errors="ignore")
+            trackerDf.drop(columns=collectAllFormerNames, inplace=True, errors="ignore")
 
         # step 2: update enums
         
@@ -136,7 +147,9 @@ def version_update_tracker(getTrk,trackerType):
                 if ((bool(fieldNameMap["properties"][key]["mapEnum"])) or (bool(fieldNameMap["properties"][key]["deleteEnum"]))):
                     
                     # get type of schema property
-                    propertyType = schema_resource_tracker["properties"][key]["type"]
+                    #propertyType = schema_resource_tracker["properties"][key]["type"]
+                    propertyType = dsc_pkg_utils.trkDict[trackerTypeCamelCase]["schema"]["properties"][key]["type"]
+
                     
                     # if deleteEnums is not empty
                     if fieldNameMap["properties"][key]["deleteEnum"]:
@@ -145,22 +158,22 @@ def version_update_tracker(getTrk,trackerType):
                         
                         if propertyType == "string": # each value in this column of the df is a string
                             # if string value is equal to any of the values from delete list, replace string with empty string
-                            resourceTrackerDf[key] = resourceTrackerDf[key].replace(deleteDict)
+                            trackerDf[key] = trackerDf[key].replace(deleteDict)
                             
                         elif propertyType == "array": # each value in this column of the df is an array of strings
                             
                             # check list/array for any values in delete list, and replace with empty string
                             # then remove any empty strings from list/array 
                             #resourceTrackerDf[key] = [[deleteDict.get(i,i) for i in x] for x in resourceTrackerDf[key]]
-                            resourceTrackerDf[key] = [dsc_pkg_utils.mapArrayOfStrings(x,deleteDict) for x in resourceTrackerDf[key]]
+                            trackerDf[key] = [dsc_pkg_utils.mapArrayOfStrings(x,deleteDict) for x in trackerDf[key]]
 
                             #resourceTrackerDf[key] = [[i for i in x if i] for x in resourceTrackerDf[key]]
-                            resourceTrackerDf[key] = [dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(x) for x in resourceTrackerDf[key]]
+                            trackerDf[key] = [dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(x) for x in trackerDf[key]]
                             
                         
                         else:
                             print(key, " is not a string or array of strings - I don't know how to delete enums for any other property types yet!")
-                    
+                            return False
                     else:
                         print(key, " has no enum deletions to review")
 
@@ -174,18 +187,18 @@ def version_update_tracker(getTrk,trackerType):
 
                         if propertyType == "string": # each value in this column of the df is a string
                             # check if string is equal to any of the former values that have a mapping, if so, replace with mapping
-                            resourceTrackerDf[key] = resourceTrackerDf[key].replace(mapDict)
+                            trackerDf[key] = trackerDf[key].replace(mapDict)
                             
                         elif propertyType == "array": # each value in this column of the df is an array of strings
                             
                             # check list/array for any former values that have a mapping, if so, replace with mapping
                             #resourceTrackerDf[key] = [[mapDict.get(i,i) for i in x] for x in resourceTrackerDf[key]]
-                            resourceTrackerDf[key] = [dsc_pkg_utils.mapArrayOfStrings(x,mapDict) for x in resourceTrackerDf[key]]
+                            trackerDf[key] = [dsc_pkg_utils.mapArrayOfStrings(x,mapDict) for x in trackerDf[key]]
 
 
                         else:
                             print(key, " is not a string or array of strings - I don't know how to map enums for any other property types yet!")
-                    
+                            return False
                     else:
                         print(key, " has no enum mappings to review")
 
@@ -215,12 +228,14 @@ def version_update_tracker(getTrk,trackerType):
                     print("key: ",key,"; subNameDict: ", subNameDict)
                     
                     # get type of schema property
-                    propertyType = schema_resource_tracker["properties"][key]["type"]
+                    #propertyType = schema_resource_tracker["properties"][key]["type"]
+                    propertyType = dsc_pkg_utils.trkDict[trackerTypeCamelCase]["schema"]["properties"][key]["type"]
+
 
                     # if value is a dictionary
                     if propertyType == "object": # each value in this column of the df is a dictionary
                         
-                        resourceTrackerDf[key] = [dsc_pkg_utils.renameDictKeys(x,subNameDict) for x in resourceTrackerDf[key]]
+                        trackerDf[key] = [dsc_pkg_utils.renameDictKeys(x,subNameDict) for x in trackerDf[key]]
 
                     # if value is a list of dictionaries                     
                     elif propertyType == "array": # each value in this column of the df is an array of dictionaries
@@ -228,26 +243,31 @@ def version_update_tracker(getTrk,trackerType):
                         #resourceTrackerDf[key] = [{dsc_pkg_utils.renameDictKeys(i,subNameDict) for i in x} for x in resourceTrackerDf[key]]
                         #resourceTrackerDf.loc[bool(resourceTrackerDf[key]),resourceTrackerDf[key]] = [{dsc_pkg_utils.renameDictKeys(i,subNameDict) for i in x} for x in resourceTrackerDf[key]]
                         #resourceTrackerDf.loc[resourceTrackerDf[key] != '[]',resourceTrackerDf[key]] = [dsc_pkg_utils.renameListOfDictKeys(x,subNameDict) for x in resourceTrackerDf[key]]
-                        resourceTrackerDf[key] = [dsc_pkg_utils.renameListOfDictKeys(x,subNameDict) for x in resourceTrackerDf[key]]
+                        trackerDf[key] = [dsc_pkg_utils.renameListOfDictKeys(x,subNameDict) for x in trackerDf[key]]
                         
                     else:
                         print(key, " is not a dictionary object or an arrary of dictionary objects - I don't know how to map former sub field names for any other property types yet!")
+                        return False
 
         print("reordering to correct order")
-        resourceTrackerDf = resourceTrackerDf[collectAllCurrentNamesOrdered]
+        trackerDf = trackerDf[collectAllCurrentNamesOrdered]
         
         print("adding updated schema version")
-        if "schemaVersion" in resourceTrackerDf.columns:
+        if "schemaVersion" in trackerDf.columns: # it should be at this point, since it should have been added if not already present
             resourceTrackerDf["schemaVersion"] = fieldNameMap["latestVersion"]
         else:
             print("has the name of the schema version property changed from schemaVersion? if so update the script to the new name to add the updated schema version")
+            return False
 
         print("done updating; getting ready to save")          
-        getResourceTrkUpdated = os.path.join(getDir,"heal-csv-resource-tracker-updated.csv")
-        resourceTrackerDf.to_csv(getResourceTrkUpdated, index=False)
+        #getTrkUpdated = os.path.join(getDir,"heal-csv-resource-tracker-updated.csv")
+        trackerDf.to_csv(getTrk, index=False)
 
         print("saved")
+        return True
 
+    else:
+        return False
 
     #       replace keys in list of dictionaries according to the mapping in formerSubNames
     #       (https://stackoverflow.com/questions/54637847/how-to-change-dictionary-keys-in-a-list-of-dictionaries)                         

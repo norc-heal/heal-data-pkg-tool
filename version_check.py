@@ -37,34 +37,35 @@ def version_check(workingDataPkgDir):
         if f in os.listdir(getDir):
             os.rename(os.path.join(getDir,f), os.path.join(operationalFileSubDir,f))
 
-    trkDict = {
+    trkDict = dsc_pkg_utils.trkDict
+    # trkDict = {
         
-        "experimentTracker":{
-            "schema":schema_experiment_tracker.schema_experiment_tracker,
-            "updateSchemaMap": versions_experiment_tracker.fieldNameMap,
-            "oneOrMulti":"one",
-            "trackerName":"heal-csv-experiment-tracker.csv",
-            "trackerTypeHyphen":"experiment-tracker",
-            "jsonTxtPrefix": "exp-trk-exp-"
-        },
-        "resourceTracker":{
-            "schema": schema_resource_tracker.schema_resource_tracker,
-            "updateSchemaMap": versions_resource_tracker.fieldNameMap,
-            "oneOrMulti": "one",
-            "trackerName":"heal-csv-resource-tracker.csv",
-            "trackerTypeHyphen":"resource-tracker",
-            "jsonTxtPrefix": "resource-trk-resource-"
-        },
-        "resultsTracker":{
-            "schema": schema_results_tracker.schema_results_tracker,
-            "updateSchemaMap": versions_results_tracker.fieldNameMap,
-            "oneOrMulti": "multi",
-            "trackerName":"heal-csv-results-tracker-",
-            "trackerTypeHyphen":"results-tracker",
-            "jsonTxtPrefix": "result-trk-result-"
-        }
+    #     "experimentTracker":{
+    #         "schema":schema_experiment_tracker.schema_experiment_tracker,
+    #         "updateSchemaMap": versions_experiment_tracker.fieldNameMap,
+    #         "oneOrMulti":"one",
+    #         "trackerName":"heal-csv-experiment-tracker.csv",
+    #         "trackerTypeHyphen":"experiment-tracker",
+    #         "jsonTxtPrefix": "exp-trk-exp-"
+    #     },
+    #     "resourceTracker":{
+    #         "schema": schema_resource_tracker.schema_resource_tracker,
+    #         "updateSchemaMap": versions_resource_tracker.fieldNameMap,
+    #         "oneOrMulti": "one",
+    #         "trackerName":"heal-csv-resource-tracker.csv",
+    #         "trackerTypeHyphen":"resource-tracker",
+    #         "jsonTxtPrefix": "resource-trk-resource-"
+    #     },
+    #     "resultsTracker":{
+    #         "schema": schema_results_tracker.schema_results_tracker,
+    #         "updateSchemaMap": versions_results_tracker.fieldNameMap,
+    #         "oneOrMulti": "multi",
+    #         "trackerName":"heal-csv-results-tracker-",
+    #         "trackerTypeHyphen":"results-tracker",
+    #         "jsonTxtPrefix": "result-trk-result-"
+    #     }
         
-    }
+    # }
 
     cols = ["trackerType","fileType","schemaVersion","schemaMapVersion","file","fileSchemaVersion","upToDate","canBeUpdated","canBeUpdatedFully","message"]
     collectDf = pd.DataFrame([],columns=cols)

@@ -91,7 +91,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                 saveFormat = '<span style="color:green;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
 
-                QApplication.processEvents() # print accumulated user status messages 
+                #QApplication.processEvents() # print accumulated user status messages 
             
                 # a copy of the working data package dir and the operational subdir has been created in the update in progress dir
                 # need to update the tracker and json txt file paths in collectDf to reflect the versions in the update in progress dir
@@ -226,7 +226,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                     print(j)
                                     print(j[idCol])
                                     print(j[idNumCol])
-                                    fname = jsonTxtPrefix + str(j[idNumCol]) + '.txt'
+                                    fname = jsonTxtPrefix + str(int(j[idNumCol])) + '.txt'
                                     fpath = os.path.join(updateDir,fname)
                                     jFinal = json.dumps(j, indent=4)
                                     print(jFinal)

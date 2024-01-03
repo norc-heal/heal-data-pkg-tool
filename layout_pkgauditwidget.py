@@ -150,6 +150,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 pd.to_datetime(trackerDfDf["annotationModTimeStamp"])
                                 print(trackerDf)
                                 
+                                idCol = dsc_pkg_utils.trkDict[t]["id"]
                                 idNumCol = dsc_pkg_utils.trkDict[t]["id"] + "Number"
                                 jsonTxtPrefix = dsc_pkg_utils.trkDict[t]["jsonTxtPrefix"]
 
@@ -165,9 +166,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
 
                                     idNumFromTrackerList = trackerDf[idNumCol].tolist()
                                     print("idNumFromTrackerList: ",idNumFromTrackerList)
-                                    # idNumStringFromTrackerList = [str(idNum) for idNum in idNumFromTrackerList]
-                                    # jsonTxtStemFromTrackerList = [jsonTxtFromTrackerList + idNumString for idNumString in idNumStringFromTrackerList]
-
+                                    
                                 # get id nums based on annotation files that already exist
                                 existingFileList = [filename for filename in os.listdir(updateDir) if filename.startswith(jsonTxtPrefix)]
                                 print(existingFileList)
@@ -209,7 +208,26 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                         # NOT in tracker, with a json txt annotation file - this may happen if the using an old version of the tool that does not auto add to tracker OR if the json txt file failed validation during the add to tracker step
                                         notInTrackerInTxtFileIdNumList = [n for n in existingFileIdNumList if n not in idNumFromTrackerList]
 
-                                            
+                                writeFromTrackerToTxtFileIdNumList = inTrackerNotInTxtFileIdNumList + inTrackerInTxtFileIdNumList
+                                # writeFromTrackerToTxtFileIdNumStringList = [str(idNum) for idNum in writeFromTrackerToTxtFileIdNumList]
+                                # writeFromTrackerToTxtFileFnameList = [jsonTxtPrefix + idNumString + ".txt" for idNumString in writeFromTrackerToTxtFileIdNumStringList]
+
+                                writeFromTrackerToTxtFileDf = trackerDf[trackerDf[idNumCol].isin(writeFromTrackerToTxtFileIdNumList)]
+                                writeFromTrackerToTxtFileDfToJson = writeFromTrackerToTxtFileDf.to_json(orient="records")
+                                writeFromTrackerToTxtFileDfToJsonParsed = json.loads(writeFromTrackerToTxtFileDfToJson)
+                                
+                                #for n,p in zip(writeFromTrackerToTxtFileIdNumList,writeFromTrackerToTxtFileFnameList):
+                                for j in writeFromTrackerToTxtFileDfToJsonParsed:
+                                    print(j)
+                                    print(j[idCol])
+                                    print(j[idNumCol])
+                                    fname = jsonTxtPrefix + str(j[idNumCol]) + '.txt'
+                                    fpath = os.path.join(updateDir,fname)
+                                    jFinal = json.dumps(j, indent=4)
+                                    print(jFinal)
+                                    with open(fpath, "w") as outfile:
+                                        outfile.write(jFinal)
+
 
 
                             else:

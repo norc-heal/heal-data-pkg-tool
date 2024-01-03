@@ -17,20 +17,28 @@ from pathlib import Path
 from healdata_utils.schemas import healjsonschema, healcsvschema
 from healdata_utils.transforms.frictionless import conversion
 
-from versions_experiment_tracker import fieldNameMap
-from versions_resource_tracker import fieldNameMap
-from versions_results_tracker import fieldNameMap
+# from versions_experiment_tracker import fieldNameMap
+# from versions_resource_tracker import fieldNameMap
+# from versions_results_tracker import fieldNameMap
 
-from schema_experiment_tracker import schema_experiment_tracker
-from schema_resource_tracker import schema_resource_tracker
-from schema_results_tracker import schema_results_tracker
+import versions_experiment_tracker
+import versions_resource_tracker
+import versions_results_tracker
+
+import schema_experiment_tracker
+import schema_resource_tracker
+import schema_results_tracker
+
+# from schema_experiment_tracker import schema_experiment_tracker
+# from schema_resource_tracker import schema_resource_tracker
+# from schema_results_tracker import schema_results_tracker
 
 from packaging import version
 
 trkDict = {
         
     "experimentTracker":{
-        "schema":schema_experiment_tracker.schema_experiment_tracker,
+        "schema": schema_experiment_tracker.schema_experiment_tracker,
         "updateSchemaMap": versions_experiment_tracker.fieldNameMap,
         "oneOrMulti":"one",
         "trackerName":"heal-csv-experiment-tracker.csv",

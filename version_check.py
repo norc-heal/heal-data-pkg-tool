@@ -201,7 +201,7 @@ def version_check(workingDataPkgDir):
         allUpToDate = False
 
         messageDf1 = collectDf[collectDf["upToDate"] == "No"]
-        message = message + "<br>1. Out of " + str(collectDf.shape[0]) + " total dsc-pkg files, " + str(messageDf1.shape[0]) + " files are NOT up to date."
+        message = message + "<br><b>WARNING:</b>At least one dsc-pkg file in your working Data Package Directory is NOT up to date - Please head to the \"Data Package\" tab >> \"Audit and Update\" sub-tab to update these dsc-pkg files before proceeding. Some details are provided below:<br><br>1. Out of " + str(collectDf.shape[0]) + " total dsc-pkg files, " + str(messageDf1.shape[0]) + " files are NOT up to date."
         
         if "Yes" in messageDf1["canBeUpdated"].values:
             messageDf2 = messageDf1[messageDf1["canBeUpdated"] == "Yes"]

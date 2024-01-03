@@ -570,14 +570,17 @@ def heal_metadata_json_schema(metadataType):
         
 
     if metadataType == "resource-tracker":
-        schema = schema_resource_tracker
+        #schema = schema_resource_tracker
+        schema = schema_resource_tracker.schema_resource_tracker
         
 
     if metadataType == "experiment-tracker":
-        schema = schema_experiment_tracker
+        #schema = schema_experiment_tracker
+        schema = schema_experiment_tracker.schema_experiment_tracker
 
     if metadataType == "results-tracker":
-        schema = schema_results_tracker
+        #schema = schema_results_tracker
+        schema = schema_results_tracker.schema_results_tracker
         
 
     if metadataType not in ["data-dictionary","resource-tracker","experiment-tracker","results-tracker"]:
@@ -599,14 +602,17 @@ def heal_metadata_json_schema_properties(metadataType):
         
 
     if metadataType == "resource-tracker":
-        props = schema_resource_tracker["properties"]
+        #props = schema_resource_tracker["properties"]
+        props = schema_resource_tracker.schema_resource_tracker["properties"]
         
 
     if metadataType == "experiment-tracker":
-        props = schema_experiment_tracker["properties"]
+        #props = schema_experiment_tracker["properties"]
+        props = schema_experiment_tracker.schema_experiment_tracker["properties"]
 
     if metadataType == "results-tracker":
-        props = schema_results_tracker["properties"]
+        #props = schema_results_tracker["properties"]
+        props = schema_results_tracker.schema_results_tracker["properties"]
         
 
     if metadataType not in ["data-dictionary","resource-tracker","experiment-tracker","results-tracker"]:

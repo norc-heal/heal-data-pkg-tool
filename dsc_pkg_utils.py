@@ -38,6 +38,7 @@ from packaging import version
 trkDict = {
         
     "experimentTracker":{
+        "id": "experimentId",
         "schema": schema_experiment_tracker.schema_experiment_tracker,
         "updateSchemaMap": versions_experiment_tracker.fieldNameMap,
         "oneOrMulti":"one",
@@ -47,6 +48,7 @@ trkDict = {
         "jsonTxtPrefix": "exp-trk-exp-"
     },
     "resourceTracker":{
+        "id": "resourceId",
         "schema": schema_resource_tracker.schema_resource_tracker,
         "updateSchemaMap": versions_resource_tracker.fieldNameMap,
         "oneOrMulti": "one",
@@ -56,6 +58,7 @@ trkDict = {
         "jsonTxtPrefix": "resource-trk-resource-"
     },
     "resultsTracker":{
+        "id": "resultId",
         "schema": schema_results_tracker.schema_results_tracker,
         "updateSchemaMap": versions_results_tracker.fieldNameMap,
         "oneOrMulti": "multi",

@@ -45,7 +45,8 @@ trkDict = {
         "trackerName":"heal-csv-experiment-tracker.csv",
         "trackerTypeHyphen":"experiment-tracker",
         "trackerTypeMessageString":"Experiment Tracker",
-        "jsonTxtPrefix": "exp-trk-exp-"
+        "jsonTxtPrefix": "exp-trk-exp-",
+        "idPrefix": "exp-"
     },
     "resourceTracker":{
         "id": "resourceId",
@@ -55,7 +56,8 @@ trkDict = {
         "trackerName":"heal-csv-resource-tracker.csv",
         "trackerTypeHyphen":"resource-tracker",
         "trackerTypeMessageString":"Resource Tracker",
-        "jsonTxtPrefix": "resource-trk-resource-"
+        "jsonTxtPrefix": "resource-trk-resource-",
+        "idPrefix": "resource-"
     },
     "resultsTracker":{
         "id": "resultId",
@@ -65,7 +67,8 @@ trkDict = {
         "trackerName":"heal-csv-results-tracker-",
         "trackerTypeHyphen":"results-tracker",
         "trackerTypeMessageString":"Results Tracker",
-        "jsonTxtPrefix": "result-trk-result-"
+        "jsonTxtPrefix": "result-trk-result-",
+        "idPrefix": "result-"
     }
     
 }

@@ -78,7 +78,7 @@ def version_update_tracker(getTrk,trackerTypeCamelCase):
                 collectAllCurrentNamesOrdered.append(key) # collect a list of current (non-deprecated) property names so that you can re-order based on the 'correct' order at the end of the update
                 
                 # if field with current field name exists
-                if key in resourceTrackerDf.columns: 
+                if key in trackerDf.columns: 
                     
                     # leave field with current field name alone
                     # delete any field with a former field name
@@ -99,7 +99,7 @@ def version_update_tracker(getTrk,trackerTypeCamelCase):
                         i=0
                         for f in formerFieldNames:
                             
-                            if f in resourceTrackerDf.columns:
+                            if f in trackerDf.columns:
                                 i+=1
                                 if i>1:
                                     print("there is more than one field with a former name for the field currently named: ",key)
@@ -263,7 +263,7 @@ def version_update_tracker(getTrk,trackerTypeCamelCase):
         
         print("adding updated schema version")
         if "schemaVersion" in trackerDf.columns: # it should be at this point, since it should have been added if not already present
-            resourceTrackerDf["schemaVersion"] = fieldNameMap["latestVersion"]
+            trackerDf["schemaVersion"] = fieldNameMap["latestVersion"]
         else:
             print("has the name of the schema version property changed from schemaVersion? if so update the script to the new name to add the updated schema version")
             return False

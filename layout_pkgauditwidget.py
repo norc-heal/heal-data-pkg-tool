@@ -147,19 +147,71 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 print("reading in tracker")
                                 trackerDf = pd.read_csv(p)
                                 trackerDf.fillna("", inplace = True)
+                                pd.to_datetime(trackerDfDf["annotationModTimeStamp"])
                                 print(trackerDf)
                                 
                                 idNumCol = dsc_pkg_utils.trkDict[t]["id"] + "Number"
                                 jsonTxtPrefix = dsc_pkg_utils.trkDict[t]["jsonTxtPrefix"]
 
-                                # if the tracker is empty, just create a new empty tracker based on the current schema
+                                # get id nums based on updated tracker
+                                # if the tracker is empty, id nums in tracker is empty list
                                 if trackerDf.empty:
-                                    idNumList = []
+                                    idNumFromTrackerList = []
                                 else: 
-                                    idNumList = trackerDf[idNumCol].unique().tolist()
-                                    print("idList: ",idList)
-                                    idNumStringList = [str(idNum) for idNum in idNumList]
-                                    jsonTxtFromTrackerList = [jsonTxtFromTrackerList + idNumString + ".txt" for idNumString in idNumStringList]
+                                    # sort by date-time (ascending), then drop duplicates of id, keeping the last/latest instance of each id's occurrence
+                                    # to get the latest annotation entry
+                                    trackerDf.sort_values(by=["annotationModTimeStamp"],ascending=True,inplace=True)
+                                    trackerDf.drop_duplicates(subset=["idNumCol"],keep="last",inplace=True)
+
+                                    idNumFromTrackerList = trackerDf[idNumCol].tolist()
+                                    print("idNumFromTrackerList: ",idNumFromTrackerList)
+                                    # idNumStringFromTrackerList = [str(idNum) for idNum in idNumFromTrackerList]
+                                    # jsonTxtStemFromTrackerList = [jsonTxtFromTrackerList + idNumString for idNumString in idNumStringFromTrackerList]
+
+                                # get id nums based on annotation files that already exist
+                                existingFileList = [filename for filename in os.listdir(updateDir) if filename.startswith(jsonTxtPrefix)]
+                                print(existingFileList)
+
+                                if existingFileList: # if the list is not empty
+                                    existingFileStemList = [Path(filename).stem for filename in fileList]
+                                    print(existingFileStemList)
+                                    existingFileIdNumList = [int(filename.split(jsonTxtPrefix)[1]) for filename in existingFileStemList]
+                                    print(existingFileIdNumList)
+                                else: 
+                                    existingFileIdNumList = []
+                                
+                                # get the id nums in just annotation file, just tracker, or both (list of json txt annotation files that have and have not already been added to tracker - also check if some annotations added to tracker with no corresponding annotation file)
+                                if not idNumFromTrackerList:
+                                    if not existingFileIdNumList:
+                                        print("NO json txt annotation files, and NO annotations in the tracker - There are no json txt annotation files to update or write")
+                                        continue
+                                    else:
+                                        # in tracker, no json txt annotation file - this shouldn't happen unless someone added to tracker manually or using another tool
+                                        inTrackerNotInTxtFileIdNumList = []
+                                        # in tracker, with corresponding json txt annotation file - this should be most common especially if using updated tool
+                                        inTrackerInTxtFileIdNumList = []
+                                        # NOT in tracker, with a json txt annotation file - this may happen if the using an old version of the tool that does not auto add to tracker OR if the json txt file failed validation during the add to tracker step
+                                        notInTrackerInTxtFileIdNumList = existingFileIdNumList
+                                else:
+                                    if not existingFileIdNumList:
+                                        # in tracker, no json txt annotation file - this shouldn't happen unless someone added to tracker manually or using another tool
+                                        inTrackerNotInTxtFileIdNumList = idNumFromTrackerList
+                                        # in tracker, with corresponding json txt annotation file - this should be most common especially if using updated tool
+                                        inTrackerInTxtFileIdNumList = []
+                                        # NOT in tracker, with a json txt annotation file - this may happen if the using an old version of the tool that does not auto add to tracker OR if the json txt file failed validation during the add to tracker step
+                                        notInTrackerInTxtFileIdNumList = []
+                                        print("NO json txt annotation files, but there ARE annotations in the tracker - There are no json txt annotation files to update, but we can try to write json txt annotation files de novo for the annotations already in the tracker")
+                                    else:
+                                        # in tracker, no json txt annotation file - this shouldn't happen unless someone added to tracker manually or using another tool
+                                        inTrackerNotInTxtFileIdNumList = [n for n in idNumFromTrackerList if n not in existingFileIdNumList]
+                                        # in tracker, with corresponding json txt annotation file - this should be most common especially if using updated tool
+                                        inTrackerInTxtFileIdNumList = [n for n in existingFileIdNumList if n in idNumFromTrackerList]
+                                        # NOT in tracker, with a json txt annotation file - this may happen if the using an old version of the tool that does not auto add to tracker OR if the json txt file failed validation during the add to tracker step
+                                        notInTrackerInTxtFileIdNumList = [n for n in existingFileIdNumList if n not in idNumFromTrackerList]
+
+                                            
+
+
                             else:
                                 messageText = "<br>The following " + t + " was NOT successfully updated:<br>" + p + "<br>"
                                 saveFormat = '<span style="color:red;">{}</span>'

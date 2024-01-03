@@ -36,6 +36,15 @@ def version_update_tracker(getTrk,trackerTypeCamelCase):
         trackerDf.fillna("", inplace = True)
         print(trackerDf)
 
+        # if the tracker is empty, just create a new empty tracker based on the current schema
+        if trackerDf.empty:
+            props = dsc_pkg_utils.heal_metadata_json_schema_properties(metadataType=dsc_pkg_utils.trkDict[trackerTypeCamelCase]["trackerTypeHyphen"])
+            df = dsc_pkg_utils.empty_df_from_json_schema_properties(jsonSchemaProperties=props)
+
+            df.to_csv(getTrk, index = False)
+            return True
+
+
         # get the latest schema map version (this could be behind the latest schema version if 
         # there's not yet a map to the latest version available)
         #updateSchemaMap = trkDict[trackerTypeCamelCase]["updateSchemaMap"]

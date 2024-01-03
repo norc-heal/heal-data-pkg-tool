@@ -136,6 +136,30 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 messageText = "<br>The following " + t + " was successfully updated:<br>" + p + "<br>"
                                 saveFormat = '<span style="color:green;">{}</span>'
                                 self.userMessageBox.append(saveFormat.format(messageText))
+
+                                # update json txt annotation files that were added to the tracker by writing 
+                                # new json txt annotation files based on contents of updated tracker
+                                # 1) check if all json txt annotation files in working data pkg dir have been added to the tracker
+                                # 2)    for those not added, check if valid
+                                # 3)        for those not added, if valid, update json directly and add to tracker
+                                # 4)        for those not added, if invalid, attempt to update the json directly anyway, and somehow alert user to check these files and correct them
+                                # 5)    for those added, write new json txt annotation file based on updated tracker contents for the annotation
+                                print("reading in tracker")
+                                trackerDf = pd.read_csv(p)
+                                trackerDf.fillna("", inplace = True)
+                                print(trackerDf)
+                                
+                                idNumCol = dsc_pkg_utils.trkDict[t]["id"] + "Number"
+                                jsonTxtPrefix = dsc_pkg_utils.trkDict[t]["jsonTxtPrefix"]
+
+                                # if the tracker is empty, just create a new empty tracker based on the current schema
+                                if trackerDf.empty:
+                                    idNumList = []
+                                else: 
+                                    idNumList = trackerDf[idNumCol].unique().tolist()
+                                    print("idList: ",idList)
+                                    idNumStringList = [str(idNum) for idNum in idNumList]
+                                    jsonTxtFromTrackerList = [jsonTxtFromTrackerList + idNumString + ".txt" for idNumString in idNumStringList]
                             else:
                                 messageText = "<br>The following " + t + " was NOT successfully updated:<br>" + p + "<br>"
                                 saveFormat = '<span style="color:red;">{}</span>'

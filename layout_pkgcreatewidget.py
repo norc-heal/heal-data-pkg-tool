@@ -112,8 +112,9 @@ class PkgCreateWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(messageText)
             return
 
-        messageText = "<br>" + "Your working Data Package Directory has been set at: "  + pkgPath
+        messageText = "<br>" + "Your working Data Package Directory has been set at: "  + pkgPath + "<br><br>Checking if updates to dsc-pkg files are needed...<br>"
         self.userMessageBox.append(messageText)
+        QApplication.processEvents() # print accumulated user status messages
 
         self.pkgPath = pkgPath
         self.workingDataPkgDirDisplay.setText(self.pkgPath)

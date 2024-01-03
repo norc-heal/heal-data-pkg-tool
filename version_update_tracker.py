@@ -119,6 +119,11 @@ def version_update_tracker(getTrk,trackerTypeCamelCase):
                             elif propertyType == "integer":
                                 trackerDf[key] = 0 # if the property is an integer, empty is zero (for now, maybe should be NaN?)
                                 # note - add check for if id number column, if yes, and id column exists, calculate it from id column
+                                idCol = dsc_pkg_utils.trkDict[trackerTypeCamelCase]["id"]
+                                idNumCol = dsc_pkg_utils.trkDict[trackerTypeCamelCase]["id"] + "Number"
+                                idPrefix = dsc_pkg_utils.trkDict[trackerTypeCamelCase]["idPrefix"]
+                                if key == idNumCol:
+                                    trackerDf[key] = [int(idString.split(idPrefix)[1]) for idString in trackerDf[idCol]]
                             else:
                                 print("the following schema property is not a string or array type so i don't know how to create a new field with appropriate empty values: ", key)
                                 return False

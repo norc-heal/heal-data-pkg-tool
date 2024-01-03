@@ -72,39 +72,65 @@ fieldNameMap = {
         "category":{
             "formerNames":[],
             "deprecated": False,
-            "deleteEnum":["figure"]
+            "mapEnum": {},
+            "deleteEnum":["figure"],
+            "formerSubNames": {}
         },
         "experimentNameBelongsTo":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "associatedFilePublication":{
             "formerNames": ["associatedFileMultiResultFile","assoc.multi.result.file"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "figureNumber":{
             "formerNames": ["figure.number"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "tableNumber":{
             "formerNames": ["table.number"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "associatedFileDependsOn":{
             "formerNames": ["assoc.file.depends.on"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "resultSupports":{
             "formerNames": ["result.supports"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "annotationCreateDateTime":{
             "formerNames": ["restrk.create.date.time"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "annotationModDateTime":{
             "formerNames": ["restrk.mod.date.time"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "resultIdNumber":{
             "formerNames": ["result.id.num"],

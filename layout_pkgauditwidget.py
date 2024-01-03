@@ -91,6 +91,8 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                 saveFormat = '<span style="color:green;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
 
+                #QApplication.processEvents() # print accumulated user status messages 
+            
                 # a copy of the working data package dir and the operational subdir has been created in the update in progress dir
                 # need to update the tracker and json txt file paths in collectDf to reflect the versions in the update in progress dir
                 # so that updates will be made to the versions in that dir instead of the original working data pkg dir
@@ -107,18 +109,21 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                 
                 messageText = "<br>The following csv trackers were detected:<br>" + "<br>".join(trackerDf["file"].tolist())
                 self.userMessageBox.append(messageText)
+                #QApplication.processEvents() # print accumulated user status messages 
                 
                 if "No" in trackerDf["upToDate"].values:
                     trackerDfNeedsUpdate = trackerDf[trackerDf["upToDate"] == "No"]
 
                     messageText = "<br>The following csv trackers need to be updated:<br>" + "<br>".join(trackerDfNeedsUpdate["file"].tolist())
                     self.userMessageBox.append(messageText)
+                    #QApplication.processEvents() # print accumulated user status messages 
                     
                     if "Yes" in trackerDfNeedsUpdate["canBeUpdated"].values:
                         trackerDfCanBeUpdated = trackerDfNeedsUpdate[trackerDfNeedsUpdate["canBeUpdated"] == "Yes"]
 
-                        messageText = "<br>The following csv trackers need to be updated AND can be updated:<br>" + "<br>".join(trackerDfCanBeUpdated["file"].tolist())
+                        messageText = "<br>The following csv trackers need to be updated AND can be updated:<br>" + "<br>".join(trackerDfCanBeUpdated["file"].tolist()) + "<br><br>Starting updates<br>"
                         self.userMessageBox.append(messageText)
+                        QApplication.processEvents() # print accumulated user status messages 
 
                         # update the trackers here
                         trkPathList = trackerDfCanBeUpdated["file"].tolist()
@@ -135,6 +140,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 messageText = "<br>The following " + t + " was NOT successfully updated:<br>" + p + "<br>"
                                 saveFormat = '<span style="color:red;">{}</span>'
                                 self.userMessageBox.append(saveFormat.format(messageText))
+                            #QApplication.processEvents() # print accumulated user status messages 
 
                         # if all trackers of a specific type are successfully updated, 
                         # update the schema version operational txt file
@@ -142,7 +148,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                         for t in trkUpdateStatusDf["trackerType"].unique().tolist():
                             filterDf = trkUpdateStatusDf[trkUpdateStatusDf["trackerType"] == t]
                             if filterDf["updateStatus"].all():
-                                trackerTypeHypen = dsc_pkg_utils.trkDict[t]["trackerTypeHyphen"]
+                                trackerTypeHyphen = dsc_pkg_utils.trkDict[t]["trackerTypeHyphen"]
                                 versionTxtFileName = "schema-version-" + trackerTypeHyphen + ".txt"
                                 versionTxtFilePath = os.path.join(updateDir,"no-user-access",versionTxtFileName)
                                 versionText = dsc_pkg_utils.trkDict[t]["updateSchemaMap"]["latestVersion"]
@@ -159,6 +165,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                     else:
                         messageText = "<br>None of the csv trackers that need to be updated can be updated. This is likely because schema version mapping files for these trackers are not up to date."
                         self.userMessageBox.append(messageText)
+                         
 
 
                 else:

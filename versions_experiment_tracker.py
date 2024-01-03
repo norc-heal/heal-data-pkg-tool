@@ -85,7 +85,7 @@ fieldNameMap = {
         },
         "experimentQuestion":{
             "formerNames": ["experiment.question"],
-            "deprecated": True,
+            "deprecated": False,
             "mapEnum": {},
             "deleteEnum":[],
             "formerSubNames": {}

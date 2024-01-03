@@ -39,8 +39,8 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
         
         widget = QtWidgets.QWidget()
         
-        self.buttonCheckPkgVersions = QtWidgets.QPushButton(text="Check Package Versions",parent=self)
-        self.buttonCheckPkgVersions.clicked.connect(self.check_pkg_versions)
+        # self.buttonCheckPkgVersions = QtWidgets.QPushButton(text="Check Package Versions",parent=self)
+        # self.buttonCheckPkgVersions.clicked.connect(self.check_pkg_versions)
 
         self.buttonUpdatePkgVersions = QtWidgets.QPushButton(text="Update Package Versions",parent=self)
         self.buttonUpdatePkgVersions.clicked.connect(self.update_pkg_versions)
@@ -51,7 +51,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
         self.userMessageBox.setReadOnly(True)
         
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.buttonCheckPkgVersions)
+        #layout.addWidget(self.buttonCheckPkgVersions)
         layout.addWidget(self.buttonUpdatePkgVersions)
         layout.addWidget(self.userMessageBox)
 
@@ -82,16 +82,16 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
             # at the end can clean up but don't want the possibility that the update fails and the original is corrupted in the process
             # if an update in progress folder already exists exit with informative message - this may indicate that the user had a previously failed update since a successful update would lead to clean up of this folder
             if not dsc_pkg_utils.copyDataPkgDirToUpdate(self.workingDataPkgDir):
-                messageText = "<br>An update of your working data package directory may already be in progress. Check for a folder in the same parent directory as your working data package directory that starts with \"dsc-pkg\" and ends with \"update-in-progress\". If this folder exists, an update may have been initiated but not completed. If you didn't purposely create or keep this folder, please delete this folder and then come back here and try to update again. <br>"
+                messageText = "<br>Updates are needed. However, an update of your working data package directory may already be in progress. Check for a folder in the same parent directory as your working data package directory that starts with \"dsc-pkg\" and ends with \"update-in-progress\". If this folder exists, an update may have been initiated but not completed. If you didn't purposely create or keep this folder, please delete this folder and then come back here and try to update again. <br>"
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return
             else:
-                messageText = "<br>An \"update-in-progress\" version of your working data package directory has been successfully created - This copy will be used to perform the updates and will be cleaned up at the end of a successful update - You shouls see a new folder in the same parent directory as your working data package directory that starts with \"dsc-pkg\" and ends with \"update-in-progress\".<br>"
+                messageText = "<br>Updates are needed. An \"update-in-progress\" version of your working data package directory has been successfully created - This copy will be used to perform the updates and will be cleaned up at the end of a successful update - You should see a new folder in the same parent directory as your working data package directory that starts with \"dsc-pkg\" and ends with \"update-in-progress\".<br><br>Working on updates..<br>"
                 saveFormat = '<span style="color:green;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
 
-                #QApplication.processEvents() # print accumulated user status messages 
+                QApplication.processEvents() # print accumulated user status messages 
             
                 # a copy of the working data package dir and the operational subdir has been created in the update in progress dir
                 # need to update the tracker and json txt file paths in collectDf to reflect the versions in the update in progress dir
@@ -147,7 +147,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 print("reading in tracker")
                                 trackerDf = pd.read_csv(p)
                                 trackerDf.fillna("", inplace = True)
-                                pd.to_datetime(trackerDfDf["annotationModTimeStamp"])
+                                pd.to_datetime(trackerDf["annotationModTimeStamp"])
                                 print(trackerDf)
                                 
                                 idCol = dsc_pkg_utils.trkDict[t]["id"]
@@ -162,9 +162,10 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                     # sort by date-time (ascending), then drop duplicates of id, keeping the last/latest instance of each id's occurrence
                                     # to get the latest annotation entry
                                     trackerDf.sort_values(by=["annotationModTimeStamp"],ascending=True,inplace=True)
-                                    trackerDf.drop_duplicates(subset=["idNumCol"],keep="last",inplace=True)
+                                    trackerDf.drop_duplicates(subset=[idNumCol],keep="last",inplace=True)
 
                                     idNumFromTrackerList = trackerDf[idNumCol].tolist()
+                                    idNumFromTrackerList = [int(item) for item in idNumFromTrackerList] 
                                     print("idNumFromTrackerList: ",idNumFromTrackerList)
                                     
                                 # get id nums based on annotation files that already exist
@@ -172,7 +173,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 print(existingFileList)
 
                                 if existingFileList: # if the list is not empty
-                                    existingFileStemList = [Path(filename).stem for filename in fileList]
+                                    existingFileStemList = [Path(filename).stem for filename in existingFileList]
                                     print(existingFileStemList)
                                     existingFileIdNumList = [int(filename.split(jsonTxtPrefix)[1]) for filename in existingFileStemList]
                                     print(existingFileIdNumList)
@@ -207,6 +208,10 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                         inTrackerInTxtFileIdNumList = [n for n in existingFileIdNumList if n in idNumFromTrackerList]
                                         # NOT in tracker, with a json txt annotation file - this may happen if the using an old version of the tool that does not auto add to tracker OR if the json txt file failed validation during the add to tracker step
                                         notInTrackerInTxtFileIdNumList = [n for n in existingFileIdNumList if n not in idNumFromTrackerList]
+
+                                print("inTrackerNotInTxtFileIdNumList: ",inTrackerNotInTxtFileIdNumList)
+                                print("inTrackerInTxtFileIdNumList: ",inTrackerInTxtFileIdNumList)
+                                print("notInTrackerInTxtFileIdNumList: ",notInTrackerInTxtFileIdNumList)
 
                                 writeFromTrackerToTxtFileIdNumList = inTrackerNotInTxtFileIdNumList + inTrackerInTxtFileIdNumList
                                 # writeFromTrackerToTxtFileIdNumStringList = [str(idNum) for idNum in writeFromTrackerToTxtFileIdNumList]

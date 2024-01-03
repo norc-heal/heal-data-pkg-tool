@@ -216,23 +216,39 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 writeFromTrackerToTxtFileIdNumList = inTrackerNotInTxtFileIdNumList + inTrackerInTxtFileIdNumList
                                 # writeFromTrackerToTxtFileIdNumStringList = [str(idNum) for idNum in writeFromTrackerToTxtFileIdNumList]
                                 # writeFromTrackerToTxtFileFnameList = [jsonTxtPrefix + idNumString + ".txt" for idNumString in writeFromTrackerToTxtFileIdNumStringList]
-
-                                writeFromTrackerToTxtFileDf = trackerDf[trackerDf[idNumCol].isin(writeFromTrackerToTxtFileIdNumList)]
-                                writeFromTrackerToTxtFileDfToJson = writeFromTrackerToTxtFileDf.to_json(orient="records")
-                                writeFromTrackerToTxtFileDfToJsonParsed = json.loads(writeFromTrackerToTxtFileDfToJson)
                                 
-                                #for n,p in zip(writeFromTrackerToTxtFileIdNumList,writeFromTrackerToTxtFileFnameList):
-                                for j in writeFromTrackerToTxtFileDfToJsonParsed:
-                                    print(j)
-                                    print(j[idCol])
-                                    print(j[idNumCol])
-                                    fname = jsonTxtPrefix + str(int(j[idNumCol])) + '.txt'
-                                    fpath = os.path.join(updateDir,fname)
-                                    jFinal = json.dumps(j, indent=4)
-                                    print(jFinal)
-                                    with open(fpath, "w") as outfile:
-                                        outfile.write(jFinal)
+                                if writeFromTrackerToTxtFileIdNumList:
+                                    writeFromTrackerToTxtFileDf = trackerDf[trackerDf[idNumCol].isin(writeFromTrackerToTxtFileIdNumList)]
+                                    writeFromTrackerToTxtFileDfToJson = writeFromTrackerToTxtFileDf.to_json(orient="records")
+                                    writeFromTrackerToTxtFileDfToJsonParsed = json.loads(writeFromTrackerToTxtFileDfToJson)
+                                    
+                                    messageText = "<br>It was used to successfully update the following json txt annotation files:<br>"
 
+                                    #for n,p in zip(writeFromTrackerToTxtFileIdNumList,writeFromTrackerToTxtFileFnameList):
+                                    for j in writeFromTrackerToTxtFileDfToJsonParsed:
+                                        print(j)
+                                        print(j[idCol])
+                                        print(j[idNumCol])
+                                        fname = jsonTxtPrefix + str(int(j[idNumCol])) + '.txt'
+                                        fpath = os.path.join(updateDir,fname)
+                                        jFinal = json.dumps(j, indent=4)
+                                        print(jFinal)
+                                        with open(fpath, "w") as outfile:
+                                            outfile.write(jFinal)
+                                        
+                                        messageText = messageText + fpath + "<br>"  
+                                    
+                                    saveFormat = '<span style="color:green;">{}</span>'
+                                    self.userMessageBox.append(saveFormat.format(messageText))
+
+                                if notInTrackerInTxtFileIdNumList:
+                                    notInTrackerInTxtFileIdNumStringList = [str(idNum) for idNum in notInTrackerInTxtFileIdNumList]
+                                    notInTrackerInTxtFileFnameList = [jsonTxtPrefix + idNumString + ".txt" for idNumString in notInTrackerInTxtFileIdNumStringList]
+                                    notInTrackerInTxtFileFpathList = [os.path.join(updateDir,fname) for fname in notInTrackerInTxtFileFnameList]
+                                    
+                                    messageText = "The following json txt annotation files have not been added to the appropriate tracker(s). These json txt annotation files must be updated to the current schema version before they can be added to the tracker. It is also possible that they were originally not added to the tracker because they failed validation against the schema version under which they were originally created. Update capabilities for json txt annotation files as well as validation checks will be available in the near future. In the meantime, these json txt files cannot be added to the tracker AND they cannot be edited using this version of the tool. Please standby for tool updates that will help you to resolve these issues, and let us know that you are experiencing this issue - This will help us to prioritize this as a needed tool update:<br>" + "<br>".join(notInTrackerInTxtFileFpathList) + "<br"
+                                    saveFormat = '<span style="color:red;">{}</span>'
+                                    self.userMessageBox.append(saveFormat.format(messageText))
 
 
                             else:

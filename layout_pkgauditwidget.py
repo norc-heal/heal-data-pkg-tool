@@ -153,6 +153,16 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 idCol = dsc_pkg_utils.trkDict[t]["id"]
                                 idNumCol = dsc_pkg_utils.trkDict[t]["id"] + "Number"
                                 jsonTxtPrefix = dsc_pkg_utils.trkDict[t]["jsonTxtPrefix"]
+                                schema = dsc_pkg_utils.trkDict[t]["schema"]
+
+                                # get the array type properties in this tracker
+                                # when pulling in from tracker, they will have become stringified lists instead of 
+                                # true lists and will be incorrectly converted into json if not updated appropriately
+                                arrayTypeProps = []
+                                for key in schema["properties"]:
+                                    if schema["properties"][key]["type"] == "array":
+                                        arrayTypeProps.append(key) 
+                                print("arrayTypeProps: ",arrayTypeProps)
 
                                 # get id nums based on updated tracker
                                 # if the tracker is empty, id nums in tracker is empty list
@@ -221,6 +231,11 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 
                                 if writeFromTrackerToTxtFileIdNumList:
                                     writeFromTrackerToTxtFileDf = trackerDf[trackerDf[idNumCol].isin(writeFromTrackerToTxtFileIdNumList)]
+                                    
+                                    if arrayTypeProps:
+                                        for a in arrayTypeProps:
+                                            trackerDf[a] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(x) for x in trackerDf[a]]
+                                        
                                     writeFromTrackerToTxtFileDfToJson = writeFromTrackerToTxtFileDf.to_json(orient="records")
                                     writeFromTrackerToTxtFileDfToJsonParsed = json.loads(writeFromTrackerToTxtFileDfToJson)
                                     

@@ -158,14 +158,16 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 # if the tracker is empty, id nums in tracker is empty list
                                 if trackerDf.empty:
                                     idNumFromTrackerList = []
-                                else: 
+                                else:
+                                    # make sure the id num is an integer here 
+                                    trackerDf[idNumCol] = trackerDf[idNumCol].astype(int)
                                     # sort by date-time (ascending), then drop duplicates of id, keeping the last/latest instance of each id's occurrence
                                     # to get the latest annotation entry
                                     trackerDf.sort_values(by=["annotationModTimeStamp"],ascending=True,inplace=True)
                                     trackerDf.drop_duplicates(subset=[idNumCol],keep="last",inplace=True)
 
                                     idNumFromTrackerList = trackerDf[idNumCol].tolist()
-                                    idNumFromTrackerList = [int(item) for item in idNumFromTrackerList] 
+                                    #idNumFromTrackerList = [int(item) for item in idNumFromTrackerList] 
                                     print("idNumFromTrackerList: ",idNumFromTrackerList)
                                     
                                 # get id nums based on annotation files that already exist

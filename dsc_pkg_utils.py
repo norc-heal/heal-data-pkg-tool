@@ -210,6 +210,22 @@ def renameListOfDictKeys(myDictionaryList,keyRenameDictionary):
 
         return myDictionaryList
 
+def convertStringifiedArrayOfStringsToList(myStringifiedArrayOfStrings):
+    print("myStringifiedArrayOfStrings: ",myStringifiedArrayOfStrings)
+    print(type(myStringifiedArrayOfStrings))
+    if myStringifiedArrayOfStrings == '[]':
+        print("value is stringfied empty list")
+        return []  
+    else: 
+        myStringifiedArrayOfStrings = myStringifiedArrayOfStrings.replace("'","\"")
+        print("myStringifiedArrayOfStrings: ",myStringifiedArrayOfStrings)
+        print(type(myStringifiedArrayOfStrings))
+        myStringifiedArrayOfStrings = json.loads(myStringifiedArrayOfStrings)
+        print("myStringifiedArrayOfStrings: ",myStringifiedArrayOfStrings)
+        print(type(myStringifiedArrayOfStrings))
+        
+        return myStringifiedArrayOfStrings
+
 def mapArrayOfStrings(myStringArray,stringMapDictionary):
     print("myStringArray: ",myStringArray)
     print(type(myStringArray))

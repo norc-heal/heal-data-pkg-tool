@@ -741,7 +741,7 @@ def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path
     os.mkdir(os.path.join(operationalFileSubDir))
         
     metadataTypeList = ["experiment-tracker", "resource-tracker","results-tracker"]
-    metadataSchemaVersionList = [schema_experiment_tracker["version"], schema_resource_tracker["version"], schema_results_tracker["version"]]
+    metadataSchemaVersionList = [schema_experiment_tracker.schema_experiment_tracker["version"], schema_resource_tracker.schema_resource_tracker["version"], schema_results_tracker.schema_results_tracker["version"]]
     
     for metadataType, metadataSchemaVersion in zip(metadataTypeList,metadataSchemaVersionList):
 

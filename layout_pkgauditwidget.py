@@ -234,7 +234,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                     
                                     if arrayTypeProps:
                                         for a in arrayTypeProps:
-                                            trackerDf[a] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(x) for x in trackerDf[a]]
+                                            writeFromTrackerToTxtFileDf[a] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(x) for x in writeFromTrackerToTxtFileDf[a]]
                                         
                                     writeFromTrackerToTxtFileDfToJson = writeFromTrackerToTxtFileDf.to_json(orient="records")
                                     writeFromTrackerToTxtFileDfToJsonParsed = json.loads(writeFromTrackerToTxtFileDfToJson)

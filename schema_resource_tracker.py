@@ -347,7 +347,7 @@ schema_resource_tracker = {
         "resourceModTimeStamp": {
             "title": "Resource modification datetime timestamp",
             "description": "Date time at which the resource was last modified, converted to timestamp for easy sorting on datetime; auto-inferred",
-            "type": "string",
+            "type": "number",
             "priority": "resource tracker, auto"
         },
         "annotationModTimeStamp": {

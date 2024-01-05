@@ -111,7 +111,7 @@ schema_results_tracker = {
         "annotationModTimeStamp": {
             "title": "Results tracker entry modification datetime timestamp",
             "description": "Date time at which the result annotation was last modified, converted to timestamp for easy sorting by datetime; auto-inferred",
-            "type": "string",
+            "type": "number",
             "priority": "results tracker, auto"
         }
     }

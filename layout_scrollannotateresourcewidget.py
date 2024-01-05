@@ -441,109 +441,112 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         #if changedFieldName == "category":
 
-        # reminder to add dd if tabular data; reminder to add result tracker if publication 
+        # reminder to add dd if tabular data; reminder to add result tracker if publication
+        # if results tracker, read in and try to get result dependencies
+        # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+        if not self.loadingFormDataFromFile:
 
-        if self.form.widget.state["category"] == "tabular-data":
-            messageText = "<br>You have indicated your resource is a tabular data resource. Please ensure that you add a data dictionary for this tabular data resource in the Associated Data Dictionary field in the form below. A HEAL formatted data dictionary is highly preferred. If you don't already have a HEAL formatted data dictionary, you can easily create one directly from your tabular data file by visiting the Data Dictionary tab of the DSC Packaging Desktop application. You can leave this form open, visit the Data Dictionary tab to create and save your HEAL formatted data dictionary, and then return to this form to add the data dictionary you created."
-            errorFormat = '<span style="color:blue;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
-
-        if self.form.widget.state["category"] == "publication":
-            messageText = "<br>You have indicated your resource is a publication resource. Please ensure that you add a results tracker for this publication resource in the Associated Results Tracker field in the form below. A results tracker is a HEAL formatted standard data package metadata file to track all results in a publication, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted results tracker, you can easily create one by visiting the Results Tracker tab of the DSC Data Packaging Desktop Tool. You can leave this form open, visit the Results Tracker tab to create and save your HEAL formatted results tracker, and then return to this form to add the results tracker you created."
-            errorFormat = '<span style="color:blue;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
-
-        if self.form.widget.state["category"] == "metadata":
-            if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
-                messageText = "<br>You have indicated your resource is a HEAL formatted Results Tracker. The Associated Files/Dependencies field in this form has been hidden from view because this field cannot be used to add file dependencies for a Results Tracker file. If your Result Tracker is correctly formatted, and you have provided file dependencies for each result listed in the results tracker, file dependencies will be pulled in directly from the Results Tracker."
+            if self.form.widget.state["category"] == "tabular-data":
+                messageText = "<br>You have indicated your resource is a tabular data resource. Please ensure that you add a data dictionary for this tabular data resource in the Associated Data Dictionary field in the form below. A HEAL formatted data dictionary is highly preferred. If you don't already have a HEAL formatted data dictionary, you can easily create one directly from your tabular data file by visiting the Data Dictionary tab of the DSC Packaging Desktop application. You can leave this form open, visit the Data Dictionary tab to create and save your HEAL formatted data dictionary, and then return to this form to add the data dictionary you created."
                 errorFormat = '<span style="color:blue;">{}</span>'
                 self.userMessageBox.append(errorFormat.format(messageText))
 
-                if not self.form.widget.state["path"]:
-                    messageText = "<br>Please use the Resource File Path field in the form to browse to your Results Tracker file."
+            if self.form.widget.state["category"] == "publication":
+                messageText = "<br>You have indicated your resource is a publication resource. Please ensure that you add a results tracker for this publication resource in the Associated Results Tracker field in the form below. A results tracker is a HEAL formatted standard data package metadata file to track all results in a publication, along with the data and other supporting files that underly each result. If you don't already have a HEAL formatted results tracker, you can easily create one by visiting the Results Tracker tab of the DSC Data Packaging Desktop Tool. You can leave this form open, visit the Results Tracker tab to create and save your HEAL formatted results tracker, and then return to this form to add the results tracker you created."
+                errorFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+
+            if self.form.widget.state["category"] == "metadata":
+                if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
+                    messageText = "<br>You have indicated your resource is a HEAL formatted Results Tracker. The Associated Files/Dependencies field in this form has been hidden from view because this field cannot be used to add file dependencies for a Results Tracker file. If your Result Tracker is correctly formatted, and you have provided file dependencies for each result listed in the results tracker, file dependencies will be pulled in directly from the Results Tracker."
                     errorFormat = '<span style="color:blue;">{}</span>'
                     self.userMessageBox.append(errorFormat.format(messageText))
 
-                if self.form.widget.state["path"]:
-                    pathStem = Path(self.form.widget.state["path"]).stem
-                    if not pathStem.startswith("heal-csv-results-tracker"):
-                        messageText = "<br>The resource file path you have added to the Resource File Path field in the form does not appear to be a HEAL formatted results tracker, or the tracker has been re-named. Please ensure that you have added a HEAL formatted Results Tracker to the Resource File Path field in the form, and that the Results tracker name follows the naming convention: heal-csv-results-tracker-(name of publication file with which the results tracker is associated)."
-                        errorFormat = '<span style="color:red;">{}</span>'
+                    if not self.form.widget.state["path"]:
+                        messageText = "<br>Please use the Resource File Path field in the form to browse to your Results Tracker file."
+                        errorFormat = '<span style="color:blue;">{}</span>'
                         self.userMessageBox.append(errorFormat.format(messageText))
-                    else: 
-                        # formally validate the results tracker here?
-                        self.popFormField = []
 
-                        messageText = "<br>The resource file path you have added to the Resource File Path field in the form appears to be a HEAL formatted results tracker. Attempting to extract file dependencies for each result in the results tracker now."
-                        errorFormat = '<span style="color:green;">{}</span>'
-                        self.userMessageBox.append(errorFormat.format(messageText))
-                       
-                        resultsTrk = pd.read_csv(self.form.widget.state["path"])
-                        resultIds = resultsTrk["resultId"].tolist()
-
-                        if resultIds:
-
-                            # for each result id if multiple entries (due to editing the result entry) only keep the entry with the latest mod date
-                            print("de-duping result ids if necessary")
-                            resultsTrk["annotationModDateTime"] = pd.to_datetime(resultsTrk["annotationModDateTime"])
-
-                            #print(resultsTrk)
-                            print("start resultsTrk.columns: ",resultsTrk.columns)
-                            print("start resultsTrk.shape: ",resultsTrk.shape)
-
-                            resultsTrk = resultsTrk[resultsTrk["annotationModDateTime"] == (resultsTrk.groupby("resultId")["annotationModDateTime"].transform("max"))]
-                            print("finished de-duping result ids if necessary")
-                            #print(resultsTrk)
-                            print("end resultsTrk.columns: ",resultsTrk.columns)
-                            print("end resultsTrk.shape: ",resultsTrk.shape)
-
-                            resultIds = resultsTrk["resultId"].tolist()
-                            resultIdDependencies = resultsTrk["associatedFileDependsOn"].tolist()
-                            
-                            
-                            popFormField = [{"resultId": rId, "resultIdDependsOn": rIdD.strip("][").split(", ")} for rId,rIdD in zip(resultIds,resultIdDependencies)]
-                            print("popFormField: ", popFormField)
-
-                            messageText = "<br>Extracted file dependencies for each result in the results tracker are as follows:<br><br>"
-                            #errorFormat = '<span style="color:green;">{}</span>'
-                            #self.userMessageBox.append(errorFormat.format(messageText))
-                            self.userMessageBox.append(messageText)
-
-                            emptyDependencies = []
-                            formatDependencies = []
-                            for i, list_item in enumerate(popFormField):
-                                self.userMessageBox.append(f"{i + 1}. ")
-                                for j, key in enumerate(list_item.keys()):
-                                    self.userMessageBox.append(f"{key}:{list_item[key]}{'' if j == len(list_item) - 1 else ', '}")
-                                    if key == "resultId":
-                                        resultId = list_item[key]
-                                    if key == "resultIdDependsOn":
-                                        if not list_item[key]:
-                                            emptyDependencies.append(resultId)
-                                            print("emptyDependencies: ",emptyDependencies)
-                                            formatDependencies.append([])
-                                        else:
-                                            formatDependencies.append([item.replace("'", '') for item in list_item[key]])
-                                            
-                                self.userMessageBox.append("")
-
-                            self.popFormField = [{"resultId": rId, "resultIdDependsOn": rIdD} for rId,rIdD in zip(resultIds,formatDependencies)]
-                            print("popFormField_format: ", self.popFormField)
-
-                            if emptyDependencies:
-                                messageText = "<br>The following result IDs listed in the Results Tracker did not have any file dependencies listed:<br>" + ", ".join(emptyDependencies) + "<br><br>Please review your results tracker and add file dependencies for each result as appropriate, then come back and re-add the results tracker as a resource.<br><br>"
-                                errorFormat = '<span style="color:red;">{}</span>'
-                                self.userMessageBox.append(errorFormat.format(messageText))
-
-                            #self.form.widget.state = {
-                            #    "associatedFileResultsDependOn": popFormField
-                            #}
-                        
-                        else: 
-                            messageText = "<br>There do not appear to be any results listed in the Results Tracker. Please add at least one result to your Results Tracker by navigating to the Add Results sub-tab of the Results Tracker tab. If you have already annotated your result(s), use the Add result or Auto-add result button to add your result files to your Result Tracker. If you need to annotate your result(s), start by clicking the Annotate Result button, fill out the brief form that appears to annotate your result(s), use the Add or Auto-add Result button(s) to add your result file(s) to your Results Tracker, then come back here to re-add your Results Tracker as a resource.<br>"
+                    if self.form.widget.state["path"]:
+                        pathStem = Path(self.form.widget.state["path"]).stem
+                        if not pathStem.startswith("heal-csv-results-tracker"):
+                            messageText = "<br>The resource file path you have added to the Resource File Path field in the form does not appear to be a HEAL formatted results tracker, or the tracker has been re-named. Please ensure that you have added a HEAL formatted Results Tracker to the Resource File Path field in the form, and that the Results tracker name follows the naming convention: heal-csv-results-tracker-(name of publication file with which the results tracker is associated)."
                             errorFormat = '<span style="color:red;">{}</span>'
                             self.userMessageBox.append(errorFormat.format(messageText))
+                        else: 
+                            # formally validate the results tracker here?
+                            self.popFormField = []
+
+                            messageText = "<br>The resource file path you have added to the Resource File Path field in the form appears to be a HEAL formatted results tracker. Attempting to extract file dependencies for each result in the results tracker now."
+                            errorFormat = '<span style="color:green;">{}</span>'
+                            self.userMessageBox.append(errorFormat.format(messageText))
                         
+                            resultsTrk = pd.read_csv(self.form.widget.state["path"])
+                            resultIds = resultsTrk["resultId"].tolist()
+
+                            if resultIds:
+
+                                # for each result id if multiple entries (due to editing the result entry) only keep the entry with the latest mod date
+                                print("de-duping result ids if necessary")
+                                resultsTrk["annotationModDateTime"] = pd.to_datetime(resultsTrk["annotationModDateTime"])
+
+                                #print(resultsTrk)
+                                print("start resultsTrk.columns: ",resultsTrk.columns)
+                                print("start resultsTrk.shape: ",resultsTrk.shape)
+
+                                resultsTrk = resultsTrk[resultsTrk["annotationModDateTime"] == (resultsTrk.groupby("resultId")["annotationModDateTime"].transform("max"))]
+                                print("finished de-duping result ids if necessary")
+                                #print(resultsTrk)
+                                print("end resultsTrk.columns: ",resultsTrk.columns)
+                                print("end resultsTrk.shape: ",resultsTrk.shape)
+
+                                resultIds = resultsTrk["resultId"].tolist()
+                                resultIdDependencies = resultsTrk["associatedFileDependsOn"].tolist()
+                                
+                                
+                                popFormField = [{"resultId": rId, "resultIdDependsOn": rIdD.strip("][").split(", ")} for rId,rIdD in zip(resultIds,resultIdDependencies)]
+                                print("popFormField: ", popFormField)
+
+                                messageText = "<br>Extracted file dependencies for each result in the results tracker are as follows:<br><br>"
+                                #errorFormat = '<span style="color:green;">{}</span>'
+                                #self.userMessageBox.append(errorFormat.format(messageText))
+                                self.userMessageBox.append(messageText)
+
+                                emptyDependencies = []
+                                formatDependencies = []
+                                for i, list_item in enumerate(popFormField):
+                                    self.userMessageBox.append(f"{i + 1}. ")
+                                    for j, key in enumerate(list_item.keys()):
+                                        self.userMessageBox.append(f"{key}:{list_item[key]}{'' if j == len(list_item) - 1 else ', '}")
+                                        if key == "resultId":
+                                            resultId = list_item[key]
+                                        if key == "resultIdDependsOn":
+                                            if not list_item[key]:
+                                                emptyDependencies.append(resultId)
+                                                print("emptyDependencies: ",emptyDependencies)
+                                                formatDependencies.append([])
+                                            else:
+                                                formatDependencies.append([item.replace("'", '') for item in list_item[key]])
+                                                
+                                    self.userMessageBox.append("")
+
+                                self.popFormField = [{"resultId": rId, "resultIdDependsOn": rIdD} for rId,rIdD in zip(resultIds,formatDependencies)]
+                                print("popFormField_format: ", self.popFormField)
+
+                                if emptyDependencies:
+                                    messageText = "<br>The following result IDs listed in the Results Tracker did not have any file dependencies listed:<br>" + ", ".join(emptyDependencies) + "<br><br>Please review your results tracker and add file dependencies for each result as appropriate, then come back and re-add the results tracker as a resource.<br><br>"
+                                    errorFormat = '<span style="color:red;">{}</span>'
+                                    self.userMessageBox.append(errorFormat.format(messageText))
+
+                                #self.form.widget.state = {
+                                #    "associatedFileResultsDependOn": popFormField
+                                #}
+                            
+                            else: 
+                                messageText = "<br>There do not appear to be any results listed in the Results Tracker. Please add at least one result to your Results Tracker by navigating to the Add Results sub-tab of the Results Tracker tab. If you have already annotated your result(s), use the Add result or Auto-add result button to add your result files to your Result Tracker. If you need to annotate your result(s), start by clicking the Annotate Result button, fill out the brief form that appears to annotate your result(s), use the Add or Auto-add Result button(s) to add your result file(s) to your Results Tracker, then come back here to re-add your Results Tracker as a resource.<br>"
+                                errorFormat = '<span style="color:red;">{}</span>'
+                                self.userMessageBox.append(errorFormat.format(messageText))
+                            
 
 
 
@@ -1654,6 +1657,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Resource Txt Data file you want to edit",
         #        (QtCore.QDir.homePath()), "Text (*.txt)")
 
+        self.loadingFormDataFromFile = True
         
         if self.mode == "edit":
             textBit = "edit"
@@ -1761,6 +1765,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 messageText = "<br>Your new resource has been initialized based on information you entered for " + based_on_annotation_id + "<br><br>"
                 saveFormat = '<span style="color:blue;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
+
+        self.loadingFormDataFromFile = False
 
     def take_inputs(self):
 

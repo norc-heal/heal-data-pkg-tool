@@ -1049,6 +1049,12 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
+        if not os.path.isfile(self.form.widget.state["path"]):
+            messageText = "<br>The file path indicated in this form does not exist. You must enter a resource file path that exists before saving your resource file. Please check your resource file path, update the path indicated in the form if necessary, and then try saving again." 
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return
+
         # if in edit mode then resource path should already exist in resource tracker; if not in edit mode the resource path should
         # not yet exist in tracker
         if self.mode != "edit":
@@ -1494,6 +1500,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     res_m_timestamp = os.path.getmtime(data["path"])
                     res_m_datetime = datetime.datetime.fromtimestamp(res_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
                     print("res_m_datetime: ", res_m_datetime)
+                
+
 
                     # add_to_df_dict = {#"resourceId":[resource_id],
                     #                 "resourceIdNumber": [int(resIdNumStr)],  

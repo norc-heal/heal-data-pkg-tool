@@ -443,6 +443,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         # reminder to add dd if tabular data; reminder to add result tracker if publication
         # if results tracker, read in and try to get result dependencies
+        
         # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
         if not self.loadingFormDataFromFile:
 
@@ -556,31 +557,42 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         ################### hide fields that were revealed due to previous selection
 
+        
+            
         if self.form.widget.state["category"] != "tabular-data":
             self.toggle_widgets(keyText = "data", desiredToggleState = "hide")
             self.toggle_widgets(keyText = "tabular data", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
-            self.form.widget.state = {
-                "descriptionRow": "",
-                "associatedFileDataDict": []
-            } 
+
+            # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+            if not self.loadingFormDataFromFile:
+                self.form.widget.state = {
+                    "descriptionRow": "",
+                    "associatedFileDataDict": []
+                } 
             
         if self.form.widget.state["category"] != "non-tabular-data":
             self.toggle_widgets(keyText = "data", desiredToggleState = "hide")
             
         if self.form.widget.state["category"] not in ["tabular-data","non-tabular-data"]:
             # delete contents of conditional fields if any added
-            self.form.widget.state = {
-                    "categorySubData": "",
-                    "associatedFileProtocol": []
-                } 
+
+            # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+            if not self.loadingFormDataFromFile:
+                self.form.widget.state = {
+                        "categorySubData": "",
+                        "associatedFileProtocol": []
+                    } 
         
         if self.form.widget.state["category"] != "metadata":
             self.toggle_widgets(keyText = "metadata", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
-            self.form.widget.state = {
-                    "categorySubMetadata": ""
-                } 
+
+            # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+            if not self.loadingFormDataFromFile:
+                self.form.widget.state = {
+                        "categorySubMetadata": ""
+                    } 
 
         # if self.form.widget.state["category"] not in ["single-result","multi-result"]:
         #     self.toggle_widgets(keyText = "results", desiredToggleState = "hide")
@@ -592,47 +604,69 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if self.form.widget.state["category"] != "result":
             self.toggle_widgets(keyText = "result", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
-            self.form.widget.state = {
-                    "categorySubResult": ""
-                }
+            
+            # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+            if not self.loadingFormDataFromFile:
+                self.form.widget.state = {
+                        "categorySubResult": ""
+                    }
 
         if self.form.widget.state["category"] != "publication":
             self.toggle_widgets(keyText = "publication", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
-            self.form.widget.state = {
-                    "categorySubPublication": ""
-                }  
+            
+            # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+            if not self.loadingFormDataFromFile:
+                self.form.widget.state = {
+                        "categorySubPublication": ""
+                    }  
 
         if self.form.widget.state["category"] != "publication":
             self.toggle_widgets(keyText = "publication", desiredToggleState = "hide")
             self.toggle_widgets(keyText = "not publication", desiredToggleState = "show")
-            self.form.widget.state = {
-                    "associatedFileResultsTracker": []
-                } 
+            
+            # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+            if not self.loadingFormDataFromFile:
+                self.form.widget.state = {
+                        "associatedFileResultsTracker": []
+                    } 
 
         if self.form.widget.state["category"] == "metadata":
             if self.form.widget.state["categorySubMetadata"] != "heal-formatted-results-tracker":
                 self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
                 # clear associatedFileResultsDependOn field (not sure the format for this, is it a list of lists?)
-                self.popFormField = []
+                
+                # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+                if not self.loadingFormDataFromFile:
+                    self.popFormField = []
+            
             if self.form.widget.state["categorySubMetadata"] != "other":
                 self.toggle_widgets(keyText = "subMetadataOther", desiredToggleState = "hide")
-                self.form.widget.state = {
-                "categorySubMetadataOther": ""
-                } 
+                
+                # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+                if not self.loadingFormDataFromFile:
+                    self.form.widget.state = {
+                    "categorySubMetadataOther": ""
+                    } 
 
         if self.form.widget.state["category"] != "metadata":
             #if self.form.widget.state["categorySubMetadata"] == "heal-formatted-results-tracker":
             self.toggle_widgets(keyText = "not results-tracker", desiredToggleState = "show")
-            self.form.widget.state = {
-                "categorySubMetadata": ""
-            } 
-            self.popFormField = []
+            
+            # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+            if not self.loadingFormDataFromFile:
+                self.form.widget.state = {
+                    "categorySubMetadata": ""
+                } 
+                self.popFormField = []
             
             self.toggle_widgets(keyText = "subMetadataOther", desiredToggleState = "hide")
-            self.form.widget.state = {
-                "categorySubMetadataOther": ""
-            } 
+            
+            # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+            if not self.loadingFormDataFromFile:
+                self.form.widget.state = {
+                    "categorySubMetadataOther": ""
+                } 
         ################### show field appropriate to current selection
             
         if self.form.widget.state["category"] == "tabular-data":

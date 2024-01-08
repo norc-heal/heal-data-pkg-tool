@@ -48,6 +48,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.resetForFormSetState = False
         self.annotationMode = annotationMode
         self.schemaVersion = schema_resource_tracker["version"]
+        self.loadingFormDataFromFile = False
         self.initUI()
         #self.load_file()
 

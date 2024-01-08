@@ -40,6 +40,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         self.workingDataPkgDir = workingDataPkgDir
         self.mode = mode
         self.schemaVersion = schema_results_tracker["version"]
+        self.loadingFormDataFromFile = False
         self.initUI()
 
     def initUI(self):

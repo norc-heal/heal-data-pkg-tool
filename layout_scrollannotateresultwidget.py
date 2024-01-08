@@ -1100,6 +1100,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
         print("in load_file fx")
 
+        self.loadingFormDataFromFile = True
+
         if self.mode == "edit":
             textBit = "edit"
             textButton = "\"Edit an existing result\""
@@ -1197,6 +1199,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 saveFormat = '<span style="color:blue;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))      
 
+        self.loadingFormDataFromFile = False
         
 
 if __name__ == "__main__":

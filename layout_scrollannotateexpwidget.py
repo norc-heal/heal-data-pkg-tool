@@ -958,6 +958,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             
             with open(ifileName, 'r') as stream:
                 data = load(stream)
+                print(data)
 
             if self.mode == "add-based-on":
                 based_on_annotation_id = data["experimentId"]

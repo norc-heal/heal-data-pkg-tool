@@ -419,16 +419,22 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         if self.form.widget.state["category"] not in ["single-panel-figure","figure-panel"]:
             self.toggle_widgets(keyText = "figure", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
-            self.form.widget.state = {
-                "figureNumber": []
-            }
+
+            # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+            if not self.loadingFormDataFromFile:
+                self.form.widget.state = {
+                    "figureNumber": []
+                }
 
         if self.form.widget.state["category"] != "table":
             self.toggle_widgets(keyText = "table", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
-            self.form.widget.state = {
-                "tableNumber": []
-            }  
+            
+            # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+            if not self.loadingFormDataFromFile:
+                self.form.widget.state = {
+                    "tableNumber": []
+                }  
             
         ################### show field appropriate to current selection
             

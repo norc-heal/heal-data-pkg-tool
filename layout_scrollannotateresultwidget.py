@@ -575,6 +575,18 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             self.labelAddMultiDepend.hide()
 
     def save_result(self):
+
+        result = deepcopy(self.form.widget.state)
+        #dumps(result, indent=4)
+
+        # for any array of string items, remove empty strings from array
+        for key in self.schema["properties"]:
+            if self.schema["properties"][key]["type"] == "array":
+                if self.schema["properties"][key]["items"]["type"] == "string":
+                    result[key] = dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(myStringArray=result[key])
+
+        if not dsc_pkg_utils.validateFormData(self=self,formData=result):
+            return
         
         # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
         # check that a dsc data package dir has been added - this is the save folder
@@ -601,7 +613,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # to an existing publication - 
         # now only check that at least a minimal description has been added to the form 
         # if not exit with informative error
-        if not self.form.widget.state["description"]:
+        #if not self.form.widget.state["description"]:
+        if not result["description"]:
             messageText = "<br>You must add at least a minimal description of your result before saving your result annotation form. Please add at least a minimal description of your result in the Result Description field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
@@ -612,7 +625,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # and if they don't already know it that they should edit once they do in order to ensure the result is 
         # appropriately added to the publication's results tracker
         # importantly, this does not stop the user from saving the result annotation
-        if not self.form.widget.state["associatedFilePublication"]:
+        #if not self.form.widget.state["associatedFilePublication"]:
+        if not result["associatedFilePublication"]:
             messageText = "<br><b>WARNING:</b> You did not indicate an associated publication file in which this result is or will be shared. If you already know which publication(s) this result will be shared in, please return to the \"Add Result\" tab and use the \"Edit an existing result\" push-button to edit this result annotation and add the publication(s) in which the result will be shared. You can add at least one publication file in which this result is/will be shared by browsing to a file path(s) in the Associated Publication File(s) field in the form. <br><br>If, at this time, you have not started drafting the publication in which this result will be shared, or don't know yet in which publication this result will be shared, please return to edit the result annotation once you have started drafting the publication or decided in which publication this result will be shared. Doing so will ensure that this result is added to the Results Tracker for the publication(s) in which it is shared!" 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
@@ -632,9 +646,11 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # form fields that will be the same), and save again with a new id - in this case the user can modify the 
         # id manually, incrementing the id number by one - if id modified, updated it in memory and regenerate
         # the save file name, save file path, and id number
-        if self.form.widget.state["resultId"] != self.result_id:
+        #if self.form.widget.state["resultId"] != self.result_id:
+        if result["resultId"] != self.result_id:
             
-            self.result_id = self.form.widget.state["resultId"]
+            #self.result_id = self.form.widget.state["resultId"]
+            self.result_id = result["resultId"]
             self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
 
@@ -643,14 +659,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # check if saveFilePath already exists (same as if a file for this resource id already exists); if exists, exit our with informative message;
         # otherwise go ahead and save
         if os.path.isfile(self.saveFilePath):
-            messageText = "A result annotation for a result with id " + self.result_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your result tracker file(s) and check which result IDs you've already used and added to your tracker(s), 2) Use File Explorer to navigate to your DSC Data Package Directory and check which result IDs you've already used and for which you've already created result files - these files will be called \'result-trk-result-{a number}.txt\'. While you perform these checks, your result tracker form will remain open unless you explicitly close it. You can come back to it, change your result ID, and hit the save button again to save with a result ID that is not already in use. If you meant to overwrite a result file you previously created for a result with this result ID, please delete the previously created result file and try saving again.<br><br>" 
+            messageText = "A result annotation for a result with id " + self.result_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your result tracker file(s) and check which result IDs you've already used and added to your tracker(s), 2) Use File Explorer to navigate to your DSC Data Package Directory and check which result IDs you've already used and for which you've already created result files - these files will be called \'result-trk-result-{a number}.txt\'. While you perform these checks, your result tracker form will remain open unless you explicitly close it. You can come back to it, change your result ID, and hit the save button again to save with a result ID that is not already in use. If you meant to edit an existing result annotation file, please use the \"Edit an existing result\" functionality on the \"Add a result\" sub-tab.<br><br>" 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
         else:
                               
-            result = self.form.widget.state
+            #result = self.form.widget.state
             f=open(self.saveFilePath,'w')
             print(dumps(result, indent=4), file=f)
             f.close()

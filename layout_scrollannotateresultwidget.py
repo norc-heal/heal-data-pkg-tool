@@ -924,11 +924,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
             # check if none of the resulst have an associated pub - if none have an associated pub, set explode to False
             explode = True
+            # if user didn't add a publication path but did click the button on the form to add a field in which to add a path, an empty string is saved to the array of file paths, get rid of those here
+            collect_df["associatedFilePublication"] = [dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(myStringArray = l) for l in collect_df["associatedFilePublication"]]
+            
             if collect_df["associatedFilePublication"][0] == []:
                 if collect_df.shape[0] == 1:
                     explode = False
                 elif collect_df.shape[0] > 1:
-                    check = all([True if v==[] else False for v in df2["file_list"]])
+                    check = all([True if v==[] else False for v in collect_df["associatedFilePublication"]])
                     if check:
                         explode = False
 
@@ -1218,7 +1221,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 self.form.widget.state = {
                     "resultIdNumber": self.resIdNum
                 }
-                
+
             if self.mode == "add-based-on":
                 self.get_id()
                 messageText = "<br>Your new result has been initialized based on information you entered for " + based_on_annotation_id + "<br><br>"

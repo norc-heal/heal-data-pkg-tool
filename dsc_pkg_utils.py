@@ -16,6 +16,7 @@ from pathlib import Path
 
 from healdata_utils.schemas import healjsonschema, healcsvschema
 from healdata_utils.transforms.frictionless import conversion
+from healdata_utils.validators.jsonschema import validate_against_jsonschema
 
 # from versions_experiment_tracker import fieldNameMap
 # from versions_resource_tracker import fieldNameMap
@@ -72,6 +73,51 @@ trkDict = {
     }
     
 }
+
+def validateFormData(self, formData):
+    # validate experiment file json content against experiment tracker json schema
+    #out = validate_against_jsonschema(data, schema_results_tracker)
+    out = validate_against_jsonschema(formData, self.schema)
+    print(out["valid"])
+    print(out["errors"])
+    print(type(out["errors"]))
+
+    
+    # if not valid, print validation errors and exit 
+    if not out["valid"]:
+
+        # # add file to list of invalid files
+        # invalidFiles.append(ifileNameStem)
+        
+        # get validation errors to print
+        printErrListSingle = []
+        # initialize the final full validation error message for this file to start with the filename
+        #printErrListAll = [ifileNameStem]
+        printErrListAll = []
+    
+        for e in out["errors"]:
+            printErrListSingle.append(''.join(e["absolute_path"]))
+            printErrListSingle.append(e["validator"])
+            printErrListSingle.append(e["validator_value"])
+            printErrListSingle.append(e["message"])
+
+            print(printErrListSingle)
+            printErrSingle = '\n'.join(printErrListSingle)
+            printErrListAll.append(printErrSingle)
+
+            # printErrListSingle = []
+            # printErrSingle = ""
+        
+        printErrAll = '\n\n'.join(printErrListAll)
+    
+        #messageText = "The following resource file is NOT valid and will not be added to your Resource Tracker file: " + ifileName + "\n\n\n" + "Validation errors are as follows: " + "\n\n\n" + ', '.join(out["errors"]) + "\n\n\n" + "Exiting \"Add Resource\" function now."
+        messageText = "The form data is NOT valid and will not be saved until validation errors are fixed." + "\n\n" + "Validation errors are as follows: " + "\n\n" + printErrAll + "\n\n"
+        #self.userMessageBox.append(messageText)
+        saveFormat = '<span style="color:red;">{}</span>'
+        self.userMessageBox.append(saveFormat.format(messageText))
+        return False
+    else:
+        return True
 
 def getDataPkgDirStem(workingDataPkgDir):
     getDir = workingDataPkgDir

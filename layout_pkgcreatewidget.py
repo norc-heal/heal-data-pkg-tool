@@ -25,6 +25,8 @@ import pipe
 import dsc_pkg_utils # local module, no pip install needed
 from layout_csveditwidget import CSVEditWindow
 
+import version_check
+
 class PkgCreateWindow(QtWidgets.QMainWindow):
 
     def __init__(self, workingDataPkgDirDisplay):
@@ -110,10 +112,25 @@ class PkgCreateWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(messageText)
             return
 
-        messageText = "<br>" + "Your working Data Package Directory has been set at: "  + pkgPath
+        messageText = "<br>" + "Your working Data Package Directory has been set at: "  + pkgPath + "<br><br>Checking if updates to dsc-pkg files are needed...<br>"
         self.userMessageBox.append(messageText)
+        QApplication.processEvents() # print accumulated user status messages
 
         self.pkgPath = pkgPath
         self.workingDataPkgDirDisplay.setText(self.pkgPath)
+
+        versionCheck = version_check.version_check(self.pkgPath)
+        
+        versionCheckAllUpToDate = versionCheck[0]
+        versionCheckMessageText = versionCheck[1]
+
+        messageText = "<br>" + versionCheckMessageText
+        
+        if versionCheckAllUpToDate:
+            saveFormat = '<span style="color:green;">{}</span>'
+        else:
+            saveFormat = '<span style="color:red;">{}</span>'
+
+        self.userMessageBox.append(saveFormat.format(messageText)) 
 
     

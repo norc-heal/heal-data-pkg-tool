@@ -46,39 +46,84 @@
 
 
 fieldNameMap = {
-    "latestVersion":"0.2.0",
+    "latestVersion":"0.3.0",
     "properties":{
+        "schemaVersion":{
+            "formerNames": [],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
+        },
         "experimentId":{
             "formerNames": ["experiment.id"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "experimentName":{
             "formerNames":[],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "experimentType":{
             "formerNames":["experiment.type"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "experimentDescription":{
             "formerNames":["experiment.description"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "experimentQuestion":{
             "formerNames": ["experiment.question"],
-            "deprecated": True
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "experimentHypothesis":{
             "formerNames": ["experiment.hypothesis"],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "annotationCreateDateTime":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         },
         "annotationModDateTime":{
             "formerNames": [],
-            "deprecated": False
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
+        },
+        "experimentIdNumber":{
+            "formerNames": ["experiment.id.num","exp.id.num"],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
+        },
+        "annotationModTimeStamp":{
+            "formerNames": ["restrk.mod.time.stamp"],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         }
     }
 }

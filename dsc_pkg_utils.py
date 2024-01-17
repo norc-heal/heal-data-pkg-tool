@@ -16,11 +16,227 @@ from pathlib import Path
 
 from healdata_utils.schemas import healjsonschema, healcsvschema
 from healdata_utils.transforms.frictionless import conversion
+from healdata_utils.validators.jsonschema import validate_against_jsonschema
 
-from schema_resource_tracker import schema_resource_tracker
-from schema_experiment_tracker import schema_experiment_tracker
-from schema_results_tracker import schema_results_tracker
+# from versions_experiment_tracker import fieldNameMap
+# from versions_resource_tracker import fieldNameMap
+# from versions_results_tracker import fieldNameMap
 
+import versions_experiment_tracker
+import versions_resource_tracker
+import versions_results_tracker
+
+import schema_experiment_tracker
+import schema_resource_tracker
+import schema_results_tracker
+
+# from schema_experiment_tracker import schema_experiment_tracker
+# from schema_resource_tracker import schema_resource_tracker
+# from schema_results_tracker import schema_results_tracker
+
+from packaging import version
+
+trkDict = {
+        
+    "experimentTracker":{
+        "id": "experimentId",
+        "schema": schema_experiment_tracker.schema_experiment_tracker,
+        "updateSchemaMap": versions_experiment_tracker.fieldNameMap,
+        "oneOrMulti":"one",
+        "trackerName":"heal-csv-experiment-tracker.csv",
+        "trackerTypeHyphen":"experiment-tracker",
+        "trackerTypeMessageString":"Experiment Tracker",
+        "jsonTxtPrefix": "exp-trk-exp-",
+        "idPrefix": "exp-"
+    },
+    "resourceTracker":{
+        "id": "resourceId",
+        "schema": schema_resource_tracker.schema_resource_tracker,
+        "updateSchemaMap": versions_resource_tracker.fieldNameMap,
+        "oneOrMulti": "one",
+        "trackerName":"heal-csv-resource-tracker.csv",
+        "trackerTypeHyphen":"resource-tracker",
+        "trackerTypeMessageString":"Resource Tracker",
+        "jsonTxtPrefix": "resource-trk-resource-",
+        "idPrefix": "resource-"
+    },
+    "resultsTracker":{
+        "id": "resultId",
+        "schema": schema_results_tracker.schema_results_tracker,
+        "updateSchemaMap": versions_results_tracker.fieldNameMap,
+        "oneOrMulti": "multi",
+        "trackerName":"heal-csv-results-tracker-",
+        "trackerTypeHyphen":"results-tracker",
+        "trackerTypeMessageString":"Results Tracker",
+        "jsonTxtPrefix": "result-trk-result-",
+        "idPrefix": "result-"
+    }
+    
+}
+
+def validateFormData(self, formData):
+    # validate experiment file json content against experiment tracker json schema
+    #out = validate_against_jsonschema(data, schema_results_tracker)
+    out = validate_against_jsonschema(formData, self.schema)
+    print(out["valid"])
+    print(out["errors"])
+    print(type(out["errors"]))
+
+    
+    # if not valid, print validation errors and exit 
+    if not out["valid"]:
+
+        # # add file to list of invalid files
+        # invalidFiles.append(ifileNameStem)
+        
+        # get validation errors to print
+        printErrListSingle = []
+        # initialize the final full validation error message for this file to start with the filename
+        #printErrListAll = [ifileNameStem]
+        printErrListAll = []
+    
+        for e in out["errors"]:
+            printErrListSingle.append(''.join(e["absolute_path"]))
+            printErrListSingle.append(e["validator"])
+            printErrListSingle.append(e["validator_value"])
+            printErrListSingle.append(e["message"])
+
+            print(printErrListSingle)
+            printErrSingle = '\n'.join(printErrListSingle)
+            printErrListAll.append(printErrSingle)
+
+            # printErrListSingle = []
+            # printErrSingle = ""
+        
+        printErrAll = '\n\n'.join(printErrListAll)
+    
+        #messageText = "The following resource file is NOT valid and will not be added to your Resource Tracker file: " + ifileName + "\n\n\n" + "Validation errors are as follows: " + "\n\n\n" + ', '.join(out["errors"]) + "\n\n\n" + "Exiting \"Add Resource\" function now."
+        messageText = "The form data is NOT valid and will not be saved until validation errors are fixed." + "\n\n" + "Validation errors are as follows: " + "\n\n" + printErrAll + "\n\n"
+        #self.userMessageBox.append(messageText)
+        saveFormat = '<span style="color:red;">{}</span>'
+        self.userMessageBox.append(saveFormat.format(messageText))
+        return False
+    else:
+        return True
+
+def getDataPkgDirStem(workingDataPkgDir):
+    getDir = workingDataPkgDir
+    getDirPath = pathlib.Path(getDir)
+
+    # get the stem/name of the working data package dir so that can reproduce it (e.g. may be dsc-pkg-my-study instead of just dsc-pkg, or dsc-pkg name may change over time)
+    getDirName = getDirPath.stem
+
+    return getDirName
+
+def getDataPkgDirParent(workingDataPkgDir):
+    getDir = workingDataPkgDir
+    getDirPath = pathlib.Path(getDir)
+
+    # get the parent dir of the working data package dir path (should be the overall study folder)
+    getParentOfDirPath = getDirPath.parent
+
+    return getParentOfDirPath
+
+def getDataPkgDirToUpdate(workingDataPkgDir):
+    getDir = workingDataPkgDir
+    #getDirPath = pathlib.Path(getDir)
+
+    # get the stem/name of the working data package dir so that can reproduce it (e.g. may be dsc-pkg-my-study instead of just dsc-pkg, or dsc-pkg name may change over time)
+    #getDirName = getDirPath.stem
+    getDirName = getDataPkgDirStem(workingDataPkgDir=getDir)
+
+    # get the parent dir of the working data package dir path (should be the overall study folder)
+    #getParentOfDirPath = getDirPath.parent
+    getParentOfDirPath = getDataPkgDirParent(workingDataPkgDir=getDir)
+
+    # in the overall study folder copy the working data pkg dir contents to an update in progress version of the working data pkg dir
+    getUpdateDirName = getDirName + "-update-in-progress" 
+    getUpdateDirPath = os.path.join(getParentOfDirPath,getUpdateDirName)
+
+    return getUpdateDirPath
+
+def copyDataPkgDirToUpdate(workingDataPkgDir):
+    getDir = workingDataPkgDir
+    
+    getUpdateDirPath = getDataPkgDirToUpdate(workingDataPkgDir=getDir)
+
+    # path to source directory
+    src_dir = getDir
+    # path to destination directory
+    dest_dir = getUpdateDirPath
+
+    if os.path.isdir(dest_dir):
+        return False
+    else:
+        # copy all contents of src to dest
+        shutil.copytree(src_dir, dest_dir)
+        return True
+
+
+def checkTrackerCreatedSchemaVersionAgainstCurrent(self,trackerTypeFileNameString,trackerTypeMessageString):
+    # check self.schemaVersion against version in operational schema version file 
+    # if no operational schema version file exists OR 
+    # if version in operational schema version file is less than self.schemaVersion 
+    # return with message that update of tracker version is needed before new annotations can be added
+    operationalFileSubDir = os.path.join(self.workingDataPkgDir,"no-user-access")
+    fname = "schema-version-" + trackerTypeFileNameString + ".txt"
+    trackerCreatedSchemaVersionFile = os.path.join(operationalFileSubDir,fname)
+    print(trackerCreatedSchemaVersionFile)
+    if os.path.isdir(operationalFileSubDir):
+        print("oper dir exists")
+        if os.path.isfile(trackerCreatedSchemaVersionFile):
+            print("version file exists")
+            #trackerCreatedSchemaVersion = dsc_pkg_utils.read_last_line_txt_file(trackerCreatedSchemaVersionFile)
+            trackerCreatedSchemaVersion = read_last_line_txt_file(trackerCreatedSchemaVersionFile)
+        else:
+            print("version file does not exist")
+            trackerCreatedSchemaVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
+    else: 
+        print("oper dir does not exist")
+        trackerCreatedSchemaVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
+
+    
+    trackerCreatedSchemaVersionParse = version.parse(trackerCreatedSchemaVersion)
+    currentTrackerVersionParse = version.parse(self.schemaVersion)
+
+    print("trackerCreatedSchemaVersionParse: ",trackerCreatedSchemaVersionParse)
+    print("currentTrackerVersionParse: ",currentTrackerVersionParse)
+
+    if trackerCreatedSchemaVersionParse != currentTrackerVersionParse:
+        if trackerCreatedSchemaVersionParse < currentTrackerVersionParse:
+            messageText = "<br>The " + trackerTypeMessageString + " file in your working Data Package Directory was created under an outdated schema version. Update of tracker version is needed before new annotations can be added or existing annotations can be edited. Head to the \"Data Package\" tab >> \"Audit & Update\" sub-tab to update, then come back and try again. <br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return False
+        else:
+            messageText = "<br>It appears that the " + trackerTypeMessageString + " file in your working Data Package Directory was created under a schema version that is later than the current schema version. Something is not right. Please reach out to the DSC team for help. <br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return False
+    else:
+        messageText = "<br>The " + trackerTypeMessageString + " file in your working Data Package Directory was created under the current schema version. You may proceed with adding new items.<br>"
+        saveFormat = '<span style="color:green;">{}</span>'
+        self.userMessageBox.append(saveFormat.format(messageText)) 
+        return True
+
+def read_last_line_txt_file(txtFile):
+    #import os
+    #https://www.logilax.com/python-read-last-line-of-file/
+    with open(txtFile, "rb") as file:
+        try:
+            file.seek(-2, os.SEEK_END)
+            while file.read(1) != b'\n':
+                file.seek(-2, os.SEEK_CUR)
+        except OSError:
+            file.seek(0)
+        last_line = file.readline().decode()
+    
+    return last_line
+
+def unique_cols(df):
+    a = df.to_numpy() # df.values (pandas<0.24)
+    return (a[0] == a).all(0)
+    
 def renameDictKeys(myDictionary,keyRenameDictionary):
     print("myDictionary: ",myDictionary)
     for k, v in list(myDictionary.items()):
@@ -39,6 +255,22 @@ def renameListOfDictKeys(myDictionaryList,keyRenameDictionary):
                 d[keyRenameDictionary.get(k, k)] = d.pop(k)
 
         return myDictionaryList
+
+def convertStringifiedArrayOfStringsToList(myStringifiedArrayOfStrings):
+    print("myStringifiedArrayOfStrings: ",myStringifiedArrayOfStrings)
+    print(type(myStringifiedArrayOfStrings))
+    if myStringifiedArrayOfStrings == '[]':
+        print("value is stringfied empty list")
+        return []  
+    else: 
+        myStringifiedArrayOfStrings = myStringifiedArrayOfStrings.replace("'","\"")
+        print("myStringifiedArrayOfStrings: ",myStringifiedArrayOfStrings)
+        print(type(myStringifiedArrayOfStrings))
+        myStringifiedArrayOfStrings = json.loads(myStringifiedArrayOfStrings)
+        print("myStringifiedArrayOfStrings: ",myStringifiedArrayOfStrings)
+        print(type(myStringifiedArrayOfStrings))
+        
+        return myStringifiedArrayOfStrings
 
 def mapArrayOfStrings(myStringArray,stringMapDictionary):
     print("myStringArray: ",myStringArray)
@@ -403,14 +635,17 @@ def heal_metadata_json_schema(metadataType):
         
 
     if metadataType == "resource-tracker":
-        schema = schema_resource_tracker
+        #schema = schema_resource_tracker
+        schema = schema_resource_tracker.schema_resource_tracker
         
 
     if metadataType == "experiment-tracker":
-        schema = schema_experiment_tracker
+        #schema = schema_experiment_tracker
+        schema = schema_experiment_tracker.schema_experiment_tracker
 
     if metadataType == "results-tracker":
-        schema = schema_results_tracker
+        #schema = schema_results_tracker
+        schema = schema_results_tracker.schema_results_tracker
         
 
     if metadataType not in ["data-dictionary","resource-tracker","experiment-tracker","results-tracker"]:
@@ -432,14 +667,17 @@ def heal_metadata_json_schema_properties(metadataType):
         
 
     if metadataType == "resource-tracker":
-        props = schema_resource_tracker["properties"]
+        #props = schema_resource_tracker["properties"]
+        props = schema_resource_tracker.schema_resource_tracker["properties"]
         
 
     if metadataType == "experiment-tracker":
-        props = schema_experiment_tracker["properties"]
+        #props = schema_experiment_tracker["properties"]
+        props = schema_experiment_tracker.schema_experiment_tracker["properties"]
 
     if metadataType == "results-tracker":
-        props = schema_results_tracker["properties"]
+        #props = schema_results_tracker["properties"]
+        props = schema_results_tracker.schema_results_tracker["properties"]
         
 
     if metadataType not in ["data-dictionary","resource-tracker","experiment-tracker","results-tracker"]:
@@ -560,15 +798,27 @@ def new_pkg(pkg_parent_dir_path,pkg_dir_name='dsc-pkg',dsc_pkg_resource_dir_path
         print("Directory '%s' can not be created - check to see if the directory already exists")
         return
 
+    # create a no user access subdir in working data pkg dir for operational files
+    operationalFileSubDir = os.path.join(pkg_path,"no-user-access")
+    os.mkdir(os.path.join(operationalFileSubDir))
+        
+    metadataTypeList = ["experiment-tracker", "resource-tracker","results-tracker"]
+    metadataSchemaVersionList = [schema_experiment_tracker.schema_experiment_tracker["version"], schema_resource_tracker.schema_resource_tracker["version"], schema_results_tracker.schema_results_tracker["version"]]
     
-    #destination_folder = pkg_path
-    
+    for metadataType, metadataSchemaVersion in zip(metadataTypeList,metadataSchemaVersionList):
 
-    for metadataType in ["experiment-tracker", "resource-tracker"]:
+        versionTxtFileName = "schema-version-" + metadataType + ".txt"
+        with open(os.path.join(operationalFileSubDir,versionTxtFileName), "w") as text_file:
+            text_file.write(metadataSchemaVersion)
+
         props = heal_metadata_json_schema_properties(metadataType=metadataType)
         df = empty_df_from_json_schema_properties(jsonSchemaProperties=props)
 
-        fName = "heal-csv-" + metadataType + ".csv"
+        if metadataType == "results-tracker":
+            fName = "heal-csv-" + metadataType + "-collect-all.csv"
+        else:
+            fName = "heal-csv-" + metadataType + ".csv"
+        
         df.to_csv(os.path.join(pkg_path, fName), index = False) 
 
     return pkg_path

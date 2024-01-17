@@ -32,6 +32,8 @@ from schema_results_tracker import schema_results_tracker
 from healdata_utils.validators.jsonschema import validate_against_jsonschema
 import datetime
 
+from packaging import version
+
 
 class ResultsTrkAddWindow(QtWidgets.QMainWindow):
 
@@ -39,6 +41,7 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.w = None  # No external window yet.
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
+        self.schemaVersion = schema_results_tracker["version"]
         
         widget = QtWidgets.QWidget()
         
@@ -101,6 +104,42 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
 
+        
+        # check self.schemaVersion against version in operational schema version file 
+        # if no operational schema version file exists OR 
+        # if version in operational schema version file is less than self.schemaVersion 
+        # return with message that update of tracker version is needed before new annotations can be added
+        if not dsc_pkg_utils.checkTrackerCreatedSchemaVersionAgainstCurrent(self=self,trackerTypeFileNameString="results-tracker",trackerTypeMessageString="Results Tracker"):
+            return
+
+        # operationalFileSubDir = os.path.join(self.workingDataPkgDir,"no-user-access")
+        # trackerCreatedSchemaVersionFile = os.path.join(operationalFileSubDir,"schema-version-results-tracker.csv")
+        # if os.isdir(operationalFileSubDir):
+        #     if os.isfile(trackerCreatedSchemaVersionFile):
+        #         trackerCreatedSchemaVersion = dsc_pkg_utils.read_last_line_txt_file(trackerCreatedSchemaVersionFile)
+        #     else:
+        #         trackerCreatedSchemaVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
+        # else: 
+        #     trackerCreatedSchemaVersion = "0.1.0" # not necessarily accurate, just indicating that it's not up to date
+
+        # trackerCreatedSchemaVersionParse = version.parse(trackerCreatedSchemaVersion)
+        # currentTrackerVersionParse = version.parse(self.schemaVersion)
+
+        # if trackerCreatedSchemaVersionParse != currentTrackerVersionParse:
+        #     if trackerCreatedSchemaVersionParse < currentTrackerVersionParse:
+        #         messageText = "<br>The Results Tracker file in your working Data Package Directory was created under an outdated schema version. Update of tracker version is needed before new annotations can be added. Head to the \"Data Package\" tab >> \"Audit & Update\" sub-tab to update, then come back and try again. <br>"
+        #         saveFormat = '<span style="color:red;">{}</span>'
+        #         self.userMessageBox.append(saveFormat.format(messageText))
+        #         return
+        #     else:
+        #         messageText = "<br>It appears that The Results Tracker file in your working Data Package Directory was created under a schema version that is later than the current schema version. Something is not right. Please reach out to the DSC team for help. <br>"
+        #         saveFormat = '<span style="color:red;">{}</span>'
+        #         self.userMessageBox.append(saveFormat.format(messageText))
+        #         return
+
+
+         
+
         # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property (in this case for validation purposes) so perform some checks
 
         # check that experiment tracker exists in working data pkg dir, if not, return
@@ -133,6 +172,13 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
 
         # check if user has set a working data package dir - if not exit gracefully with informative message
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        # check self.schemaVersion against version in operational schema version file 
+        # if no operational schema version file exists OR 
+        # if version in operational schema version file is less than self.schemaVersion 
+        # return with message that update of tracker version is needed before new annotations can be added
+        if not dsc_pkg_utils.checkTrackerCreatedSchemaVersionAgainstCurrent(self=self,trackerTypeFileNameString="results-tracker",trackerTypeMessageString="Results Tracker"):
             return
 
         # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property (in this case for validation purposes) so perform some checks
@@ -169,6 +215,13 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
 
         # check if user has set a working data package dir - if not exit gracefully with informative message
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        # check self.schemaVersion against version in operational schema version file 
+        # if no operational schema version file exists OR 
+        # if version in operational schema version file is less than self.schemaVersion 
+        # return with message that update of tracker version is needed before new annotations can be added
+        if not dsc_pkg_utils.checkTrackerCreatedSchemaVersionAgainstCurrent(self=self,trackerTypeFileNameString="results-tracker",trackerTypeMessageString="Results Tracker"):
             return
 
         # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property so perform some checks
@@ -394,6 +447,13 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
 
+        # check self.schemaVersion against version in operational schema version file 
+        # if no operational schema version file exists OR 
+        # if version in operational schema version file is less than self.schemaVersion 
+        # return with message that update of tracker version is needed before new annotations can be added
+        if not dsc_pkg_utils.checkTrackerCreatedSchemaVersionAgainstCurrent(self=self,trackerTypeFileNameString="experiment-tracker",trackerTypeMessageString="Experiment Tracker"):
+            return
+            
         # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property (in this case for validation purposes) so perform some checks
 
         # check that experiment tracker exists in working data pkg dir, if not, return
@@ -571,23 +631,25 @@ class ResultsTrkAddWindow(QtWidgets.QMainWindow):
                     restrk_m_datetime = datetime.datetime.fromtimestamp(restrk_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
                     print("restrk_m_datetime: ", restrk_m_datetime)
 
-                    add_to_df_dict = {#"resultId":[resource_id],
-                                    "resultIdNumber": [int(IdNumStr)],  
-                                    #"annotationCreateDateTime": [restrk_c_datetime],
-                                    #"annotationModDateTime": [restrk_m_datetime],
-                                    "annotationModTimeStamp": [restrk_m_timestamp]}
+                    # add_to_df_dict = {#"resultId":[resource_id],
+                    #                 "resultIdNumber": [int(IdNumStr)],  
+                    #                 #"annotationCreateDateTime": [restrk_c_datetime],
+                    #                 #"annotationModDateTime": [restrk_m_datetime],
+                    #                 "annotationModTimeStamp": [restrk_m_timestamp]}
 
 
-                    add_to_df = pd.DataFrame(add_to_df_dict)
+                    # add_to_df = pd.DataFrame(add_to_df_dict)
 
                     # convert json to pd df
                     df = pd.json_normalize(data) # df is a one row dataframe
                     print(df)
                     df["annotationCreateDateTime"][0] = restrk_c_datetime
                     df["annotationModDateTime"][0] = restrk_m_datetime
+                    df["resultIdNumber"][0] = int(IdNumStr)
+                    df["annotationModTimeStamp"][0] = restrk_m_timestamp
                     print(df)
-                    df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
-                    print(df)
+                    # df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
+                    # print(df)
 
                     collect_df = pd.concat([collect_df,df], axis=0) # add this files data to the dataframe that will collect data across all valid data files
                     print("collect_df rows: ", collect_df.shape[0])

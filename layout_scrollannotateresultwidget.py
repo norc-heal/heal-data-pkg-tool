@@ -39,6 +39,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         self.workingDataPkgDir = workingDataPkgDir
         self.mode = mode
+        self.schemaVersion = schema_results_tracker["version"]
+        self.loadingFormDataFromFile = False
         self.initUI()
 
     def initUI(self):
@@ -73,6 +75,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         self.form = self.builder.create_form(self.ui_schema)
         
         self.formDefaultState = {
+            "schemaVersion": self.schemaVersion,
             "resultId": "result-1",
             "experimentNameBelongsTo": "default-experiment-name"
         }
@@ -417,16 +420,22 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         if self.form.widget.state["category"] not in ["single-panel-figure","figure-panel"]:
             self.toggle_widgets(keyText = "figure", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
-            self.form.widget.state = {
-                "figureNumber": []
-            }
+
+            # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+            if not self.loadingFormDataFromFile:
+                self.form.widget.state = {
+                    "figureNumber": []
+                }
 
         if self.form.widget.state["category"] != "table":
             self.toggle_widgets(keyText = "table", desiredToggleState = "hide")
             # delete contents of conditional fields if any added
-            self.form.widget.state = {
-                "tableNumber": []
-            }  
+            
+            # DO NOT do these items if loading from file (i.e. user is editing an existing annotation or adding a new annotation based on existing) 
+            if not self.loadingFormDataFromFile:
+                self.form.widget.state = {
+                    "tableNumber": []
+                }  
             
         ################### show field appropriate to current selection
             
@@ -461,6 +470,11 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 resIdNum = 1
 
             self.resIdNum = resIdNum
+
+            self.form.widget.state = {
+                    "resultIdNumber": self.resIdNum
+                }
+
             self.result_id = 'result-'+ str(self.resIdNum)
             self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
@@ -561,6 +575,18 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             self.labelAddMultiDepend.hide()
 
     def save_result(self):
+
+        result = deepcopy(self.form.widget.state)
+        #dumps(result, indent=4)
+
+        # for any array of string items, remove empty strings from array
+        for key in self.schema["properties"]:
+            if self.schema["properties"][key]["type"] == "array":
+                if self.schema["properties"][key]["items"]["type"] == "string":
+                    result[key] = dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(myStringArray=result[key])
+
+        if not dsc_pkg_utils.validateFormData(self=self,formData=result):
+            return
         
         # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
         # check that a dsc data package dir has been added - this is the save folder
@@ -587,7 +613,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # to an existing publication - 
         # now only check that at least a minimal description has been added to the form 
         # if not exit with informative error
-        if not self.form.widget.state["description"]:
+        #if not self.form.widget.state["description"]:
+        if not result["description"]:
             messageText = "<br>You must add at least a minimal description of your result before saving your result annotation form. Please add at least a minimal description of your result in the Result Description field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
@@ -598,21 +625,32 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # and if they don't already know it that they should edit once they do in order to ensure the result is 
         # appropriately added to the publication's results tracker
         # importantly, this does not stop the user from saving the result annotation
-        if not self.form.widget.state["associatedFilePublication"]:
+        #if not self.form.widget.state["associatedFilePublication"]:
+        if not result["associatedFilePublication"]:
             messageText = "<br><b>WARNING:</b> You did not indicate an associated publication file in which this result is or will be shared. If you already know which publication(s) this result will be shared in, please return to the \"Add Result\" tab and use the \"Edit an existing result\" push-button to edit this result annotation and add the publication(s) in which the result will be shared. You can add at least one publication file in which this result is/will be shared by browsing to a file path(s) in the Associated Publication File(s) field in the form. <br><br>If, at this time, you have not started drafting the publication in which this result will be shared, or don't know yet in which publication this result will be shared, please return to edit the result annotation once you have started drafting the publication or decided in which publication this result will be shared. Doing so will ensure that this result is added to the Results Tracker for the publication(s) in which it is shared!" 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             #return
         
+        if self.mode == "edit":
+            # move the annotation file user opened for editing to archive folder
+            #os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
+            os.rename(self.saveFilePath,self.saveAnnotationFilePath)
+            messageText = "<br>In preparation for saving your edited result annotation file, your original result annotation file has been archived at:<br>" + self.saveAnnotationFilePath + "<br><br>"
+            saveFormat = '<span style="color:blue;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+
         # check if user has modified the result id from the one that was autogenerated when adding dsc data dir for saving
         # this may happen if for example a user annotates a result using the autogenerated id, then wants to keep 
         # going using the same form window instance, modify the contents to annotate a new result (perhaps one with some 
         # form fields that will be the same), and save again with a new id - in this case the user can modify the 
         # id manually, incrementing the id number by one - if id modified, updated it in memory and regenerate
         # the save file name, save file path, and id number
-        if self.form.widget.state["resultId"] != self.result_id:
+        #if self.form.widget.state["resultId"] != self.result_id:
+        if result["resultId"] != self.result_id:
             
-            self.result_id = self.form.widget.state["resultId"]
+            #self.result_id = self.form.widget.state["resultId"]
+            self.result_id = result["resultId"]
             self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
 
@@ -621,14 +659,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         # check if saveFilePath already exists (same as if a file for this resource id already exists); if exists, exit our with informative message;
         # otherwise go ahead and save
         if os.path.isfile(self.saveFilePath):
-            messageText = "A result annotation for a result with id " + self.result_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your result tracker file(s) and check which result IDs you've already used and added to your tracker(s), 2) Use File Explorer to navigate to your DSC Data Package Directory and check which result IDs you've already used and for which you've already created result files - these files will be called \'result-trk-result-{a number}.txt\'. While you perform these checks, your result tracker form will remain open unless you explicitly close it. You can come back to it, change your result ID, and hit the save button again to save with a result ID that is not already in use. If you meant to overwrite a result file you previously created for a result with this result ID, please delete the previously created result file and try saving again.<br><br>" 
+            messageText = "A result annotation for a result with id " + self.result_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your result tracker file(s) and check which result IDs you've already used and added to your tracker(s), 2) Use File Explorer to navigate to your DSC Data Package Directory and check which result IDs you've already used and for which you've already created result files - these files will be called \'result-trk-result-{a number}.txt\'. While you perform these checks, your result tracker form will remain open unless you explicitly close it. You can come back to it, change your result ID, and hit the save button again to save with a result ID that is not already in use. If you meant to edit an existing result annotation file, please use the \"Edit an existing result\" functionality on the \"Add a result\" sub-tab.<br><br>" 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
         else:
                               
-            result = self.form.widget.state
+            #result = self.form.widget.state
             f=open(self.saveFilePath,'w')
             print(dumps(result, indent=4), file=f)
             f.close()
@@ -828,23 +866,25 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                     restrk_m_datetime = datetime.datetime.fromtimestamp(restrk_m_timestamp).strftime("%Y-%m-%d, %H:%M:%S")
                     print("restrk_m_datetime: ", restrk_m_datetime)
 
-                    add_to_df_dict = {#"resultId":[resource_id],
-                                    "resultIdNumber": [int(IdNumStr)],  
-                                    #"annotationCreateDateTime": [restrk_c_datetime],
-                                    #"annotationModDateTime": [restrk_m_datetime],
-                                    "annotationModTimeStamp": [restrk_m_timestamp]}
+                    # add_to_df_dict = {#"resultId":[resource_id],
+                    #                 "resultIdNumber": [int(IdNumStr)],  
+                    #                 #"annotationCreateDateTime": [restrk_c_datetime],
+                    #                 #"annotationModDateTime": [restrk_m_datetime],
+                    #                 "annotationModTimeStamp": [restrk_m_timestamp]}
 
 
-                    add_to_df = pd.DataFrame(add_to_df_dict)
+                    # add_to_df = pd.DataFrame(add_to_df_dict)
 
                     # convert json to pd df
                     df = pd.json_normalize(data) # df is a one row dataframe
                     print(df)
                     df["annotationCreateDateTime"][0] = restrk_c_datetime
                     df["annotationModDateTime"][0] = restrk_m_datetime
+                    df["resultIdNumber"][0] = int(IdNumStr)
+                    df["annotationModTimeStamp"] = restrk_m_timestamp
                     print(df)
-                    df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
-                    print(df)
+                    # df = pd.concat([df,add_to_df], axis = 1) # concatenate cols to df; still a one row dataframe
+                    # print(df)
 
                     collect_df = pd.concat([collect_df,df], axis=0) # add this files data to the dataframe that will collect data across all valid data files
                     print("collect_df rows: ", collect_df.shape[0])
@@ -900,11 +940,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
             # check if none of the resulst have an associated pub - if none have an associated pub, set explode to False
             explode = True
+            # if user didn't add a publication path but did click the button on the form to add a field in which to add a path, an empty string is saved to the array of file paths, get rid of those here
+            collect_df["associatedFilePublication"] = [dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(myStringArray = l) for l in collect_df["associatedFilePublication"]]
+            
             if collect_df["associatedFilePublication"][0] == []:
                 if collect_df.shape[0] == 1:
                     explode = False
                 elif collect_df.shape[0] > 1:
-                    check = all([True if v==[] else False for v in df2["file_list"]])
+                    check = all([True if v==[] else False for v in collect_df["associatedFilePublication"]])
                     if check:
                         explode = False
 
@@ -1090,6 +1133,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
         print("in load_file fx")
 
+        self.loadingFormDataFromFile = True
+
         if self.mode == "edit":
             textBit = "edit"
             textButton = "\"Edit an existing result\""
@@ -1141,8 +1186,11 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             if self.mode == "edit": 
                 self.result_id = data["resultId"]
                 self.resIdNum = int(self.result_id.split("-")[1])
+
                 self.resultFileName = 'result-trk-'+ self.result_id + '.txt'
-                #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
+                
+                # save the full path at which the current file is saved and at which you will save the newly edited file if possible (e.g. valid, tool does not crash for any reason)
+                self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
 
                 # # make sure an archive folder exists, if not create it
                 # if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
@@ -1168,12 +1216,16 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 #self.annotationArchiveFileName = 'exp-trk-'+ self.annotation_id + '-' + str(self.annotationArchiveFileNameNumber) + '.txt'    
                 self.annotationArchiveFileName = archiveFileStartsWith + str(self.annotationArchiveFileNameNumber) + '.txt'  
 
+                # save full path at which you will archive the file once the new file is saved
+                self.saveAnnotationFilePath = os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName)
 
-                # move the result annotation file user opened for editing to archive folder
-                os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
-                messageText = "<br>Your original result annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName) + "<br><br>"
-                saveFormat = '<span style="color:blue;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
+                # move this to end of save command and only do it if in edit mode
+                # # move the result annotation file user opened for editing to archive folder
+                # #os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
+                # os.rename(ifileName,self.saveAnnotationFilePath)
+                # messageText = "<br>Your original result annotation file has been archived at:<br>" + self.saveAnnotationFilePath + "<br><br>"
+                # saveFormat = '<span style="color:blue;">{}</span>'
+                # self.userMessageBox.append(saveFormat.format(messageText))
 
             self.form.widget.state = data
 
@@ -1181,12 +1233,18 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 self.lstbox_view2.addItems(data["associatedFileDependsOn"])
                 self.add_multi_depend()   
 
+            if self.mode == "edit":
+                self.form.widget.state = {
+                    "resultIdNumber": self.resIdNum
+                }
+
             if self.mode == "add-based-on":
                 self.get_id()
                 messageText = "<br>Your new result has been initialized based on information you entered for " + based_on_annotation_id + "<br><br>"
                 saveFormat = '<span style="color:blue;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))      
 
+        self.loadingFormDataFromFile = False
         
 
 if __name__ == "__main__":

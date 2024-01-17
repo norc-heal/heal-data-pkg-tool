@@ -1,17 +1,51 @@
 import pandas as pd
 import numpy as np
 import os
+import shutil
 from versions_resource_tracker import fieldNameMap
 from schema_resource_tracker import schema_resource_tracker
 import dsc_pkg_utils
 import json
+import pathlib
 
 # print(key,"; ",fieldNameMap["properties"][key]["formerNames"])
 
+# pre-step A: get the working data package dir path
+getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg-first"
+
+# pre-step B: run the version check to see if files need update and can be updated
+#check_versions.py 
+# need to change check_versions.py script into a function, 
+# import it here and then call it here; 
+# then parse the update report - if at least one upToDate value is No and the canBeUpdated value for that file is Yes then continue with update
+# if no upToDate values are No then quit with informative message "all files up to date; update unnecessary"
+# if upToDate values contain at least one Yes but canBeUpdated value is No then quit with informative message "all files are not up to date but cannot be updated because up-to-date map files are not available - please update the following map files to proceed with update: "
+
+# pre-step C: proceed with update after appropriate check in pre-step B - copy the working data package dir to an update in progress dir (don't mess with the original until the update is complete in case something fails)
+
+getDirPath = pathlib.Path(getDir)
+
+# get the stem/name of the working data package dir so that can reproduce it (e.g. may be dsc-pkg-my-study instead of just dsc-pkg, or dsc-pkg name may change over time)
+getDirName = getDirPath.stem
+
+# get the parent dir of the working data package dir path (should be the overall study folder)
+getParentOfDirPath = getDirPath.parent
+
+# in the overall study folder copy the working data pkg dir contents to an update in progress version of the working data pkg dir
+getUpdateDirName = getDirName + "-update-in-progress" 
+getUpdateDirPath = os.path.join(getParentOfDirPath,getUpdateDirName)
+
+# path to source directory
+src_dir = getDir
+# path to destination directory
+dest_dir = getUpdateDirPath
+# getting all the files in the source directory
+#files = os.listdir(src_dir)
+shutil.copytree(src_dir, dest_dir)
+
+
 # step 0: import resource tracker
 
-
-getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg-first"
 getResourceTrk = os.path.join(getDir,"heal-csv-resource-tracker.csv")
 #getResourceTrk = r"P:\3652\Common\HEAL\y3-task-b-data-sharing-consult\repositories\vivli-submission-from-data-pkg\vivli-test-study\dsc-pkg-first\heal-heal-csv-resource-tracker.csv"
 print("hello")

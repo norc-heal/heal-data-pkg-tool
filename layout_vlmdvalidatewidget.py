@@ -13,6 +13,7 @@ from PyQt5.uic import loadUi
 from pathlib import Path # base python, no pip install needed
 
 from healdata_utils.cli import convert_to_vlmd
+from healdata_utils import validate_vlmd_csv
 
 #from frictionless import plugins # frictionless already installed as a healdata_utils dependency, no pip install needed
 #from frictionless.plugins import remote
@@ -49,4 +50,26 @@ class VLMDValidateWindow(QtWidgets.QMainWindow):
 
     
     def validate_heal_csv_dd(self):
-        print("need to implement validation")
+
+
+        ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, 
+            "Select the HEAL CSV data dictionary to validate",
+            QtCore.QDir.homePath(), "CSV (*.csv *.tsv)")
+
+        messageText = 'Validating the HEAL CSV Data Dictionary at this path: ' + ifileName 
+        self.userMessageBox.setText(messageText)
+        
+        dd_package = validate_vlmd_csv(ifileName, to_sync_fields=True)
+        report = dd_package["report"]
+
+        messageText += "\n\n\n"
+        if report["valid"]:  
+            messageText +=  "Your data dictionary is valid!"
+        else:
+            messageText += "Your data dictionary requires the following additional annotation and/or modifications to be HEAL-compliant:"
+            messageText += "\n\n\n"
+            report_text = json.dumps(report["errors"], indent=4)  
+            messageText +=  report_text
+            
+        self.userMessageBox.setText(messageText)

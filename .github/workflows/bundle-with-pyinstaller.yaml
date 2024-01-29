@@ -4,7 +4,48 @@ on:
   push:
     tags:
       - "*"
+env:
+  TAG_BRANCH: tag-versions # branch where the version-specific code is. See note below when this var is called
+  APP_TITLE: DSC Data Packaging Tool - alpha - #prefix for the title to be displayed in the app
 jobs:
+  tag_version:
+    name: Create version identifiers
+    runs-on: "ubuntu-latest"
+    # NOTE: slugified_version_name can now be used in other jobs (referenced via needs.tag_version.outputs.slugified_version_name)
+    outputs:
+      slug_version: ${{ steps.save.outputs.slug_version }}
+      # NOTE: ${GITHUB_REF_NAME//./-} is bash syntax for referencing the default environment $GITHUB_REF and replacing dots with dashes (in the form //<tobereplaced>/<replacewith>)
+      # NOTE: this is equivalent to ${{ github.ref_name }}
+      # NOTE: for comparison, double brackets like ${{ matrix.name }} is for referencing github workflow variables (and is not bash syntax)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG_BRANCH }} # defaults to the hash for tags. Need some sort of branch to do git commits (could also be the main branch). 
+      # add the slugified (ie replace periods with dashes) to the version name to the saved output variables file
+      - name: Save slugified version tag
+        id: save
+        run: |
+          slug_version="${GITHUB_REF_NAME//./-}"
+          echo "slug_version=${slug_version}" >> $GITHUB_OUTPUT
+      # add git tag version to app script
+      - id: title_in_version
+        name: Add version number to app title
+        run: |
+          version="${GITHUB_REF_NAME}"
+          title_with_version="${APP_TITLE} ${version}"
+          echo $title_with_version
+          # replace the window title
+          sed -i -e "s/self.setWindowTitle(.*)/self.setWindowTitle(\"${title_with_version}\")/g" dsc_pkg_tool.py
+
+          git config user.name ${{ github.triggering_actor }}
+          git config user.email ${{ github.triggering_actor }}@users.noreply.github.com
+
+          git add dsc_pkg_tool.py
+          git commit -m "Automated update of app title to ${version}"
+          git push -u origin $TAG_BRANCH
+          
+
   release:
     name: Create a release from a tag
     runs-on: "ubuntu-latest"
@@ -24,7 +65,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
-    needs: release
+    needs: 
+      - release
+      - tag_version
     strategy:
       matrix:
         include:
@@ -35,6 +78,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        ref: ${{ env.TAG_BRANCH }}
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
@@ -53,10 +98,10 @@ jobs:
       if: ${{matrix.name == 'windows' }} 
     - name: Zip exe (for windows) and no ext (for ubuntu/mac)
       run: |
-        python -m zipfile -c dsc-pkg-tool-${{ matrix.name }}.zip dist/dsc_pkg_tool.exe dist/dsc_pkg_tool
+        python -m zipfile -c dsc-pkg-tool-${{ matrix.name }}-${{ needs.tag_version.outputs.slug_version }}.zip dist/dsc_pkg_tool.exe dist/dsc_pkg_tool
     - name: Release with bundles
       uses: softprops/action-gh-release@v1
       with:
         draft: true
         files: |
-          *dsc-pkg-tool-${{ matrix.name }}.zip
+          *dsc-pkg-tool-${{ matrix.name }}*.zip

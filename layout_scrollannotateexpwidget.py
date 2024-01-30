@@ -548,6 +548,17 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
     #         self.labelAddMultiDepend.hide()
 
     def save_experiment(self):
+
+        experiment = deepcopy(self.form.widget.state)
+        
+        # for any array of string items, remove empty strings from array
+        for key in self.schema["properties"]:
+            if self.schema["properties"][key]["type"] == "array":
+                if self.schema["properties"][key]["items"]["type"] == "string":
+                    experiment[key] = dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(myStringArray=experiment[key])
+
+        if not dsc_pkg_utils.validateFormData(self=self,formData=experiment):
+            return
         
         # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
         # check that a dsc data package dir has been added - this is the save folder
@@ -559,7 +570,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
 
         # check that at least a minimal description has been added to the form 
         # if not exit with informative error
-        if not (self.form.widget.state["experimentDescription"]):
+        if not (experiment["experimentDescription"]):
             messageText = "<br>You must add at least a minimal description of your experiment before saving your experiment annotation file. Please add at least a minimal description of your experiment in the Experiment Description field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
@@ -584,9 +595,9 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         # form fields that will be the same), and save again with a new id - in this case the user can modify the 
         # id manually, incrementing the id number by one - if id modified, updated it in memory and regenerate
         # the save file name, save file path, and id number
-        if self.form.widget.state["experimentId"] != self.annotation_id:
+        if experiment["experimentId"] != self.annotation_id:
             
-            self.annotation_id = self.form.widget.state["experimentId"]
+            self.annotation_id = experiment["experimentId"]
             self.annotationFileName = 'exp-trk-'+ self.annotation_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.annotationFileName)
 
@@ -595,16 +606,16 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         # check if saveFilePath already exists (same as if a file for this experiment id already exists); if exists, exit our with informative message;
         # otherwise go ahead and save
         if os.path.isfile(self.saveFilePath):
-            messageText = "An experiment annotation file for an experiment with id " + self.annotation_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your experiment tracker file(s) and check which experiment IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which experiment IDs you've already used (i.e. for which you've already created experiment annotation files - these files will be called \'exp-trk-exp-{a number}.txt\'. While you perform these checks, your experiment tracker form will remain open unless you explicitly close it. You can come back to it, change your experiment ID, and hit the save button again to save with an experiment ID that is not already in use. If you meant to overwrite an experiment annotation file you previously created for an experiment with this experiment ID, please delete the previously created experiment annotation file and try saving again.<br><br>" 
+            messageText = "An experiment annotation file for an experiment with id " + self.annotation_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your experiment tracker file(s) and check which experiment IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your working Data Package Directory and check which experiment IDs you've already used (i.e. for which you've already created experiment annotation files - these files will be called \'exp-trk-exp-{a number}.txt\'. While you perform these checks, your experiment tracker form will remain open unless you explicitly close it. You can come back to it, change your experiment ID, and hit the save button again to save with an experiment ID that is not already in use. If you meant to edit an existing experiment annotation file, please use the \"Edit an existing experiment\" functionality on the \"Add experiment\" sub-tab.<br><br>" 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
         else:
                               
-            annotationContent = self.form.widget.state
+            #annotationContent = self.form.widget.state
             f=open(self.saveFilePath,'w')
-            print(dumps(annotationContent, indent=4), file=f)
+            print(dumps(experiment, indent=4), file=f)
             f.close()
                 
             #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."

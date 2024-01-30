@@ -752,6 +752,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 resIdNum = 1
 
             self.resIdNum = resIdNum
+
+            self.form.widget.state = {
+                    "resourceIdNumber": self.resIdNum
+                }
+
             self.resource_id = 'resource-'+ str(self.resIdNum)
             self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)

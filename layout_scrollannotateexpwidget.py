@@ -549,6 +549,28 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
 
     def save_experiment(self):
 
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        # this shouldn't be necessary since form shouldn't open if working data pkg dir not set
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        # check that experiment tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
+            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that experiment tracker is closed (user doesn't have it open in excel for example) - if open, prevents the automated add to tracker part of the workflow
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
         experiment = deepcopy(self.form.widget.state)
         
         # for any array of string items, remove empty strings from array
@@ -557,16 +579,17 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
                 if self.schema["properties"][key]["items"]["type"] == "string":
                     experiment[key] = dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(myStringArray=experiment[key])
 
+        # validate against schema
         if not dsc_pkg_utils.validateFormData(self=self,formData=experiment):
             return
         
-        # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
-        # check that a dsc data package dir has been added - this is the save folder
-        if not self.saveFolderPath:
-            messageText = "<br>You must add a DSC Data Package Directory before saving your experiment annotation file. Please add a DSC Data Package Directory and then try saving again." 
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
-            return
+        # # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
+        # # check that a dsc data package dir has been added - this is the save folder
+        # if not self.saveFolderPath:
+        #     messageText = "<br>You must add a DSC Data Package Directory before saving your experiment annotation file. Please add a DSC Data Package Directory and then try saving again." 
+        #     errorFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(errorFormat.format(messageText))
+        #     return
 
         # check that at least a minimal description has been added to the form 
         # if not exit with informative error
@@ -632,26 +655,26 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
 
     def add_exp(self):
 
-        # check if user has set a working data package dir - if not exit gracefully with informative message
-        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
-            return
+        # # check if user has set a working data package dir - if not exit gracefully with informative message
+        # if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+        #     return
 
-        # check that experiment tracker exists in working data pkg dir, if not, return
-        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
-            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
-            saveFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(saveFormat.format(messageText))
-            return
+        # # check that experiment tracker exists in working data pkg dir, if not, return
+        # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
+        #     messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
+        #     saveFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(saveFormat.format(messageText))
+        #     return
         
-        # check that experiment tracker is closed (user doesn't have it open in excel for example)
-        try: 
-            with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
-                print("file is closed, proceed!!")
-        except PermissionError:
-                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
-                saveFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
-                return
+        # # check that experiment tracker is closed (user doesn't have it open in excel for example)
+        # try: 
+        #     with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
+        #         print("file is closed, proceed!!")
+        # except PermissionError:
+        #         messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
+        #         saveFormat = '<span style="color:red;">{}</span>'
+        #         self.userMessageBox.append(saveFormat.format(messageText))
+        #         return
 
         # get result file path
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",

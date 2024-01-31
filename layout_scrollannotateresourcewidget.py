@@ -1849,11 +1849,6 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 # save the full path at which the current file is saved and at which you will save the newly edited file if possible (e.g. valid, tool does not crash for any reason)
                 self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
                 
-
-                # # make sure an archive folder exists, if not create it
-                # if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
-                #     os.makedirs(os.path.join(self.saveFolderPath,"archive"))
-
                 archiveFileStartsWith = Path(ifileName).stem + "-"
                 print("archiveFileStartsWith: ",archiveFileStartsWith)
 

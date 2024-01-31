@@ -1081,15 +1081,72 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
     def save_resource(self):
         
-        # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
-        # check that a dsc data package dir has been added - this is the save folder - if not exit with informative error
-        if not self.saveFolderPath:
-            messageText = "<br>You must add a DSC Data Package Directory before saving your resource file. Please add a DSC Data Package Directory and then try saving again." 
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
+        # # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
+        # # check that a dsc data package dir has been added - this is the save folder - if not exit with informative error
+        # if not self.saveFolderPath:
+        #     messageText = "<br>You must add a DSC Data Package Directory before saving your resource file. Please add a DSC Data Package Directory and then try saving again." 
+        #     errorFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(errorFormat.format(messageText))
+        #     return
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
 
-        if not os.path.isfile(self.form.widget.state["path"]):
+        # check that resource tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+            messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that resource tracker is closed (user doesn't have it open in excel for example)
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+                messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, and close the file. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+        # when saving a resource, will also write any dependencies of the resource to a 
+        # operational file called resources-to-add (these are resources the user should add to the tracker)
+        # here check if the operational file dir this file will be saved in exists and if not create it
+        # if the file already exists, make sure that it is not open (if open it cannot be written to and saving workflow will crash the tool without error handling)
+        resourcesToAddOutputDir = os.path.join(self.workingDataPkgDir,"no-user-access")
+        if not os.path.exists(resourcesToAddOutputDir):
+            os.makedirs(resourcesToAddOutputDir)
+            print("creating no-user-access subdirectory")
+        else:
+            print("no-user-access subdirectory already exists")
+        
+        resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"no-user-access","resources-to-add.csv")
+        if os.path.isfile(resourcesToAddOutputPath):
+            # check that file is closed (user doesn't have it open in excel for example)
+            try: 
+                with open(resourcesToAddOutputPath,'r+') as f:
+                    print("file is closed, proceed!!")
+            except PermissionError:
+                messageText = "<br>A crucial file in your working Data Package Directory called <b>" + Path(resourcesToAddOutputPath).stem + ".csv</b> is open in another application, and must be closed to proceed; Check if this is open in Excel or similar application, and close the file. Then try saving this resource again<br><br>."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+
+        resource = deepcopy(self.form.widget.state)
+
+        # for any array of string items, remove empty strings from array
+        for key in self.schema["properties"]:
+            if self.schema["properties"][key]["type"] == "array":
+                if self.schema["properties"][key]["items"]["type"] == "string":
+                    resource[key] = dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(myStringArray=resource[key])
+
+        # validate against schema
+        if not dsc_pkg_utils.validateFormData(self=self,formData=resource):
+            return
+
+        if not os.path.isfile(resource["path"]):
             messageText = "<br>The file path indicated in this form does not exist. You must enter a resource file path that exists before saving your resource file. Please check your resource file path, update the path indicated in the form if necessary, and then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
@@ -1099,7 +1156,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # not yet exist in tracker
         if self.mode != "edit":
             addedResourcePathsList = dsc_pkg_utils.get_added_resource_paths(self=self)
-            if self.form.widget.state["path"] in addedResourcePathsList:
+            if resource["path"] in addedResourcePathsList:
                 messageText = "<br>You have already added a resource to the Resource Tracker with the file path indicated in this form. You must add a unique resource file path before saving your resource file. Please check your resource file path, add a unique resource file path, and then try saving again. <b>If you meant to edit an existing resource</b>, you can do that by closing this window, then navigating to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab, and clicking the \"Edit an existing resource\" push-button. " 
                 errorFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(errorFormat.format(messageText))
@@ -1108,22 +1165,29 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         # check that file path and at least a minimal description has been added to the form 
         # if not exit with informative error
-        if not ((self.form.widget.state["path"]) and (self.form.widget.state["description"])):
+        if not ((resource["path"]) and (resource["description"])):
             messageText = "<br>You must add a resource file path and at least a minimal description of your resource to your resource file form before saving your resource file. Please add a resource file path either by browsing to the file path using the Resource File Path field in the form, or by dragging and dropping the file path for your resource file (or multiple file paths if you are annotating multiple 'like' resources at once) in the drag and drop box above the form (open this drag and drop box by clicking on the Add Multiple 'like' Resources button above the form), and add at least a minimal description of your resource (or set of 'like' resources) in the Resource Description field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
-        
+        if self.mode == "edit":
+            # move the annotation file user opened for editing to archive folder
+            #os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
+            os.rename(self.saveFilePath,self.saveAnnotationFilePath)
+            messageText = "<br>In preparation for saving your edited resource annotation file, your original resource annotation file has been archived at:<br>" + self.saveAnnotationFilePath + "<br><br>"
+            saveFormat = '<span style="color:blue;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+
         # check if user has modified the resource id from the one that was autogenerated when adding dsc data dir for saving
         # this may happen if for example a user annotates a resource using the autogenerated resource id, then wants to keep 
         # going using the same form window instance, modify the contents to annotate a new resource (perhaps one with some 
         # form fields that will be the same), and save again with a new resource id - in this case the user can modify the 
         # resource id manually, incrementing the id number by one - if resource id modified, updated it in memory and regenerate
         # the save file name, save file path, and resource id number
-        if self.form.widget.state["resourceId"] != self.resource_id:
+        if resource["resourceId"] != self.resource_id:
             
-            self.resource_id = self.form.widget.state["resourceId"]
+            self.resource_id = resource["resourceId"]
             self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
 
@@ -1159,21 +1223,21 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.resource_id_list = [self.resource_id]
                 self.resourceFileNameList = [self.resourceFileName]
                 self.saveFilePathList = [self.saveFilePath]
-                self.items = [self.form.widget.state["path"]]
-                self.itemsDescriptionList = [self.form.widget.state["descriptionFile"]]
+                self.items = [resource["path"]]
+                self.itemsDescriptionList = [resource["descriptionFile"]]
         else:
             self.resource_id_list = [self.resource_id]
             self.resourceFileNameList = [self.resourceFileName]
             self.saveFilePathList = [self.saveFilePath]
-            self.items = [self.form.widget.state["path"]]
-            self.itemsDescriptionList = [self.form.widget.state["descriptionFile"]]
+            self.items = [resource["path"]]
+            self.itemsDescriptionList = [resource["descriptionFile"]]
                 
         if self.editSingle:
             self.resource_id_list = [self.resource_id]
             self.resourceFileNameList = [self.resourceFileName]
             self.saveFilePathList = [self.saveFilePath]
-            self.items = [self.form.widget.state["path"]]
-            self.itemsDescriptionList = [self.form.widget.state["descriptionFile"]]            
+            self.items = [resource["path"]]
+            self.itemsDescriptionList = [resource["descriptionFile"]]            
         
         #messageText = ""
 
@@ -1206,7 +1270,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             return
         else:
             #print(self.form.widget.state)
-            resource = deepcopy(self.form.widget.state)
+            #resource = deepcopy(self.form.widget.state)
 
             resourceDependDataDict = resource["associatedFileDataDict"]
             resourceDependDataDictType = ["associatedFileDataDict"] * len(resourceDependDataDict)
@@ -1241,14 +1305,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 
                 resourceDependAllDf = pd.concat([resourceDependAllDf,resourceDependResultDependDf])
 
-            resourcesToAddOutputDir = os.path.join(self.workingDataPkgDir,"no-user-access")
-            if not os.path.exists(resourcesToAddOutputDir):
-                os.makedirs(resourcesToAddOutputDir)
-                print("creating no-user-access subdirectory")
-            else:
-                print("no-user-access subdirectory already exists")
+            # moved this check and dir creation up to the top so no longer needed here
+            # resourcesToAddOutputDir = os.path.join(self.workingDataPkgDir,"no-user-access")
+            # if not os.path.exists(resourcesToAddOutputDir):
+            #     os.makedirs(resourcesToAddOutputDir)
+            #     print("creating no-user-access subdirectory")
+            # else:
+            #     print("no-user-access subdirectory already exists")
             
-            resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"no-user-access","resources-to-add.csv")
+            # resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"no-user-access","resources-to-add.csv")
 
             # if not os.path.isfile(resourcesToAddOutputPath):
             #     f=open(resourcesToAddOutputPath,'w')
@@ -1259,21 +1324,22 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 # add timestamp at which time resource was added to the resources to add to tracker list
                 resourceDependAllDf["date-time"] = pd.Timestamp("now")
                 resourceDependAllDf["parent-resource-id"] = self.resource_id_list[0]
-                resourceDependAllDf["parent-resource-exp-name-belongs-to"] = self.form.widget.state["experimentNameBelongsTo"]
-                resourceDependAllDf["parent-resource-description"] = self.form.widget.state["description"]
-                resourceDependAllDf["parent-resource-path"] = self.form.widget.state["path"]
+                resourceDependAllDf["parent-resource-exp-name-belongs-to"] = resource["experimentNameBelongsTo"]
+                resourceDependAllDf["parent-resource-description"] = resource["description"]
+                resourceDependAllDf["parent-resource-path"] = resource["path"]
 
                 if os.path.isfile(resourcesToAddOutputPath):
 
-                    # check that file is closed (user doesn't have it open in excel for example)
-                    try: 
-                        with open(resourcesToAddOutputPath,'r+') as f:
-                            print("file is closed, proceed!!")
-                    except PermissionError:
-                        messageText = "<br>A crucial file in your working Data Package Directory called <b>" + Path(resourcesToAddOutputPath).stem + ".csv</b> is open in another application, and must be closed to proceed; Check if this is open in Excel or similar application, and close the file. Then try saving this resource again<br><br>."
-                        saveFormat = '<span style="color:red;">{}</span>'
-                        self.userMessageBox.append(saveFormat.format(messageText))
-                        return
+                    # moved this check up to the top so no longer needed here
+                    # # check that file is closed (user doesn't have it open in excel for example)
+                    # try: 
+                    #     with open(resourcesToAddOutputPath,'r+') as f:
+                    #         print("file is closed, proceed!!")
+                    # except PermissionError:
+                    #     messageText = "<br>A crucial file in your working Data Package Directory called <b>" + Path(resourcesToAddOutputPath).stem + ".csv</b> is open in another application, and must be closed to proceed; Check if this is open in Excel or similar application, and close the file. Then try saving this resource again<br><br>."
+                    #     saveFormat = '<span style="color:red;">{}</span>'
+                    #     self.userMessageBox.append(saveFormat.format(messageText))
+                    #     return
 
                     # if a file already exists then read it in, append new dependencies of the current resource that are now resources that need to be added to the resource tracker, deduplicate, and write result back to file
                     all_to_add_df = pd.read_csv(resourcesToAddOutputPath)
@@ -1326,23 +1392,23 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
             self.userMessageBox.moveCursor(QTextCursor.End)
 
-            if self.form.widget.state["category"] == "tabular-data":
-                if not self.form.widget.state["associatedFileDataDict"]:
+            if resource["category"] == "tabular-data":
+                if not resource["associatedFileDataDict"]:
 
                     messageText = "<br>WARNING: You annotated a tabular data resource and did not include a data dictionary for this tabular data resource. If you don't already have a data dictionary, please visit the Data Dictionary tab to create a data dictionary for this resource. You can easily and automatically create a data dictionary using only your tabular data file. Once you have a data dictionary, you can come back here and edit this form to add your data dictionary and save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed." + "\n\n"
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
-            if "temporary-private" in self.form.widget.state["access"]:
-                if not any(map(lambda v: v in self.form.widget.state["access"], ["open-access","managed-access"])):
+            if "temporary-private" in resource["access"]:
+                if not any(map(lambda v: v in resource["access"], ["open-access","managed-access"])):
 
                     messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'open-access\n' or to \n'managed-access\n' once the temporary-private status expires. Please return to the form to indicate what the final access level of this resource will be by adding another value to the Access field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
-                if self.form.widget.state["accessDate"] == self.formDefaultState["accessDate"]:
+                if resource["accessDate"] == self.formDefaultState["accessDate"]:
 
                     messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'open-access\n' or to \n'managed-access\n'. Please return to the form to indicate the date at which temporary-provate access level will expire in the Access Date field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
                     saveFormat = '<span style="color:red;">{}</span>'
@@ -1367,26 +1433,27 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
     def add_resource(self):
 
-        # check if user has set a working data package dir - if not exit gracefully with informative message
-        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
-            return
+        # moved these checks to save function so no longer needed here
+        # # check if user has set a working data package dir - if not exit gracefully with informative message
+        # if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+        #     return
 
-        # check that resource tracker exists in working data pkg dir, if not, return
-        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
-            messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
-            saveFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(saveFormat.format(messageText))
-            return
+        # # check that resource tracker exists in working data pkg dir, if not, return
+        # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+        #     messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+        #     saveFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(saveFormat.format(messageText))
+        #     return
         
-        # check that resource tracker is closed (user doesn't have it open in excel for example)
-        try: 
-            with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
-                print("file is closed, proceed!!")
-        except PermissionError:
-                messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, and close the file. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
-                saveFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
-                return
+        # # check that resource tracker is closed (user doesn't have it open in excel for example)
+        # try: 
+        #     with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
+        #         print("file is closed, proceed!!")
+        # except PermissionError:
+        #         messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, and close the file. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+        #         saveFormat = '<span style="color:red;">{}</span>'
+        #         self.userMessageBox.append(saveFormat.format(messageText))
+        #         return
         
         # get resource(s) file path
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Resource Txt Data file(s)",
@@ -1756,13 +1823,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 based_on_annotation_id = data["resourceId"]
 
             if self.mode == "edit": 
-                self.saveFilePath = ifileName # is this necessary?
-                print("setting saveFilePath to path of chosen file")
+                # self.saveFilePath = ifileName # is this necessary?
+                # print("setting saveFilePath to path of chosen file")
                 
                 self.resource_id = data["resourceId"]
                 self.resIdNum = int(self.resource_id.split("-")[1])
                 self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
-                #self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
+
+                # save the full path at which the current file is saved and at which you will save the newly edited file if possible (e.g. valid, tool does not crash for any reason)
+                self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
+                
 
                 # # make sure an archive folder exists, if not create it
                 # if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
@@ -1788,11 +1858,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 #self.annotationArchiveFileName = 'exp-trk-'+ self.annotation_id + '-' + str(self.annotationArchiveFileNameNumber) + '.txt'    
                 self.annotationArchiveFileName = archiveFileStartsWith + str(self.annotationArchiveFileNameNumber) + '.txt'  
 
-                # move the resource annotation file user opened for editing to archive folder
-                os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
-                messageText = "<br>Your original resource annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName) + "<br><br>"
-                saveFormat = '<span style="color:blue;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
+                # save full path at which you will archive the file once the new file is saved
+                self.saveAnnotationFilePath = os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName)
+
+                # move this to end of save command and only do it if in edit mode
+                # # move the resource annotation file user opened for editing to archive folder
+                # os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
+                # messageText = "<br>Your original resource annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName) + "<br><br>"
+                # saveFormat = '<span style="color:blue;">{}</span>'
+                # self.userMessageBox.append(saveFormat.format(messageText))
 
             if data["associatedFileResultsDependOn"]:
                 self.popFormField = data.pop("associatedFileResultsDependOn")
@@ -1807,6 +1881,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if len(data["associatedFileDependsOn"]) > 2: 
                 self.lstbox_view2.addItems(data["associatedFileDependsOn"])
                 self.add_multi_depend()
+
+            if self.mode == "edit":
+                self.form.widget.state = {
+                    "resourceIdNumber": self.resIdNum
+                }
 
             if self.mode == "add-based-on":
                 self.get_id()

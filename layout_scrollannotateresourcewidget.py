@@ -1819,10 +1819,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             with open(ifileName, 'r') as stream:
                 data = load(stream)
 
+            checkDataAssociatedFileMultiLikeFiles = data["associatedFileMultiLikeFiles"]
+            checkDataAssociatedFileMultiLikeFiles = dsc_pkg_utils.convertStringifiedArrayOfStringsToList(myStringifiedArrayOfStrings=checkDataAssociatedFileMultiLikeFiles)
+            
             if self.mode == "add-based-on":
                 based_on_annotation_id = data["resourceId"]
                 
-                if data["associatedFileMultiLikeFiles"]: 
+                if checkDataAssociatedFileMultiLikeFiles: 
                     messageText = "<br>You selected a resource txt file that is part of a multi-like file resource. It is currently not possible to add a new resource based upon an existing resource txt file that is part of a multi-like file resource. Instead, start a new resource from scratch using the \"Add a new resource\" push-button or start a new resource based on an existing resource using the \"Add a new resource based on an existing resource\" push-button, then select a resource txt file that is NOT part of a multi-like file resource upon which to base the new resource.<br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
@@ -1832,8 +1835,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 # self.saveFilePath = ifileName # is this necessary?
                 # print("setting saveFilePath to path of chosen file")
 
-                if data["associatedFileMultiLikeFiles"]:
-                    if data["path"] != data["associatedFileMultiLikeFiles"][0]: 
+                if checkDataAssociatedFileMultiLikeFiles:
+                    if data["path"] != checkDataAssociatedFileMultiLikeFiles[0]: 
                         messageText = "<br>You selected a resource txt file that is part of a multi-like file resource, but you did NOT select the resource txt file that is the first in the series for this multi-like file resource. In order to edit a resource that is part of a multi-like file resource you MUST select the first resource txt file in the series for the multi-like file resource. You can head to the \"View Tracker\" tab to view your Resource Tracker, identify the resource ID for the first resource txt file in the series for this multi-like file resource, then try again.<br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
                         saveFormat = '<span style="color:red;">{}</span>'
                         self.userMessageBox.append(saveFormat.format(messageText))

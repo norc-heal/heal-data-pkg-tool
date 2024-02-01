@@ -1886,7 +1886,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     saveNameList = ['resource-trk-'+ x + '.txt' for x in checkDataAssociatedFileMultiLikeFilesIds]
                     savePathList = [os.path.join(self.saveFolderPath,x) for x in saveNameList]
                     archiveNameStartsWithList = ['resource-trk-'+ x + '-' for x in checkDataAssociatedFileMultiLikeFilesIds]
-                    archiveNameList = [x + str(self.annotationArchiveFileNameNumber) for x in archiveNameStartsWithList]
+                    archiveNameList = [x + str(self.annotationArchiveFileNameNumber) + '.txt'  for x in archiveNameStartsWithList]
                     archivePathList = [os.path.join(self.saveFolderPath,"archive",x) for x in archiveNameList]
                     
                     checkDataAssociatedFileMultiLikeFilesDict = {
@@ -1957,46 +1957,47 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 saveFormat = '<span style="color:blue;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText)) 
                 
-                # if the user used the drag and drop to add multiple files, get a list of resource ids num, resource id, resource file name, and resource file save path for each file added
+                # don't assume resource ids are always sequential from the first id (if a multi resource file is edited to add or delete files this may break)
+                # also, don't archive before the user tries to save the edited version AND the edits they have made have passed checks that make it clear save will go through AND
+                # other checks to make sure save will go through and files can be added to tracker
+                # self.resIdNumList = [self.resIdNum]
+                # self.resource_id_list = []
+                # self.resourceFileNameList = []
+                # self.saveFilePathList = []
         
-                self.resIdNumList = [self.resIdNum]
-                self.resource_id_list = []
-                self.resourceFileNameList = []
-                self.saveFilePathList = []
-        
-                # assign a resource id to every resource file path added, construct a save file path for each resource
-                if self.items:
-                    print("self.items: ", self.items)
-                    if len(self.items) > 1:
+                # # assign a resource id to every resource file path added, construct a save file path for each resource
+                # if self.items:
+                #     print("self.items: ", self.items)
+                #     if len(self.items) > 1:
                 
                 
-                        resCounter = 1
-                        for i in self.items[1:]:
+                #         resCounter = 1
+                #         for i in self.items[1:]:
                     
-                            self.resIdNumList.append(self.resIdNum + resCounter)
-                            print(self.resIdNumList)
-                            resCounter += 1
+                #             self.resIdNumList.append(self.resIdNum + resCounter)
+                #             print(self.resIdNumList)
+                #             resCounter += 1
 
-                        self.resource_id_list = ["resource-" + str(l) for l in self.resIdNumList]
-                        print(self.resource_id_list)
-                        self.resourceFileNameList = ["resource-trk-" + l + ".txt" for l in self.resource_id_list]
-                        print(self.resourceFileNameList)
-                        self.saveFilePathList = [os.path.join(self.saveFolderPath,l) for l in self.resourceFileNameList]
-                        print(self.saveFilePathList)
-                        self.archiveFilePathList = [os.path.join(self.saveFolderPath,"archive",l) for l in self.resourceFileNameList]
-                        print(self.saveFilePathList)
+                #         self.resource_id_list = ["resource-" + str(l) for l in self.resIdNumList]
+                #         print(self.resource_id_list)
+                #         self.resourceFileNameList = ["resource-trk-" + l + ".txt" for l in self.resource_id_list]
+                #         print(self.resourceFileNameList)
+                #         self.saveFilePathList = [os.path.join(self.saveFolderPath,l) for l in self.resourceFileNameList]
+                #         print(self.saveFilePathList)
+                #         self.archiveFilePathList = [os.path.join(self.saveFolderPath,"archive",l) for l in self.resourceFileNameList]
+                #         print(self.saveFilePathList)
 
-                        # already archived the first file so remove from list
-                        self.saveFilePathList.pop(0)
-                        self.archiveFilePathList.pop(0) # already archived the first file so remove from list
+                #         # already archived the first file so remove from list
+                #         self.saveFilePathList.pop(0)
+                #         self.archiveFilePathList.pop(0) # already archived the first file so remove from list
 
-                        for p, archiveP in zip(self.saveFilePathList,self.archiveFilePathList):
-                            # move the resource annotation file user opened for editing to archive folder
-                            print(p, "; ", archiveP)
-                            os.rename(p, archiveP)
-                            messageText = "<br>Your original resource annotation file has been archived at:<br>" + archiveP + "<br>"
-                            saveFormat = '<span style="color:blue;">{}</span>'
-                            self.userMessageBox.append(saveFormat.format(messageText))
+                #         for p, archiveP in zip(self.saveFilePathList,self.archiveFilePathList):
+                #             # move the resource annotation file user opened for editing to archive folder
+                #             print(p, "; ", archiveP)
+                #             os.rename(p, archiveP)
+                #             messageText = "<br>Your original resource annotation file has been archived at:<br>" + archiveP + "<br>"
+                #             saveFormat = '<span style="color:blue;">{}</span>'
+                #             self.userMessageBox.append(saveFormat.format(messageText))
 
 
 

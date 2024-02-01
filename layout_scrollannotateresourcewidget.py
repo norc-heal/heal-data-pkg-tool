@@ -1786,7 +1786,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.saveFolderPath, "Text (*.txt)")
 
         if not ifileName: 
-            messageText = "<br>You have not selected a file to " + textBit + ". Close this form now. If you still want to " + textBit + " an existing resource, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button."
+            messageText = "<br>You have not selected a file to " + textBit + ". If you still want to " + textBit + " an existing resource, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText)) 
         else: 

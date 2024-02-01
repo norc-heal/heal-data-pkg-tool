@@ -46,7 +46,7 @@
 
 
 fieldNameMap = {
-    "latestVersion":"0.3.0",
+    "latestVersion":"0.4.0",
     "properties":{
         "schemaVersion":{
             "formerNames": [],
@@ -220,6 +220,13 @@ fieldNameMap = {
         },
         "associatedFileMultiLikeFiles":{
             "formerNames": ["assoc.file.multi.like.file"],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
+        },
+        "associatedFileMultiLikeFilesIds":{
+            "formerNames": [],
             "deprecated": False,
             "mapEnum": {},
             "deleteEnum":[],

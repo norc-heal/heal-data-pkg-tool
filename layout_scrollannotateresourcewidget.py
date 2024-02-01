@@ -1204,20 +1204,22 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if self.items:
             if len(self.items) > 1:
                 
-                
-                resCounter = 1
-                for i in self.items[1:]:
-                    
-                    self.resIdNumList.append(self.resIdNum + resCounter)
-                    print(self.resIdNumList)
-                    resCounter += 1
+                if mode != "edit":
+                    resCounter = 1
+                    for i in self.items[1:]:
+                        
+                        self.resIdNumList.append(self.resIdNum + resCounter)
+                        print(self.resIdNumList)
+                        resCounter += 1
 
-                self.resource_id_list = ["resource-" + str(l) for l in self.resIdNumList]
-                print(self.resource_id_list)
-                self.resourceFileNameList = ["resource-trk-" + l + ".txt" for l in self.resource_id_list]
-                print(self.resourceFileNameList)
-                self.saveFilePathList = [os.path.join(self.saveFolderPath,l) for l in self.resourceFileNameList]
-                print(self.saveFilePathList)
+                    self.resource_id_list = ["resource-" + str(l) for l in self.resIdNumList]
+                    print(self.resource_id_list)
+                    self.resourceFileNameList = ["resource-trk-" + l + ".txt" for l in self.resource_id_list]
+                    print(self.resourceFileNameList)
+                    self.saveFilePathList = [os.path.join(self.saveFolderPath,l) for l in self.resourceFileNameList]
+                    print(self.saveFilePathList)
+                else:
+                    print("come back here")
 
             else:
                 self.resource_id_list = [self.resource_id]
@@ -1231,7 +1233,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.saveFilePathList = [self.saveFilePath]
             self.items = [resource["path"]]
             self.itemsDescriptionList = [resource["descriptionFile"]]
-                
+
+        # this option has been removed at least for now so this should never be invoked   
         if self.editSingle:
             self.resource_id_list = [self.resource_id]
             self.resourceFileNameList = [self.resourceFileName]
@@ -1822,6 +1825,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             checkDataAssociatedFileMultiLikeFiles = data["associatedFileMultiLikeFiles"]
             checkDataAssociatedFileMultiLikeFiles = dsc_pkg_utils.convertStringifiedArrayOfStringsToList(myStringifiedArrayOfStrings=checkDataAssociatedFileMultiLikeFiles)
             
+            checkDataAssociatedFileMultiLikeFilesIds = data["associatedFileMultiLikeFilesIds"]
+            checkDataAssociatedFileMultiLikeFilesIds = dsc_pkg_utils.convertStringifiedArrayOfStringsToList(myStringifiedArrayOfStrings=checkDataAssociatedFileMultiLikeFilesIds)
+            
             if self.mode == "add-based-on":
                 based_on_annotation_id = data["resourceId"]
                 
@@ -1841,7 +1847,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                         saveFormat = '<span style="color:red;">{}</span>'
                         self.userMessageBox.append(saveFormat.format(messageText))
                         return
-                
+
+                    
                 self.resource_id = data["resourceId"]
                 self.resIdNum = int(self.resource_id.split("-")[1])
                 self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
@@ -1849,6 +1856,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 # save the full path at which the current file is saved and at which you will save the newly edited file if possible (e.g. valid, tool does not crash for any reason)
                 self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
                 
+                # at the moment, all files in multi like file resource must be edited at the same time
+                # so the archive suffix number should be the same for all - can just use the first to get it
                 archiveFileStartsWith = Path(ifileName).stem + "-"
                 print("archiveFileStartsWith: ",archiveFileStartsWith)
 
@@ -1871,6 +1880,26 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
                 # save full path at which you will archive the file once the new file is saved
                 self.saveAnnotationFilePath = os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName)
+
+                if checkDataAssociatedFileMultiLikeFiles:
+                    idNumList = [int(x.split("-")[1]) for x in checkDataAssociatedFileMultiLikeFilesIds]
+                    saveNameList = ['resource-trk-'+ x + '.txt' for x in checkDataAssociatedFileMultiLikeFilesIds]
+                    savePathList = [os.path.join(self.saveFolderPath,x) for x in saveNameList]
+                    archiveNameStartsWithList = ['resource-trk-'+ x + '-' for x in checkDataAssociatedFileMultiLikeFilesIds]
+                    archiveNameList = [x + str(self.annotationArchiveFileNameNumber) for x in archiveNameStartsWithList]
+                    archivePathList = [os.path.join(self.saveFolderPath,"archive",x) for x in archiveNameList]
+                    
+                    checkDataAssociatedFileMultiLikeFilesDict = {
+                        "path":checkDataAssociatedFileMultiLikeFiles,
+                        "id":checkDataAssociatedFileMultiLikeFilesIds,
+                        "idNum":idNumList,
+                        "saveName":saveNameList,
+                        "savePath":savePathList,
+                        "archiveName":archiveNameList,
+                        "archivePath":archivePathList
+                    }
+                    checkDataAssociatedFileMultiLikeFilesDf = pd.Dataframe(checkDataAssociatedFileMultiLikeFilesDict)
+                
 
                 # move this to end of save command and only do it if in edit mode
                 # # move the resource annotation file user opened for editing to archive folder

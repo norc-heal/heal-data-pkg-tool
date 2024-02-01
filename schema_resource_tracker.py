@@ -231,8 +231,18 @@ schema_resource_tracker = {
             "priority": "only results-tracker, permanent hide "
         },
         "associatedFileMultiLikeFiles": {
-            "title": "Multiple 'like' File Resource - Files",
-            "description": "If the current resource file is annotating a resource that is one of multiple 'like' files, this field will list all files that are part of the set of multiple 'like' file resources.",
+            "title": "Multiple 'like' File Resource - File Paths",
+            "description": "If the current resource file is annotating a resource that is one of multiple 'like' files, this field will list the file paths of all files that are part of the set of multiple 'like' file resources.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "path"
+            },
+            "priority": "multiple like resource, high, auto, permanent hide"
+        },
+        "associatedFileMultiLikeFilesIds": {
+            "title": "Multiple 'like' File Resource - File Resource IDs",
+            "description": "If the current resource file is annotating a resource that is one of multiple 'like' files, this field will list the resource IDs for all files that are part of the set of multiple 'like' file resources.",
             "type": "array",
             "items": {
                 "type": "string",

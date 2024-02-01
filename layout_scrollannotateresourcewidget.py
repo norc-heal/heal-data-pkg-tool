@@ -1908,11 +1908,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
     def take_inputs(self):
 
-        editOptions =["Single file within multi \'like\' file resource", "All files within multi \'like\' file resource"]
+        #editOptions =["Single file within multi \'like\' file resource", "All files within multi \'like\' file resource"]
+        editOptions =["All files within multi \'like\' file resource"]
+        # editOption, done = QtWidgets.QInputDialog.getItem(
+        #   self, 'Edit Mode', 'You have selected a resource file that was originally annotated as part of a multi \'like\' file resource. Would you like to edit the annotation for just this one single resource file, or would you like to use this form to edit the annotation for all resource files that are part of the multi \'like\' file resource?', editOptions)
         editOption, done = QtWidgets.QInputDialog.getItem(
-          self, 'Edit Mode', 'You have selected a resource file that was originally annotated as part of a multi \'like\' file resource. Would you like to edit the annotation for just this one single resource file, or would you like to use this form to edit the annotation for all resource files that are part of the multi \'like\' file resource?', editOptions)
+          self, 'Edit Mode', 'NOTE: You have selected a resource file that was originally annotated as part of a multi \'like\' file resource. If you proceed to edit this file and save the edits, you will edit the annotation for all resource files that are part of the multi \'like\' file resource.', editOptions)
+
 
         if done:
+            # removed the single option so the first condition now will never be true
             if str(editOption).startswith("Single"):
                 self.editSingle = True
                 messageText = "Edits you make in this form will be applied <b>only to this single resource file</b>. All other resource files within the larger multi \'like\' file resource of which this resource file is a part will remain unaltered."

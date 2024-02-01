@@ -89,9 +89,9 @@ jobs:
           - os: macos-13
             type: mac
             name: macos-13
-          - os: macos-14
-            type: mac
-            name: macos-14-beta
+          # - os: macos-14
+          #   type: mac
+          #   name: macos-14-beta
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3

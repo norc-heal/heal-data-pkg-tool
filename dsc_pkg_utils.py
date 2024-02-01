@@ -259,6 +259,10 @@ def renameListOfDictKeys(myDictionaryList,keyRenameDictionary):
 def convertStringifiedArrayOfStringsToList(myStringifiedArrayOfStrings):
     print("myStringifiedArrayOfStrings: ",myStringifiedArrayOfStrings)
     print(type(myStringifiedArrayOfStrings))
+    
+    if isinstance(myStringifiedArrayOfStrings, list):
+        return myStringifiedArrayOfStrings
+
     if myStringifiedArrayOfStrings == '[]':
         print("value is stringfied empty list")
         return []  

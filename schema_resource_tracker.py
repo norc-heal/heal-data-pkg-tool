@@ -365,6 +365,12 @@ schema_resource_tracker = {
             "description": "Date time at which the resource annotation was last modified, converted to timestamp for easy sorting by datetime; auto-inferred",
             "type": "number",
             "priority": "resource tracker, auto"
+        },
+        "removed": {
+            "title": "Removed status",
+            "description": "True if user has removed the resource from the scope of the data package",
+            "type": "boolean",
+            "priority": "resource tracker, auto"
         }
         
     }

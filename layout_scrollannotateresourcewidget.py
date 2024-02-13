@@ -1193,80 +1193,95 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
             self.resIdNum = int(self.resource_id.split("-")[1])
 
-        # if the user used the drag and drop to add multiple files, get a list of resource ids num, resource id, resource file name, and resource file save path for each file added
-              
         
-        # assign a resource id to every resource file path added, construct a save file path for each resource
+        # if in edit mode and user previously already added a name convention, this will make sure it is 
+        # applied to all files in the edited set (whether same or different from original)
+        # if not in edit mode, this should not be necessary as user should have added and applied a convention
+        # however, it may catch cases where user added a convention but failed to apply it -
+        # mainly for edit mode scenario though
+        # also allows for saving a multi like resource file(s) if no file name convention applied
         if self.items:
-            if len(self.items) > 1:
-                # if in edit mode and user previously already added a name convention, this will make sure it is 
-                # applied to all files in the edited set (whether same or different from original)
-                # if not in edit mode, this should not be necessary as user should have added and applied a convention
-                # however, it may catch cases where user added a convention but failed to apply it -
-                # mainly for edit mode scenario though
-                if resource["descriptionFileNameConvention"]:
-                    self.apply_name_convention
+
+            
+            if resource["descriptionFileNameConvention"]:
+                self.apply_name_convention
 
 
-                if self.itemsDescriptionList:
-                    
-                    itemsDescriptionDict = {
-                        "path":self.items,
-                        "fileDesciption":self.itemsDescriptionList
-                    }
-                    itemsDescriptionDf = pd.Dataframe(itemsDescriptionDict)
-                else: 
-                    itemsDescriptionDict = {
-                        "path":self.items
-                    }
-                    itemsDescriptionDf = pd.Dataframe(itemsDescriptionDict)
-                    itemsDescriptionDf["fileDescription"] = ""
-
+            if self.itemsDescriptionList:
                 
-                if mode == "edit":
-                    #if self.checkDataAssociatedFileMultiLikeFilesDf:
-                    
-                    # flag any files that have been removed from the multi file resource
-                    self.checkDataAssociatedFileMultiLikeFilesDf["deleted"] = [p not in self.items for p in self.checkDataAssociatedFileMultiLikeFilesDf["path"].values]
-                    
-                    addedPathList = []
-                    addedPathIdNumList = []
-                    for i in self.items:
-                        if i not in self.checkDataAssociatedFileMultiLikeFilesDf["path"].values:
-                            addedPathList.append(i)
-                            nextAvailableIdNum = dsc_pkg_utils.get_id(self=self,prefix="resource-trk-resource-",folderPath=self.workingDataPkgDir)
-                            addedPathIdNumList.append(nextAvailableIdNum)
+                itemsDescriptionDict = {
+                    "path":self.items,
+                    "fileDesciption":self.itemsDescriptionList
+                }
+                itemsDescriptionDf = pd.Dataframe(itemsDescriptionDict)
+            else: 
+                itemsDescriptionDict = {
+                    "path":self.items
+                }
+                itemsDescriptionDf = pd.Dataframe(itemsDescriptionDict)
+                itemsDescriptionDf["fileDescription"] = ""
 
-                    
+        else:
+            itemsDescriptionDict = {
+                    "path":[resource["path"]],
+                    "fileDesciption":[resource["descriptionFile"]]
+                }
+            itemsDescriptionDf = pd.Dataframe(itemsDescriptionDict)
+            
 
-                    if addedPathList:
-                        addedPathIdList = ["resource-" + str(n) for n in addedPathIdNumList]
-                        addedPathSaveNameList = ["resource-trk-" + i + ".txt" for i in addedPathIdList]
-                        addedPathSavePathList = [os.path.join(self.workingDataPkgDir,f) for f in addedPathSaveNameList]
-                        addedPathDict = {
-                            "path":addedPathList,
-                            "id":addedPathIdList,
-                            "idNum":addedPathIdNumList,
-                            "saveName":addedPathSaveNameList,
-                            "savePath":addedPathSavePathList,
-                            }
-                        addedPathDf = pd.Dataframe(addedPathDict)
-                        addedPathDf["archiveName"] = ""
-                        addedPathDf["archivePath"] = ""
-                        addedPathDf["loadedFromFile"] = 0
-                        addedPathDf["deleted"] = 0
-                        addedPathDf["added"] = 1
+        if mode == "edit":
+            if self.items:
+                currentItems = self.items
+            else:
+                currentItems = [resource["path"]]
+            #if self.checkDataAssociatedFileMultiLikeFilesDf:
+            
+            # flag any files that have been removed from the multi file resource
+            self.checkDataAssociatedFileMultiLikeFilesDf["deleted"] = [ 1 if p not in currentItems else 0 for p in self.checkDataAssociatedFileMultiLikeFilesDf["path"].values]
+            self.checkDataAssociatedFileMultiLikeFilesDf["added"] = 0
+            
+            addedPathList = []
+            addedPathIdNumList = []
+            for i in currentItems:
+                if i not in self.checkDataAssociatedFileMultiLikeFilesDf["path"].values:
+                    addedPathList.append(i)
+                    nextAvailableIdNum = dsc_pkg_utils.get_id(self=self,prefix="resource-trk-resource-",folderPath=self.workingDataPkgDir)
+                    addedPathIdNumList.append(nextAvailableIdNum)
 
-                        self.checkDataAssociatedFileMultiLikeFilesDf = pd.concat([self.checkDataAssociatedFileMultiLikeFilesDf,addedPathDf])
+            if addedPathList:
+                addedPathIdList = ["resource-" + str(n) for n in addedPathIdNumList]
+                addedPathSaveNameList = ["resource-trk-" + i + ".txt" for i in addedPathIdList]
+                addedPathSavePathList = [os.path.join(self.workingDataPkgDir,f) for f in addedPathSaveNameList]
+                addedPathDict = {
+                    "path":addedPathList,
+                    "id":addedPathIdList,
+                    "idNum":addedPathIdNumList,
+                    "saveName":addedPathSaveNameList,
+                    "savePath":addedPathSavePathList,
+                    }
+                addedPathDf = pd.Dataframe(addedPathDict)
+                addedPathDf["archiveName"] = ""
+                addedPathDf["archivePath"] = ""
+                addedPathDf["loadedFromFile"] = 0
+                addedPathDf["deleted"] = 0
+                addedPathDf["added"] = 1
 
-                    self.checkDataAssociatedFileMultiLikeFilesDf = self.checkDataAssociatedFileMultiLikeFilesDf.merge(itemsDescriptionDf, on = "path", how = "left")
-                    multiLikeFilesIdList = self.checkDataAssociatedFileMultiLIkeFilesDf["id"][self.checkDataAssociatedFileMultiLIkeFilesDf["deleted"] == 0]
-                    multiLikeFilesIdList = multiLikeFilesIdList.tolist()
-                    resource["associatedFileMultiLikeFilesIds"] = multiLikeFilesIdList
-                    self.saveDf = self.checkDataAssociatedFileMultiLikeFilesDf
-                    # else: 
-                    #     print("come back here")
-                else:
+                self.checkDataAssociatedFileMultiLikeFilesDf = pd.concat([self.checkDataAssociatedFileMultiLikeFilesDf,addedPathDf])
+
+            self.checkDataAssociatedFileMultiLikeFilesDf = self.checkDataAssociatedFileMultiLikeFilesDf.merge(itemsDescriptionDf, on = "path", how = "left")
+            self.checkDataAssociatedFileMultiLikeFilesDf["fileDescription"] = self.checkDataAssociatedFileMultiLikeFilesDf["fileDescription"].fillna("")
+            if self.items:
+                multiLikeFilesIdList = self.checkDataAssociatedFileMultiLIkeFilesDf["id"][self.checkDataAssociatedFileMultiLIkeFilesDf["deleted"] == 0]
+                multiLikeFilesIdList = multiLikeFilesIdList.tolist()
+                resource["associatedFileMultiLikeFilesIds"] = multiLikeFilesIdList
+            self.saveDf = self.checkDataAssociatedFileMultiLikeFilesDf
+        else: # if mode is not edit
+        # if the user used the drag and drop to add multiple files, get a list of resource ids num, resource id, resource file name, and resource file save path for each file added
+        # assign a resource id to every resource file path added, construct a save file path for each resource      
+            if self.items:
+                
+                if len(self.items) > 1:
+
                     self.resIdNumList = [self.resIdNum]
                     self.resource_id_list = []
                     self.resourceFileNameList = []
@@ -1302,55 +1317,62 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     saveDf["deleted"] = 0
                     saveDf["added"] = 0
                     saveDf = saveDf.merge(itemsDescriptionDf, on = "path", how = "left")
+                    saveDf["fileDescription"] = saveDf["fileDescription"].fillna("")
                     self.saveDf = saveDf
-                
-            else: # if length of self.items is 1
+            
+                else: # if length of self.items is 1
+                    self.resIdNumList = [self.resIdNum]
+                    self.resource_id_list = [self.resource_id]
+                    self.resourceFileNameList = [self.resourceFileName]
+                    self.saveFilePathList = [self.saveFilePath]
+                    self.items = [resource["path"]]
+                    #self.itemsDescriptionList = [resource["descriptionFile"]]
+
+                    resource["associatedFileMultiLikeFilesIds"] = self.resource_id_list
+
+                    saveDict = {
+                                "path":self.items,
+                                "id":self.resource_id_list,
+                                "idNum":self.resIdNumList,
+                                "saveName":self.resourceFileNameList,
+                                "savePath":self.saveFilePathList,
+                                }
+                    saveDf = pd.Dataframe(saveDict)
+                    saveDf["archiveName"] = ""
+                    saveDf["archivePath"] = ""
+                    saveDf["loadedFromFile"] = 0
+                    saveDf["deleted"] = 0
+                    saveDf["added"] = 0
+                    saveDf = saveDf.merge(itemsDescriptionDf, on = "path", how = "left")
+                    saveDf["fileDescription"] = saveDf["fileDescription"].fillna("")
+                    #saveDf["fileDescription"] = self.itemsDescriptionList
+                    self.saveDf = saveDf
+        
+            else: # if self.items is empty
                 self.resIdNumList = [self.resIdNum]
                 self.resource_id_list = [self.resource_id]
                 self.resourceFileNameList = [self.resourceFileName]
                 self.saveFilePathList = [self.saveFilePath]
                 self.items = [resource["path"]]
-                self.itemsDescriptionList = [resource["descriptionFile"]]
+                #self.itemsDescriptionList = [resource["descriptionFile"]]
 
                 saveDict = {
-                            "path":self.items,
-                            "id":self.resource_id_list,
-                            "idNum":self.resIdNumList,
-                            "saveName":self.resourceFileNameList,
-                            "savePath":self.saveFilePathList,
-                            }
+                                "path":self.items,
+                                "id":self.resource_id_list,
+                                "idNum":self.resIdNumList,
+                                "saveName":self.resourceFileNameList,
+                                "savePath":self.saveFilePathList,
+                                }
                 saveDf = pd.Dataframe(saveDict)
                 saveDf["archiveName"] = ""
                 saveDf["archivePath"] = ""
                 saveDf["loadedFromFile"] = 0
                 saveDf["deleted"] = 0
                 saveDf["added"] = 0
-                saveDf["fileDescription"] = self.itemsDescriptionList
+                saveDf = saveDf.merge(itemsDescriptionDf, on = "path", how = "left")
+                saveDf["fileDescription"] = saveDf["fileDescription"].fillna("")
+                #saveDf["fileDescription"] = self.itemsDescriptionList
                 self.saveDf = saveDf
-        
-        else: # if self.items is empty
-            self.resIdNumList = [self.resIdNum]
-            self.resource_id_list = [self.resource_id]
-            self.resourceFileNameList = [self.resourceFileName]
-            self.saveFilePathList = [self.saveFilePath]
-            self.items = [resource["path"]]
-            self.itemsDescriptionList = [resource["descriptionFile"]]
-
-            saveDict = {
-                            "path":self.items,
-                            "id":self.resource_id_list,
-                            "idNum":self.resIdNumList,
-                            "saveName":self.resourceFileNameList,
-                            "savePath":self.saveFilePathList,
-                            }
-            saveDf = pd.Dataframe(saveDict)
-            saveDf["archiveName"] = ""
-            saveDf["archivePath"] = ""
-            saveDf["loadedFromFile"] = 0
-            saveDf["deleted"] = 0
-            saveDf["added"] = 0
-            saveDf["fileDescription"] = self.itemsDescriptionList
-            self.saveDf = saveDf
 
         # # this option has been removed at least for now so this should never be invoked   
         # if self.editSingle:
@@ -1387,11 +1409,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 #messageText = "A resource file for a resource with id " + self.resource_id_list[idx] + " already exists at " + self.saveFilePathList[idx] + "\n\n" + "You may want to do one or both of: 1) Use the View/Edit tab to view your resource tracker file and check which resource IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which resource IDs you've already used and for which you've already created resource files - these files will be called \'resource-trk-resource-{a number}.txt\'. While you perform these checks, your resource tracker form will remain open unless you explicitly close it. You can come back to it, change your resource ID, and hit the save button again to save with a resource ID that is not already in use. If you meant to overwrite a resource file you previously created for an resource with this resource ID, please delete the previously created resource file and try saving again." + "\n\n" 
                 #errorFormat = '<span style="color:red;">{}</span>'
                 #self.userMessageBox.append(errorFormat.format(messageText))
-                failSaveFilePathList.append(p)
-                failResIdList.append(self.resource_id_list[idx])
+                #failSaveFilePathList.append(p)
+                failSaveFilePathList.append(row.savePath)
+                #failResIdList.append(self.resource_id_list[idx])
+                failResIdList.append(row.id)
             else:
-                successSaveFilePathList.append(p)
-                successResIdList.append(self.resource_id_list[idx])
+                # successSaveFilePathList.append(p)
+                # successResIdList.append(self.resource_id_list[idx])
+                successSaveFilePathList.append(row.savePath)
+                successResIdList.append(row.id)
 
         # if any of the potential resource id/resource id annotation files already exist - exit with informative message about checking/updating resource id        
         if failResIdList:
@@ -1453,9 +1479,13 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
             if not resourceDependAllDf.empty:
 
+                validResourceIdDf = self.saveDf[self.saveDf["deleted" == 0]]
+                firstValidResourceId = validResourceIdDf["id"][0]
+                
                 # add timestamp at which time resource was added to the resources to add to tracker list
                 resourceDependAllDf["date-time"] = pd.Timestamp("now")
-                resourceDependAllDf["parent-resource-id"] = self.resource_id_list[0]
+                #resourceDependAllDf["parent-resource-id"] = self.resource_id_list[0]
+                resourceDependAllDf["parent-resource-id"] = firstValidResourceId
                 resourceDependAllDf["parent-resource-exp-name-belongs-to"] = resource["experimentNameBelongsTo"]
                 resourceDependAllDf["parent-resource-description"] = resource["description"]
                 resourceDependAllDf["parent-resource-path"] = resource["path"]
@@ -1493,27 +1523,38 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             
 
  
-            for idx, p in enumerate(self.saveFilePathList):
+            #for idx, p in enumerate(self.saveFilePathList):
+            for row in self.saveDf.itertuples():
                 
                 #resource = self.form.widget.state
                 currentResource = deepcopy(resource)
                     
-                currentResource["resourceId"] = self.resource_id_list[idx]
-                currentResource["path"] = self.items[idx]
-                currentResource["descriptionFile"] = self.itemsDescriptionList[idx]
-                
-                
+                # currentResource["resourceId"] = self.resource_id_list[idx]
+                # currentResource["path"] = self.items[idx]
+                # currentResource["descriptionFile"] = self.itemsDescriptionList[idx]
 
-                f=open(p,'w')
+                currentResource["resourceId"] = row.id
+                currentResource["path"] = row.path
+                currentResource["descriptionFile"] = row.fileDescription
+                currentResource["removed"] = 0
+                if row.deleted == 1:
+                    currentResource["removed"] = 1
+                
+                
+                #f=open(p,'w')
+                f=open(row.savePath,'w')
                 print(dumps(currentResource, indent=4), file=f)
                 f.close()
                 
-            if len(self.saveFilePathList) > 1:
+            #if len(self.saveFilePathList) > 1:
+            if self.saveDf.shape[0] > 1:
                 myString1 = "files were"
-                myString2 = ', '.join(self.saveFilePathList)
+                #myString2 = ', '.join(self.saveFilePathList)
+                myString2 = '<br>'.join(self.saveDf["savePath"].tolist())
             else: 
                 myString1 = "file was"
-                myString2 = self.saveFilePathList[0]
+                #myString2 = self.saveFilePathList[0]
+                myString2 = self.saveDf["savePath"][0]
 
             #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
             messageText = "<br>Your resource " + myString1 + " successfully written at: " + myString2 + "<br><br>Starting to add your resource(s) to the Resource Tracker now! See below for some final information about your saved resource(s) and then for updates on adding resource(s) to tracker: <br>"
@@ -1549,11 +1590,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
-            if self.editSingle:
-                self.editSingle = False
-                messageText = "<br><b>WARNING: Exiting edit mode.</b> If you need to continue editing this single resource file that is part of a larger multi \'like\' file resource, or if you need to edit another existing resource file, please close out of this form and start again by using the Edit Existing Resource button on the Add Resource Sub-tab of the Resource Tracker Tab. You can clear this form using the Clear Form button above the form to use this form to continue annotating new resource files."
-                saveFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
+            # if self.editSingle:
+            #     self.editSingle = False
+            #     messageText = "<br><b>WARNING: Exiting edit mode.</b> If you need to continue editing this single resource file that is part of a larger multi \'like\' file resource, or if you need to edit another existing resource file, please close out of this form and start again by using the Edit Existing Resource button on the Add Resource Sub-tab of the Resource Tracker Tab. You can clear this form using the Clear Form button above the form to use this form to continue annotating new resource files."
+            #     saveFormat = '<span style="color:red;">{}</span>'
+            #     self.userMessageBox.append(saveFormat.format(messageText))
 
             QApplication.processEvents() # print accumulated user status messages 
             self.add_resource() # add resource file(s) to resource tracker
@@ -2034,7 +2075,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 
                 else: 
                     checkDataAssociatedFileMultiLikeFilesDict = {
-                        "path":checkDataAssociatedFileMultiLikeFiles,
+                        "path":[data["path"]],
                         "id":[self.resource_id],
                         "idNum":[self.resIdNum],
                         "saveName":[self.resourceFileName],

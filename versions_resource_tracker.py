@@ -339,6 +339,13 @@ fieldNameMap = {
             "mapEnum": {},
             "deleteEnum":[],
             "formerSubNames": {}
+        },
+        "removed":{
+            "formerNames": [],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
         }
     }
 }

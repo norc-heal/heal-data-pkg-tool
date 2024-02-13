@@ -369,7 +369,8 @@ schema_resource_tracker = {
         "removed": {
             "title": "Removed status",
             "description": "True if user has removed the resource from the scope of the data package",
-            "type": "boolean",
+            "type": "integer",
+            "enum": [0,1],
             "priority": "resource tracker, auto"
         }
         

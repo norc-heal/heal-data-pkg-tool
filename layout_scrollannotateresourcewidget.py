@@ -1229,7 +1229,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             itemsDescriptionDf = pd.DataFrame(itemsDescriptionDict)
             
 
-        if mode == "edit":
+        if self.mode == "edit":
             if self.items:
                 currentItems = self.items
             else:

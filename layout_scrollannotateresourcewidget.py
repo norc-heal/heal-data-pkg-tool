@@ -1211,7 +1211,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 
                 itemsDescriptionDict = {
                     "path":self.items,
-                    "fileDesciption":self.itemsDescriptionList
+                    "fileDescription":self.itemsDescriptionList
                 }
                 itemsDescriptionDf = pd.DataFrame(itemsDescriptionDict)
             else: 
@@ -1224,7 +1224,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         else:
             itemsDescriptionDict = {
                     "path":[resource["path"]],
-                    "fileDesciption":[resource["descriptionFile"]]
+                    "fileDescription":[resource["descriptionFile"]]
                 }
             itemsDescriptionDf = pd.DataFrame(itemsDescriptionDict)
             
@@ -1370,6 +1370,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 saveDf["deleted"] = 0
                 saveDf["added"] = 0
                 saveDf = saveDf.merge(itemsDescriptionDf, on = "path", how = "left")
+                print("saveDf col names: ",list(saveDf))
                 saveDf["fileDescription"] = saveDf["fileDescription"].fillna("")
                 #saveDf["fileDescription"] = self.itemsDescriptionList
                 self.saveDf = saveDf

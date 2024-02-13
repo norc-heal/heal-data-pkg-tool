@@ -1199,6 +1199,14 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # assign a resource id to every resource file path added, construct a save file path for each resource
         if self.items:
             if len(self.items) > 1:
+                # if in edit mode and user previously already added a name convention, this will make sure it is 
+                # applied to all files in the edited set (whether same or different from original)
+                # if not in edit mode, this should not be necessary as user should have added and applied a convention
+                # however, it may catch cases where user added a convention but failed to apply it -
+                # mainly for edit mode scenario though
+                if resource["descriptionFileNameConvention"]:
+                    self.apply_name_convention
+
 
                 if self.itemsDescriptionList:
                     
@@ -1251,10 +1259,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
                         self.checkDataAssociatedFileMultiLikeFilesDf = pd.concat([self.checkDataAssociatedFileMultiLikeFilesDf,addedPathDf])
 
-                    self.checkDataAssociatedFileMultiLikeFilesDf = 
+                    self.checkDataAssociatedFileMultiLikeFilesDf = self.checkDataAssociatedFileMultiLikeFilesDf.merge(itemsDescriptionDf, on = "path", how = "left")
                     multiLikeFilesIdList = self.checkDataAssociatedFileMultiLIkeFilesDf["id"][self.checkDataAssociatedFileMultiLIkeFilesDf["deleted"] == 0]
                     multiLikeFilesIdList = multiLikeFilesIdList.tolist()
                     resource["associatedFileMultiLikeFilesIds"] = multiLikeFilesIdList
+                    self.saveDf = self.checkDataAssociatedFileMultiLikeFilesDf
                     # else: 
                     #     print("come back here")
                 else:
@@ -1279,28 +1288,77 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
                     resource["associatedFileMultiLikeFilesIds"] = self.resource_id_list
 
-
+                    saveDict = {
+                            "path":self.items,
+                            "id":self.resource_id_list,
+                            "idNum":self.resIdNumList,
+                            "saveName":self.resourceFileNameList,
+                            "savePath":self.saveFilePathList,
+                            }
+                    saveDf = pd.Dataframe(saveDict)
+                    saveDf["archiveName"] = ""
+                    saveDf["archivePath"] = ""
+                    saveDf["loadedFromFile"] = 0
+                    saveDf["deleted"] = 0
+                    saveDf["added"] = 0
+                    saveDf = saveDf.merge(itemsDescriptionDf, on = "path", how = "left")
+                    self.saveDf = saveDf
                 
-            else:
+            else: # if length of self.items is 1
+                self.resIdNumList = [self.resIdNum]
                 self.resource_id_list = [self.resource_id]
                 self.resourceFileNameList = [self.resourceFileName]
                 self.saveFilePathList = [self.saveFilePath]
                 self.items = [resource["path"]]
                 self.itemsDescriptionList = [resource["descriptionFile"]]
-        else:
+
+                saveDict = {
+                            "path":self.items,
+                            "id":self.resource_id_list,
+                            "idNum":self.resIdNumList,
+                            "saveName":self.resourceFileNameList,
+                            "savePath":self.saveFilePathList,
+                            }
+                saveDf = pd.Dataframe(saveDict)
+                saveDf["archiveName"] = ""
+                saveDf["archivePath"] = ""
+                saveDf["loadedFromFile"] = 0
+                saveDf["deleted"] = 0
+                saveDf["added"] = 0
+                saveDf["fileDescription"] = self.itemsDescriptionList
+                self.saveDf = saveDf
+        
+        else: # if self.items is empty
+            self.resIdNumList = [self.resIdNum]
             self.resource_id_list = [self.resource_id]
             self.resourceFileNameList = [self.resourceFileName]
             self.saveFilePathList = [self.saveFilePath]
             self.items = [resource["path"]]
             self.itemsDescriptionList = [resource["descriptionFile"]]
 
-        # this option has been removed at least for now so this should never be invoked   
-        if self.editSingle:
-            self.resource_id_list = [self.resource_id]
-            self.resourceFileNameList = [self.resourceFileName]
-            self.saveFilePathList = [self.saveFilePath]
-            self.items = [resource["path"]]
-            self.itemsDescriptionList = [resource["descriptionFile"]]            
+            saveDict = {
+                            "path":self.items,
+                            "id":self.resource_id_list,
+                            "idNum":self.resIdNumList,
+                            "saveName":self.resourceFileNameList,
+                            "savePath":self.saveFilePathList,
+                            }
+            saveDf = pd.Dataframe(saveDict)
+            saveDf["archiveName"] = ""
+            saveDf["archivePath"] = ""
+            saveDf["loadedFromFile"] = 0
+            saveDf["deleted"] = 0
+            saveDf["added"] = 0
+            saveDf["fileDescription"] = self.itemsDescriptionList
+            self.saveDf = saveDf
+
+        # # this option has been removed at least for now so this should never be invoked   
+        # if self.editSingle:
+        #     self.resource_id_list = [self.resource_id]
+        #     self.resourceFileNameList = [self.resourceFileName]
+        #     self.saveFilePathList = [self.saveFilePath]
+        #     self.items = [resource["path"]]
+        #     self.itemsDescriptionList = [resource["descriptionFile"]]            
         
         #messageText = ""
 
@@ -1310,11 +1368,22 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         failSaveFilePathList = []
         resourceList = []
 
-        for idx, p in enumerate(self.saveFilePathList):
+        #for idx, p in enumerate(self.saveFilePathList):
+        for row in self.saveDf.itertuples():
+            # before saving each file, check if there's an old file that needs to be archived 
+            # if there's an old file to archive, archive before saving new content to file 
+            # move the annotation file user opened for editing to archive folder
+            #os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
+            if row.loadedFromFile == 1:
+                os.rename(row.savePath,row.archivePath)
+                messageText = "<br>In preparation for saving your edited resource annotation file, your original resource annotation file has been archived at:<br>" + row.archivePath + "<br><br>"
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
         
             # check if saveFilePath already exists (same as if a file for this resource id already exists); if exists, exit our with informative message;
             # otherwise go ahead and save
-            if os.path.isfile(p):
+            #if os.path.isfile(p):
+            if os.path.isfile(row.savePath):
                 #messageText = "A resource file for a resource with id " + self.resource_id_list[idx] + " already exists at " + self.saveFilePathList[idx] + "\n\n" + "You may want to do one or both of: 1) Use the View/Edit tab to view your resource tracker file and check which resource IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which resource IDs you've already used and for which you've already created resource files - these files will be called \'resource-trk-resource-{a number}.txt\'. While you perform these checks, your resource tracker form will remain open unless you explicitly close it. You can come back to it, change your resource ID, and hit the save button again to save with a resource ID that is not already in use. If you meant to overwrite a resource file you previously created for an resource with this resource ID, please delete the previously created resource file and try saving again." + "\n\n" 
                 #errorFormat = '<span style="color:red;">{}</span>'
                 #self.userMessageBox.append(errorFormat.format(messageText))
@@ -1433,14 +1502,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 currentResource["path"] = self.items[idx]
                 currentResource["descriptionFile"] = self.itemsDescriptionList[idx]
                 
-                # before saving each file, check if there's an old file that needs to be archived 
-                # if there's an old file to archive, archive before saving new content to file 
-                # move the annotation file user opened for editing to archive folder
-                #os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
-                os.rename(self.saveFilePath,self.annotationArchiveFilePath)
-                messageText = "<br>In preparation for saving your edited resource annotation file, your original resource annotation file has been archived at:<br>" + self.saveAnnotationFilePath + "<br><br>"
-                saveFormat = '<span style="color:blue;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
+                
 
                 f=open(p,'w')
                 print(dumps(currentResource, indent=4), file=f)

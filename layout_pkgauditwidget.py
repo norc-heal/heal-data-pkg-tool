@@ -286,8 +286,10 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 versionText = dsc_pkg_utils.trkDict[t]["updateSchemaMap"]["latestVersion"]
 
                                 if os.path.isfile(versionTxtFilePath):
-                                    with open(versionTxtFilePath, "a") as text_file:
+                                    with open(versionTxtFilePath, "r+") as text_file:
+                                        # opening in r+ means pointer is initially at start of file
                                         text = text_file.read()
+                                        # after reading pointer will be at end of file, so writing will result in append
                                         if not text.endswith('\n'):
                                             text_file.write('\n')
                                         text_file.write(versionText)

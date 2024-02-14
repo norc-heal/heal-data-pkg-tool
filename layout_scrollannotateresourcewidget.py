@@ -1480,7 +1480,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
             if not resourceDependAllDf.empty:
 
-                validResourceIdDf = self.saveDf[self.saveDf["deleted" == 0]]
+                validResourceIdDf = self.saveDf[self.saveDf["deleted"] == 0]
                 firstValidResourceId = validResourceIdDf["id"][0]
                 
                 # add timestamp at which time resource was added to the resources to add to tracker list
@@ -1638,7 +1638,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Resource Txt Data file(s)",
         #        self.workingDataPkgDir, "Text (*.txt)")
 
-        ifileName = self.saveFilePathList
+        #ifileName = self.saveFilePathList
+        ifileName = self.saveDf["savePath"].tolist()
         
         if ifileName:
             print("ifileName: ",ifileName)

@@ -306,14 +306,37 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                     messageText = "<br>All csv trackers are up to date - json txt file updates coming soon<br>"
                     saveFormat = '<span style="color:orange;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
+                    
+                    origDir = self.workingDataPkgDir
+                    os.rename(origDir,"archive-" + origDir)
+                    os.rename(updateDir,origDir)
+                    
+                    messageText = "<br>Your original working Data Package Directory has been archived as \"archive-\" plus the original directory name.<br>"
+                    saveFormat = '<span style="color:green;">{}</span>'
+                    self.userMessageBox.append(saveFormat.format(messageText))
                     return
             else:
                 messageText = "<br>No csv trackers were detected - json txt file updates coming soon<br>"
                 saveFormat = '<span style="color:orange;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
+                
+                origDir = self.workingDataPkgDir
+                os.rename(origDir,"archive-" + origDir)
+                os.rename(updateDir,origDir)
+                
+                messageText = "<br>Your original working Data Package Directory has been archived as \"archive-\" plus the original directory name.<br>"
+                saveFormat = '<span style="color:green;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
                 return
 
-
+            
+            origDir = self.workingDataPkgDir
+            os.rename(origDir,"archive-" + origDir)
+            os.rename(updateDir,origDir)
+            
+            messageText = "<br>Your original working Data Package Directory has been archived as \"archive-\" plus the original directory name.<br>"
+            saveFormat = '<span style="color:green;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
         else:
 
             messageText = "<br>All dsc files are up to date - no updates needed!<br>"

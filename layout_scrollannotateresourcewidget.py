@@ -988,6 +988,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.labelAddMultiDepend.hide()
 
     def apply_name_convention(self):
+        print("applying name convention")
         # have to do this after add_tooltip because these items are defined in that function - may want to change that at some point
         # get the name convention widget 
         # if the contents of the name convention widget
@@ -1051,7 +1052,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.itemsDescriptionList, itemsDescriptionMessagesOut = get_multi_like_file_descriptions(self.nameConvention, self.fileStemList)
 
         if self.itemsDescriptionList:
-            print(self.itemsDescriptionList)
+            print("self.itemsDescriptionList: ",self.itemsDescriptionList)
             
             if all(self.itemsDescriptionList):
                 self.form.widget.state = {
@@ -1205,7 +1206,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
             
             if resource["descriptionFileNameConvention"]:
-                self.apply_name_convention
+                print("in save_resource: have a file name convention - going to apply name convention if not already applied")
+                self.apply_name_convention()
 
 
             if self.itemsDescriptionList:

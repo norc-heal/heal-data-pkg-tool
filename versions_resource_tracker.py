@@ -46,7 +46,7 @@
 
 
 fieldNameMap = {
-    "latestVersion":"0.4.0",
+    "latestVersion":"0.4.1",
     "properties":{
         "schemaVersion":{
             "formerNames": [],

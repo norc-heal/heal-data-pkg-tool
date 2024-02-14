@@ -289,6 +289,12 @@ schema_resource_tracker = {
             "type": "string",
             "priority": "all, low, hide-minimal"
         },
+        "note": {
+            "title": "Resource Note",
+            "description": "Any important notes for someone viewing or re-using a resource not covered in more structured fields of the Resource Tracker. For example, in a complex file such as an Excel Workbook, or a PRISM file, specify where the data is, where the analysis is, where the figure(s) is/are. For example, brief protocol data may be specified here especially if a protocol document does not exist, or directions as to where in a larger protocol document the user may find specific protocol information that pertains to this resource. For example, for a tabular data file where a heal formatted data dictionary is not appropriate (e.g. raw/normalized counts from RNAseq experiment), specify the format of a metadata file that has been added as a dependency for the resource and/or add essential metadata directly in the note (e.g. reference genome).",
+            "type": "string",
+            "priority": "all, high"
+        },
         #"format.open.type": {
         #    "title": "Format Open Type",
         #    "description": "If the format is proprietary but can be opened/converted to open source format using open source tools, provide the open source format to which the file can be converted (e.g. csv)",

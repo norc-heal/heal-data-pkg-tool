@@ -263,6 +263,13 @@ fieldNameMap = {
             "deleteEnum":[],
             "formerSubNames": {}
         },
+        "note":{
+            "formerNames": [],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
+        },
         "profile":{
             "formerNames": [],
             "deprecated": False,

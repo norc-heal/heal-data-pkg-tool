@@ -476,11 +476,11 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                     setAccess = ["open-access"]
                 elif setType == "associatedFileResultsTracker":
                     setCategorySubMetadata = "heal-formatted-results-tracker"
-                    setDescription = "heal formatted results tracker for " + setParent
+                    setDescription = "heal formatted results tracker for " + setParent + "(description: " + setParentDescription + "; relative path: " + setParentRelPath + ")"
                     setAccess = ["temporary-private","open-access"]
                 elif setType == "associatedFileDataDict":
                     setCategorySubMetadata = "heal-formatted-data-dictionary"
-                    setDescription = "heal formatted data dictionary for " + setParent 
+                    setDescription = "heal formatted data dictionary for " + setParent + "(description: " + setParentDescription + "; relative path: " + setParentRelPath + ")" 
                     setAccess = ["open-access"]
             else:
                 setCategory = ""

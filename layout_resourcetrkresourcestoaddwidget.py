@@ -326,6 +326,9 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         print(self.listRelPath)
         self.listType    = resourcesToAddDf["dependency-type"].tolist()
         self.listParent    = resourcesToAddDf["parent-resource-id"].tolist()
+        self.listParentDescription = resourcesToAddDf["parent-resource-description"].tolist()
+        self.listParentPath = resourcesToAddDf["parent-resource-path"].tolist()
+        self.listParentRelPath = [os.path.relpath(p,self.workingDataPkgDir) for p in self.listParentPath]
         self.listPushButton    = ['']*resourcesToAddDf.shape[0]
         self.listPushButton2    = ['']*resourcesToAddDf.shape[0]
         self.grid = QGridLayout()

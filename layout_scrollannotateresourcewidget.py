@@ -49,6 +49,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.annotationMode = annotationMode
         self.schemaVersion = schema_resource_tracker["version"]
         self.loadingFormDataFromFile = False
+        self.itemsDescriptionList = []
         self.initUI()
         #self.load_file()
 
@@ -1866,7 +1867,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(invalidFiles) + "\n\n\n" + "cannot be added to a Resource Tracker file because they did not pass validation. Please review the validation errors printed above." 
                 self.userMessageBox.append(messageText)
             
-            messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(validFiles) + "\n\n\n" + "were added as a resource(s) to the Resource Tracker file: " + "\n\n\n" + output_path
+            messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(validFiles) + "\n\n\n" + "were added as a resource(s) to the Resource Tracker file: " + "\n\n\n" + output_path 
             self.userMessageBox.append(messageText)
         else:
             messageText = "No Resource Tracker file exists at the designated directory. Are you sure this is a Data Package Directory? If you haven't yet created a Data Package Directory for your work, please head to the \"Data Package\" tab and use the \"Create new Data Package\" button to create your Data Package Directory. Your new Data Package Directory will contain your Resource Tracker file. You can then come back here and try adding your resource file again!" + "\n\n\n" + "Exiting \"Add Resource\" function now."

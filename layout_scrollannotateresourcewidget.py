@@ -1482,7 +1482,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if not resourceDependAllDf.empty:
 
                 validResourceIdDf = self.saveDf[self.saveDf["deleted"] == 0]
-                firstValidResourceId = validResourceIdDf["id"][0]
+                firstValidResourceId = validResourceIdDf["id"].iloc[0]
                 
                 # add timestamp at which time resource was added to the resources to add to tracker list
                 resourceDependAllDf["date-time"] = pd.Timestamp("now")

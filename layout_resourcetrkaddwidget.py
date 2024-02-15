@@ -32,6 +32,8 @@ from schema_resource_tracker import schema_resource_tracker
 from healdata_utils.validators.jsonschema import validate_against_jsonschema
 import datetime
 
+import version_check
+
 
 class ResourceTrkAddWindow(QtWidgets.QMainWindow):
 
@@ -112,6 +114,8 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(saveFormat.format(messageText))
             return
         
+        
+
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
             #self.w.editState = False
@@ -135,8 +139,58 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.checkTrackerCreatedSchemaVersionAgainstCurrent(self=self,trackerTypeFileNameString="resource-tracker",trackerTypeMessageString="Resource Tracker"):
             return
 
-        # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property so perform some checks
+        # for editing need to check if json txt annotation files are updated - if not updated, will break the form import
+        # so do full check for if update is necessary to get update status of trackers and json txt annotation files
+        versionCheck = version_check.version_check(self.pkgPath)
+        
+        versionCheckAllUpToDate = versionCheck[0]
+        versionCheckMessageText = versionCheck[1]
+        versionCheckDf = versionCheck[2]
+        
+        addToMessage = "<br><br>checking json txt annotation files for ability to edit...<br>"
+        saveFormat = '<span style="color:blue;">{}</span>'
+        # check if any json txt annotation files are not up to date and get a list if they exist
+        versionCheckDf = versionCheckDf[versionCheckDf["trackerType"] == "resourceTracker"]
+        versionCheckDf = versionCheckDf[versionCheckDf["fileType"] == "json txt"]
+        if not versionCheckDf.empty:
+            print("found at least one json txt annotation file")
+            addToMessage = addToMessage + "found at least one json txt annotation file...<br>"
+            versionCheckDf = versionCheckDf[versionCheckDf["upToDate"] != "Yes"]
+            if not versionCheckDf.empty:
+                print("found at least one json txt annotation file that is not up to date; json txt annotation files that are not up to date can NOT be edited")
+                addToMessage = addToMessage + "found at least one json txt annotation file that is not up to date; json txt annotation files that are not up to date can NOT be edited...<br>"
+                jsonTxt = versionCheckDf["file"].tolist()
+                jsonTxt = [Path(p) for p in jsonTxt]
+                jsonTxt = [p.stem for p in jsonTxt]
+                jsonTxtString = "<br>".join(jsonTxt)
+                addToMessage = addToMessage + "json txt annotation file(s) that are not up to date are as follows:<br><br>"+ jsonTxtString + "<br><br>These json txt annotation files may not be edited until they are updated.<br>"
+                
+                versionCheckDf = versionCheckDf[versionCheckDf["canBeUpdated"] == "Yes"]
+                if not versionCheckDf.empty:
+                    jsonTxt = versionCheckDf["file"].tolist()
+                    jsonTxt = [Path(p) for p in jsonTxt]
+                    jsonTxt = [p.stem for p in jsonTxt]
+                    jsonTxtString = "<br>".join(jsonTxt)
+                    print("found at least one json txt annotation file that is not up to date and can be updated; json txt annotation files that are not up to date can NOT be edited; you can update these json txt annotation files and then return to try editing them")
+                    addToMessage = addToMessage + "found at least one json txt annotation file that is not up to date and can be updated; json txt annotation files that are not up to date can NOT be edited; you can update these json txt annotation files and then return to try editing them:<br><br>" + jsonTxtString + "<br><br>"
+                else: 
+                    print("none of the json txt annotation files that are not up to date can be updated")
+                    addToMessage = addToMessage + "none of the json txt annotation files that are not up to date (listed above) can currently be updated; these files may not be edited...<br>"
+                    saveFormat = '<span style="color:red;">{}</span>'            
+            else:
+                print("all json txt annotation files are up to date and may be edited")
+                addToMessage = "<br><br>all json txt annotation files are up to date and may be edited"
+                saveFormat = '<span style="color:green;">{}</span>'
+        else:
+            print("no json txt annotation files")
+            addToMessage = "<br><br>no json txt annotation files to edit"
+            saveFormat = '<span style="color:red;">{}</span>'
+        
+        messageText = addToMessage
+        self.userMessageBox.append(saveFormat.format(messageText)) 
 
+        
+        # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property so perform some checks
         # check that experiment tracker exists in working data pkg dir, if not, return
         if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
             messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br>"

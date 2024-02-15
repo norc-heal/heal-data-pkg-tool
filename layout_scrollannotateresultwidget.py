@@ -576,6 +576,55 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
     def save_result(self):
 
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        # shouldn't be necessary as form shouldn't open if not set
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+
+        # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property (in this case for validation purposes) so perform some checks
+
+        # check that experiment tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
+            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that experiment tracker is closed (user doesn't have it open in excel for example)
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+        # don't check for results tracker exists as this function checks for appropriate trackers already existing and creates the needed results tracker(s) if they don't already exist
+        # # check that resource tracker exists in working data pkg dir, if not, return
+        # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+        #     messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+        #     saveFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(saveFormat.format(messageText))
+        #     return
+        
+        # check that all results trackers are closed (user doesn't have it open in excel for example)
+        resultsTrackersList = [filename for filename in os.listdir(self.workingDataPkgDir) if filename.startswith("heal-csv-results-tracker-")]
+        print("results trackers: ", resultsTrackersList)
+        
+        if resultsTrackersList:
+            for tracker in resultsTrackersList:
+
+                try: 
+                    with open(os.path.join(self.workingDataPkgDir,tracker),'r+') as f:
+                        print("file is closed, proceed!!")
+                except PermissionError:
+                        messageText = "<br>At least one Results Tracker file that already exists in your working Data Package Directory is open in another application, and must be closed to proceed; Check if any Results Tracker files are open in Excel or similar application, and close the file(s). <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
+                        saveFormat = '<span style="color:red;">{}</span>'
+                        self.userMessageBox.append(saveFormat.format(messageText))
+                        return
+
+
         result = deepcopy(self.form.widget.state)
         #dumps(result, indent=4)
 
@@ -588,13 +637,13 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.validateFormData(self=self,formData=result):
             return
         
-        # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
-        # check that a dsc data package dir has been added - this is the save folder
-        if not self.saveFolderPath:
-            messageText = "<br>You must add a DSC Data Package Directory before saving your result file. Please add a DSC Data Package Directory and then try saving again." 
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
-            return
+        # # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
+        # # check that a dsc data package dir has been added - this is the save folder
+        # if not self.saveFolderPath:
+        #     messageText = "<br>You must add a DSC Data Package Directory before saving your result file. Please add a DSC Data Package Directory and then try saving again." 
+        #     errorFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(errorFormat.format(messageText))
+        #     return
 
         # # check that file path for at least one associated publication and at least a minimal description has been added to the form 
         # # if not exit with informative error
@@ -683,52 +732,52 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
     def auto_add_result(self):
 
-        # check if user has set a working data package dir - if not exit gracefully with informative message
-        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
-            return
+        # # check if user has set a working data package dir - if not exit gracefully with informative message
+        # if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+        #     return
 
-        # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property (in this case for validation purposes) so perform some checks
+        # # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property (in this case for validation purposes) so perform some checks
 
-        # check that experiment tracker exists in working data pkg dir, if not, return
-        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
-            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
-            saveFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(saveFormat.format(messageText))
-            return
-        
-        # check that experiment tracker is closed (user doesn't have it open in excel for example)
-        try: 
-            with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
-                print("file is closed, proceed!!")
-        except PermissionError:
-                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added"
-                saveFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
-                return
-
-        # don't check for results tracker exists as this function checks for appropriate trackers already existing and creates the needed results tracker(s) if they don't already exist
-        # # check that resource tracker exists in working data pkg dir, if not, return
-        # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
-        #     messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+        # # check that experiment tracker exists in working data pkg dir, if not, return
+        # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
+        #     messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
         #     saveFormat = '<span style="color:red;">{}</span>'
         #     self.userMessageBox.append(saveFormat.format(messageText))
         #     return
         
-        # check that all results trackers are closed (user doesn't have it open in excel for example)
-        resultsTrackersList = [filename for filename in os.listdir(self.workingDataPkgDir) if filename.startswith("heal-csv-results-tracker-")]
-        print("results trackers: ", resultsTrackersList)
-        
-        if resultsTrackersList:
-            for tracker in resultsTrackersList:
+        # # check that experiment tracker is closed (user doesn't have it open in excel for example)
+        # try: 
+        #     with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
+        #         print("file is closed, proceed!!")
+        # except PermissionError:
+        #         messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added"
+        #         saveFormat = '<span style="color:red;">{}</span>'
+        #         self.userMessageBox.append(saveFormat.format(messageText))
+        #         return
 
-                try: 
-                    with open(os.path.join(self.workingDataPkgDir,tracker),'r+') as f:
-                        print("file is closed, proceed!!")
-                except PermissionError:
-                        messageText = "<br>At least one Results Tracker file that already exists in your working Data Package Directory is open in another application, and must be closed to proceed; Check if any Results Tracker files are open in Excel or similar application, and close the file(s). <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
-                        saveFormat = '<span style="color:red;">{}</span>'
-                        self.userMessageBox.append(saveFormat.format(messageText))
-                        return
+        # # don't check for results tracker exists as this function checks for appropriate trackers already existing and creates the needed results tracker(s) if they don't already exist
+        # # # check that resource tracker exists in working data pkg dir, if not, return
+        # # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+        # #     messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>"
+        # #     saveFormat = '<span style="color:red;">{}</span>'
+        # #     self.userMessageBox.append(saveFormat.format(messageText))
+        # #     return
+        
+        # # check that all results trackers are closed (user doesn't have it open in excel for example)
+        # resultsTrackersList = [filename for filename in os.listdir(self.workingDataPkgDir) if filename.startswith("heal-csv-results-tracker-")]
+        # print("results trackers: ", resultsTrackersList)
+        
+        # if resultsTrackersList:
+        #     for tracker in resultsTrackersList:
+
+        #         try: 
+        #             with open(os.path.join(self.workingDataPkgDir,tracker),'r+') as f:
+        #                 print("file is closed, proceed!!")
+        #         except PermissionError:
+        #                 messageText = "<br>At least one Results Tracker file that already exists in your working Data Package Directory is open in another application, and must be closed to proceed; Check if any Results Tracker files are open in Excel or similar application, and close the file(s). <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
+        #                 saveFormat = '<span style="color:red;">{}</span>'
+        #                 self.userMessageBox.append(saveFormat.format(messageText))
+        #                 return
 
         # get result file path
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",

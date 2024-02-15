@@ -46,7 +46,7 @@ schema_resource_tracker = {
     "type": "object",
     "description": "HEAL DSC Core Metadata piece to track and provide basic information about resource(s)/file(s) that support/are produced by/result from experiments you perform/will perform as part of your HEAL study. The objective is to list at least all files that will be submitted to a data repository in order to describe what each file is, how they relate to each other/how to use them, and how they relate to results/publications shared by the study group. Files may include results files (e.g. publications or draft publications/pieces of publications), processed and raw data files, protocol and analytic plan files, data dictionaries for tabular data files, other metadata as appropriate to data/field type, etc.",
     "title": "HEAL Resource Tracker",
-    "version": "0.3.0",
+    "version": "0.4.1",
     "properties": {
         "schemaVersion": {
             "title": "Schema version",
@@ -231,8 +231,18 @@ schema_resource_tracker = {
             "priority": "only results-tracker, permanent hide "
         },
         "associatedFileMultiLikeFiles": {
-            "title": "Multiple 'like' File Resource - Files",
-            "description": "If the current resource file is annotating a resource that is one of multiple 'like' files, this field will list all files that are part of the set of multiple 'like' file resources.",
+            "title": "Multiple 'like' File Resource - File Paths",
+            "description": "If the current resource file is annotating a resource that is one of multiple 'like' files, this field will list the file paths of all files that are part of the set of multiple 'like' file resources.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "path"
+            },
+            "priority": "multiple like resource, high, auto, permanent hide"
+        },
+        "associatedFileMultiLikeFilesIds": {
+            "title": "Multiple 'like' File Resource - File Resource IDs",
+            "description": "If the current resource file is annotating a resource that is one of multiple 'like' files, this field will list the resource IDs for all files that are part of the set of multiple 'like' file resources.",
             "type": "array",
             "items": {
                 "type": "string",
@@ -278,6 +288,12 @@ schema_resource_tracker = {
             "description": "If the file format of the resource file is proprietary and requires specific software to open/interpret, provide the software name and version used by the study group to produce/work with the file; e.g. Origin 11.0, CorelDraw 5.6",
             "type": "string",
             "priority": "all, low, hide-minimal"
+        },
+        "note": {
+            "title": "Resource Note",
+            "description": "Any important notes for someone viewing or re-using a resource not covered in more structured fields of the Resource Tracker. For example, in a complex file such as an Excel Workbook, or a PRISM file, specify where the data is, where the analysis is, where the figure(s) is/are, describe what is in each sheet of an Excel Workbook. For example, brief protocol data relevant to a resource may be specified here especially if a free-standing protocol document does not exist; Also may specify directions as to where in a larger free-standing protocol document (which the user has added as a dependency of the resource) the user may find specific protocol information that pertains to this resource. For example, for a tabular data file where a heal formatted data dictionary is not appropriate (e.g. raw/normalized counts from RNAseq experiment), specify the format of a metadata file that has been added as a dependency for the resource and/or add essential metadata directly in the note (e.g. reference genome).",
+            "type": "string",
+            "priority": "all, high"
         },
         #"format.open.type": {
         #    "title": "Format Open Type",
@@ -354,6 +370,13 @@ schema_resource_tracker = {
             "title": "Resource tracker entry modification datetime timestamp",
             "description": "Date time at which the resource annotation was last modified, converted to timestamp for easy sorting by datetime; auto-inferred",
             "type": "number",
+            "priority": "resource tracker, auto"
+        },
+        "removed": {
+            "title": "Removed status",
+            "description": "True if user has removed the resource from the scope of the data package",
+            "type": "integer",
+            "enum": [0,1],
             "priority": "resource tracker, auto"
         }
         

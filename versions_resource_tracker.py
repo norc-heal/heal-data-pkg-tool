@@ -46,7 +46,7 @@
 
 
 fieldNameMap = {
-    "latestVersion":"0.3.0",
+    "latestVersion":"0.4.1",
     "properties":{
         "schemaVersion":{
             "formerNames": [],
@@ -225,6 +225,13 @@ fieldNameMap = {
             "deleteEnum":[],
             "formerSubNames": {}
         },
+        "associatedFileMultiLikeFilesIds":{
+            "formerNames": [],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
+        },
         "access":{
             "formerNames": [],
             "deprecated": False,
@@ -251,6 +258,13 @@ fieldNameMap = {
         },
         "softwareUsed":{
             "formerNames": ["format.software"],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
+        },
+        "note":{
+            "formerNames": [],
             "deprecated": False,
             "mapEnum": {},
             "deleteEnum":[],
@@ -328,6 +342,13 @@ fieldNameMap = {
         },
         "annotationModTimeStamp":{
             "formerNames": ["restrk.mod.time.stamp"],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
+        },
+        "removed":{
+            "formerNames": [],
             "deprecated": False,
             "mapEnum": {},
             "deleteEnum":[],

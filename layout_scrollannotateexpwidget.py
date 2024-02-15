@@ -41,6 +41,7 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         self.workingDataPkgDir = workingDataPkgDir
         self.mode = mode
         self.schemaVersion = schema_experiment_tracker["version"]
+        self.loadingFormDataFromFile = False
         self.initUI()
 
     def initUI(self):
@@ -450,6 +451,11 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
                 annotationIdNum = 1
 
             self.annotationIdNum = annotationIdNum
+
+            self.form.widget.state = {
+                    "experimentIdNumber": self.annotationIdNum
+                }
+
             self.annotation_id = 'exp-'+ str(self.annotationIdNum)
             self.annotationFileName = 'exp-trk-'+ self.annotation_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.annotationFileName)
@@ -542,18 +548,52 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
     #         self.labelAddMultiDepend.hide()
 
     def save_experiment(self):
-        
-        # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
-        # check that a dsc data package dir has been added - this is the save folder
-        if not self.saveFolderPath:
-            messageText = "<br>You must add a DSC Data Package Directory before saving your experiment annotation file. Please add a DSC Data Package Directory and then try saving again." 
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        # this shouldn't be necessary since form shouldn't open if working data pkg dir not set
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
+
+        # check that experiment tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
+            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that experiment tracker is closed (user doesn't have it open in excel for example) - if open, prevents the automated add to tracker part of the workflow
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+        experiment = deepcopy(self.form.widget.state)
+        
+        # for any array of string items, remove empty strings from array
+        for key in self.schema["properties"]:
+            if self.schema["properties"][key]["type"] == "array":
+                if self.schema["properties"][key]["items"]["type"] == "string":
+                    experiment[key] = dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(myStringArray=experiment[key])
+
+        # validate against schema
+        if not dsc_pkg_utils.validateFormData(self=self,formData=experiment):
+            return
+        
+        # # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
+        # # check that a dsc data package dir has been added - this is the save folder
+        # if not self.saveFolderPath:
+        #     messageText = "<br>You must add a DSC Data Package Directory before saving your experiment annotation file. Please add a DSC Data Package Directory and then try saving again." 
+        #     errorFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(errorFormat.format(messageText))
+        #     return
 
         # check that at least a minimal description has been added to the form 
         # if not exit with informative error
-        if not (self.form.widget.state["experimentDescription"]):
+        if not (experiment["experimentDescription"]):
             messageText = "<br>You must add at least a minimal description of your experiment before saving your experiment annotation file. Please add at least a minimal description of your experiment in the Experiment Description field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
@@ -564,16 +604,23 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         if not self.uniqueExpNameOnSave:
             return
              
-        
+        if self.mode == "edit":
+            # move the annotation file user opened for editing to archive folder
+            #os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
+            os.rename(self.saveFilePath,self.saveAnnotationFilePath)
+            messageText = "<br>In preparation for saving your edited experiment annotation file, your original experiment annotation file has been archived at:<br>" + self.saveAnnotationFilePath + "<br><br>"
+            saveFormat = '<span style="color:blue;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+
         # check if user has modified the exp id from the one that was autogenerated when adding dsc data dir for saving
         # this may happen if for example a user annotates an experiment using the autogenerated id, then wants to keep 
         # going using the same form window instance, modify the contents to annotate a new experiment (perhaps one with some 
         # form fields that will be the same), and save again with a new id - in this case the user can modify the 
         # id manually, incrementing the id number by one - if id modified, updated it in memory and regenerate
         # the save file name, save file path, and id number
-        if self.form.widget.state["experimentId"] != self.annotation_id:
+        if experiment["experimentId"] != self.annotation_id:
             
-            self.annotation_id = self.form.widget.state["experimentId"]
+            self.annotation_id = experiment["experimentId"]
             self.annotationFileName = 'exp-trk-'+ self.annotation_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.annotationFileName)
 
@@ -582,16 +629,16 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         # check if saveFilePath already exists (same as if a file for this experiment id already exists); if exists, exit our with informative message;
         # otherwise go ahead and save
         if os.path.isfile(self.saveFilePath):
-            messageText = "An experiment annotation file for an experiment with id " + self.annotation_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your experiment tracker file(s) and check which experiment IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which experiment IDs you've already used (i.e. for which you've already created experiment annotation files - these files will be called \'exp-trk-exp-{a number}.txt\'. While you perform these checks, your experiment tracker form will remain open unless you explicitly close it. You can come back to it, change your experiment ID, and hit the save button again to save with an experiment ID that is not already in use. If you meant to overwrite an experiment annotation file you previously created for an experiment with this experiment ID, please delete the previously created experiment annotation file and try saving again.<br><br>" 
+            messageText = "An experiment annotation file for an experiment with id " + self.annotation_id + " already exists at " + self.saveFilePath + "<br><br>You may want to do one or both of: 1) Use the View/Edit tab to view your experiment tracker file(s) and check which experiment IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your working Data Package Directory and check which experiment IDs you've already used (i.e. for which you've already created experiment annotation files - these files will be called \'exp-trk-exp-{a number}.txt\'. While you perform these checks, your experiment tracker form will remain open unless you explicitly close it. You can come back to it, change your experiment ID, and hit the save button again to save with an experiment ID that is not already in use. If you meant to edit an existing experiment annotation file, please use the \"Edit an existing experiment\" functionality on the \"Add experiment\" sub-tab.<br><br>" 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
         else:
                               
-            annotationContent = self.form.widget.state
+            #annotationContent = self.form.widget.state
             f=open(self.saveFilePath,'w')
-            print(dumps(annotationContent, indent=4), file=f)
+            print(dumps(experiment, indent=4), file=f)
             f.close()
                 
             #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
@@ -608,26 +655,26 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
 
     def add_exp(self):
 
-        # check if user has set a working data package dir - if not exit gracefully with informative message
-        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
-            return
+        # # check if user has set a working data package dir - if not exit gracefully with informative message
+        # if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+        #     return
 
-        # check that experiment tracker exists in working data pkg dir, if not, return
-        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
-            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
-            saveFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(saveFormat.format(messageText))
-            return
+        # # check that experiment tracker exists in working data pkg dir, if not, return
+        # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
+        #     messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
+        #     saveFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(saveFormat.format(messageText))
+        #     return
         
-        # check that experiment tracker is closed (user doesn't have it open in excel for example)
-        try: 
-            with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
-                print("file is closed, proceed!!")
-        except PermissionError:
-                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
-                saveFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
-                return
+        # # check that experiment tracker is closed (user doesn't have it open in excel for example)
+        # try: 
+        #     with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
+        #         print("file is closed, proceed!!")
+        # except PermissionError:
+        #         messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The experiment was saved but was not added to the Experiment Tracker. To add this experiment to your Experiment Tracker, first set your working Data Package Directory, then navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click on the \"Batch add experiment(s) to tracker\" push-button. You can select just this experiment, or all experiments to add to the Experiment Tracker. If some experiments you select to add to the Experiment Tracker have already been added they will be not be re-added."
+        #         saveFormat = '<span style="color:red;">{}</span>'
+        #         self.userMessageBox.append(saveFormat.format(messageText))
+        #         return
 
         # get result file path
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Result Txt Data file(s)",
@@ -910,6 +957,8 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
         print("in load_file fx")
 
+        self.loadingFormDataFromFile = True
+
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
         #        (QtCore.QDir.homePath()), "Text (*.txt)")
         if self.mode == "edit":
@@ -971,7 +1020,9 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
                 self.annotation_id = data["experimentId"]
                 self.annotationIdNum = int(self.annotation_id.split("-")[1])
                 self.annotationFileName = 'exp-trk-'+ self.annotation_id + '.txt'
-                #self.saveFilePath = os.path.join(self.saveFolderPath,self.resultFileName)
+                
+                # save the full path at which the current file is saved and at which you will save the newly edited file if possible (e.g. valid, tool does not crash for any reason)
+                self.saveFilePath = os.path.join(self.saveFolderPath,self.annotationFileName)
 
                 archiveFileStartsWith = Path(ifileName).stem + "-"
                 print("archiveFileStartsWith: ",archiveFileStartsWith)
@@ -993,13 +1044,22 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
                 #self.annotationArchiveFileName = 'exp-trk-'+ self.annotation_id + '-' + str(self.annotationArchiveFileNameNumber) + '.txt'    
                 self.annotationArchiveFileName = archiveFileStartsWith + str(self.annotationArchiveFileNameNumber) + '.txt'    
 
-                # move the experiment annotation file user opened for editing to archive folder
-                os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
-                messageText = "<br>Your original experiment annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName) + "<br><br>"
-                saveFormat = '<span style="color:blue;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
+                # save full path at which you will archive the file once the new file is saved
+                self.saveAnnotationFilePath = os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName)
+
+                # move this to end of save command and only do it if in edit mode
+                # # move the experiment annotation file user opened for editing to archive folder
+                # os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
+                # messageText = "<br>Your original experiment annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName) + "<br><br>"
+                # saveFormat = '<span style="color:blue;">{}</span>'
+                # self.userMessageBox.append(saveFormat.format(messageText))
 
             self.form.widget.state = data
+
+            if self.mode == "edit":
+                self.form.widget.state = {
+                    "experimentIdNumber": self.annotationIdNum
+                }
 
             if self.mode == "add-based-on":
                 self.get_id()
@@ -1007,10 +1067,9 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
                 saveFormat = '<span style="color:blue;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
 
-            # if len(data["associatedFileDependsOn"]) > 2: 
-            #     self.lstbox_view2.addItems(data["associatedFileDependsOn"])
-            #     self.add_multi_depend()   
-            # 
+        self.loadingFormDataFromFile = False
+
+            
           
 
         

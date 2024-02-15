@@ -49,6 +49,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.annotationMode = annotationMode
         self.schemaVersion = schema_resource_tracker["version"]
         self.loadingFormDataFromFile = False
+        self.itemsDescriptionList = []
         self.initUI()
         #self.load_file()
 
@@ -752,6 +753,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 resIdNum = 1
 
             self.resIdNum = resIdNum
+
+            self.form.widget.state = {
+                    "resourceIdNumber": self.resIdNum
+                }
+
             self.resource_id = 'resource-'+ str(self.resIdNum)
             self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
@@ -982,6 +988,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.labelAddMultiDepend.hide()
 
     def apply_name_convention(self):
+        print("applying name convention")
         # have to do this after add_tooltip because these items are defined in that function - may want to change that at some point
         # get the name convention widget 
         # if the contents of the name convention widget
@@ -1045,7 +1052,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         self.itemsDescriptionList, itemsDescriptionMessagesOut = get_multi_like_file_descriptions(self.nameConvention, self.fileStemList)
 
         if self.itemsDescriptionList:
-            print(self.itemsDescriptionList)
+            print("self.itemsDescriptionList: ",self.itemsDescriptionList)
             
             if all(self.itemsDescriptionList):
                 self.form.widget.state = {
@@ -1076,15 +1083,72 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
     def save_resource(self):
         
-        # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
-        # check that a dsc data package dir has been added - this is the save folder - if not exit with informative error
-        if not self.saveFolderPath:
-            messageText = "<br>You must add a DSC Data Package Directory before saving your resource file. Please add a DSC Data Package Directory and then try saving again." 
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
+        # # this should no longer be necessary as the form will only be opened if a valid working data pkg dir has been set by the user and the path has been passed as a string to the form widget
+        # # check that a dsc data package dir has been added - this is the save folder - if not exit with informative error
+        # if not self.saveFolderPath:
+        #     messageText = "<br>You must add a DSC Data Package Directory before saving your resource file. Please add a DSC Data Package Directory and then try saving again." 
+        #     errorFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(errorFormat.format(messageText))
+        #     return
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
 
-        if not os.path.isfile(self.form.widget.state["path"]):
+        # check that resource tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+            messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that resource tracker is closed (user doesn't have it open in excel for example)
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+                messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, and close the file. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+        # when saving a resource, will also write any dependencies of the resource to a 
+        # operational file called resources-to-add (these are resources the user should add to the tracker)
+        # here check if the operational file dir this file will be saved in exists and if not create it
+        # if the file already exists, make sure that it is not open (if open it cannot be written to and saving workflow will crash the tool without error handling)
+        resourcesToAddOutputDir = os.path.join(self.workingDataPkgDir,"no-user-access")
+        if not os.path.exists(resourcesToAddOutputDir):
+            os.makedirs(resourcesToAddOutputDir)
+            print("creating no-user-access subdirectory")
+        else:
+            print("no-user-access subdirectory already exists")
+        
+        resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"no-user-access","resources-to-add.csv")
+        if os.path.isfile(resourcesToAddOutputPath):
+            # check that file is closed (user doesn't have it open in excel for example)
+            try: 
+                with open(resourcesToAddOutputPath,'r+') as f:
+                    print("file is closed, proceed!!")
+            except PermissionError:
+                messageText = "<br>A crucial file in your working Data Package Directory called <b>" + Path(resourcesToAddOutputPath).stem + ".csv</b> is open in another application, and must be closed to proceed; Check if this is open in Excel or similar application, and close the file. Then try saving this resource again<br><br>."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+
+        resource = deepcopy(self.form.widget.state)
+
+        # for any array of string items, remove empty strings from array
+        for key in self.schema["properties"]:
+            if self.schema["properties"][key]["type"] == "array":
+                if self.schema["properties"][key]["items"]["type"] == "string":
+                    resource[key] = dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(myStringArray=resource[key])
+
+        # validate against schema
+        if not dsc_pkg_utils.validateFormData(self=self,formData=resource):
+            return
+
+        if not os.path.isfile(resource["path"]):
             messageText = "<br>The file path indicated in this form does not exist. You must enter a resource file path that exists before saving your resource file. Please check your resource file path, update the path indicated in the form if necessary, and then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
@@ -1094,7 +1158,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # not yet exist in tracker
         if self.mode != "edit":
             addedResourcePathsList = dsc_pkg_utils.get_added_resource_paths(self=self)
-            if self.form.widget.state["path"] in addedResourcePathsList:
+            if resource["path"] in addedResourcePathsList:
                 messageText = "<br>You have already added a resource to the Resource Tracker with the file path indicated in this form. You must add a unique resource file path before saving your resource file. Please check your resource file path, add a unique resource file path, and then try saving again. <b>If you meant to edit an existing resource</b>, you can do that by closing this window, then navigating to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab, and clicking the \"Edit an existing resource\" push-button. " 
                 errorFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(errorFormat.format(messageText))
@@ -1103,72 +1167,224 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         # check that file path and at least a minimal description has been added to the form 
         # if not exit with informative error
-        if not ((self.form.widget.state["path"]) and (self.form.widget.state["description"])):
+        if not ((resource["path"]) and (resource["description"])):
             messageText = "<br>You must add a resource file path and at least a minimal description of your resource to your resource file form before saving your resource file. Please add a resource file path either by browsing to the file path using the Resource File Path field in the form, or by dragging and dropping the file path for your resource file (or multiple file paths if you are annotating multiple 'like' resources at once) in the drag and drop box above the form (open this drag and drop box by clicking on the Add Multiple 'like' Resources button above the form), and add at least a minimal description of your resource (or set of 'like' resources) in the Resource Description field in the form. Then try saving again." 
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             return
 
-        
+        if self.mode == "edit":
+            # user is not allowed to edit the resource id in edit mode, check to make sure they didn't
+            if resource["resourceId"] != self.resource_id:
+                messageText = "<br>You opened this form in edit mode to edit the resource with resource ID " + self.resource_id + ". However, it looks like you have manually edited the resource ID field in the form to " + resource["resourceId"] + ". This is not allowed while in edit mode - You can only use this form to edit the resource with resouce ID "+ self.resource_id + ". <br><br>If you meant to edit the resource with resource ID " + self.resource_id + ", then please make sure that is the resource ID value in the resource ID form field, then try saving again. Otherwise, close this form and return to the Main Data Packaging Tool window to work on other actions, such as adding a different resource, or adding a new resource.<br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+            
+            
         # check if user has modified the resource id from the one that was autogenerated when adding dsc data dir for saving
         # this may happen if for example a user annotates a resource using the autogenerated resource id, then wants to keep 
         # going using the same form window instance, modify the contents to annotate a new resource (perhaps one with some 
         # form fields that will be the same), and save again with a new resource id - in this case the user can modify the 
         # resource id manually, incrementing the id number by one - if resource id modified, updated it in memory and regenerate
         # the save file name, save file path, and resource id number
-        if self.form.widget.state["resourceId"] != self.resource_id:
+        if resource["resourceId"] != self.resource_id:
             
-            self.resource_id = self.form.widget.state["resourceId"]
+            self.resource_id = resource["resourceId"]
             self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
             self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
 
             self.resIdNum = int(self.resource_id.split("-")[1])
 
-        # if the user used the drag and drop to add multiple files, get a list of resource ids num, resource id, resource file name, and resource file save path for each file added
         
-        self.resIdNumList = [self.resIdNum]
-        self.resource_id_list = []
-        self.resourceFileNameList = []
-        self.saveFilePathList = []
-        
-        # assign a resource id to every resource file path added, construct a save file path for each resource
+        # if in edit mode and user previously already added a name convention, this will make sure it is 
+        # applied to all files in the edited set (whether same or different from original)
+        # if not in edit mode, this should not be necessary as user should have added and applied a convention
+        # however, it may catch cases where user added a convention but failed to apply it -
+        # mainly for edit mode scenario though
+        # also allows for saving a multi like resource file(s) if no file name convention applied
         if self.items:
-            if len(self.items) > 1:
-                
-                
-                resCounter = 1
-                for i in self.items[1:]:
-                    
-                    self.resIdNumList.append(self.resIdNum + resCounter)
-                    print(self.resIdNumList)
-                    resCounter += 1
 
-                self.resource_id_list = ["resource-" + str(l) for l in self.resIdNumList]
-                print(self.resource_id_list)
-                self.resourceFileNameList = ["resource-trk-" + l + ".txt" for l in self.resource_id_list]
-                print(self.resourceFileNameList)
-                self.saveFilePathList = [os.path.join(self.saveFolderPath,l) for l in self.resourceFileNameList]
-                print(self.saveFilePathList)
+            
+            if resource["descriptionFileNameConvention"]:
+                print("in save_resource: have a file name convention - going to apply name convention if not already applied")
+                self.apply_name_convention()
 
+
+            if self.itemsDescriptionList:
+                
+                itemsDescriptionDict = {
+                    "path":self.items,
+                    "fileDescription":self.itemsDescriptionList
+                }
+                itemsDescriptionDf = pd.DataFrame(itemsDescriptionDict)
+            else: 
+                itemsDescriptionDict = {
+                    "path":self.items
+                }
+                itemsDescriptionDf = pd.DataFrame(itemsDescriptionDict)
+                itemsDescriptionDf["fileDescription"] = ""
+
+        else:
+            itemsDescriptionDict = {
+                    "path":[resource["path"]],
+                    "fileDescription":[resource["descriptionFile"]]
+                }
+            itemsDescriptionDf = pd.DataFrame(itemsDescriptionDict)
+            
+
+        if self.mode == "edit":
+            if self.items:
+                currentItems = self.items
             else:
+                currentItems = [resource["path"]]
+            #if self.checkDataAssociatedFileMultiLikeFilesDf:
+            
+            # flag any files that have been removed from the multi file resource
+            self.checkDataAssociatedFileMultiLikeFilesDf["deleted"] = [ 1 if p not in currentItems else 0 for p in self.checkDataAssociatedFileMultiLikeFilesDf["path"].values]
+            self.checkDataAssociatedFileMultiLikeFilesDf["added"] = 0
+            
+            addedPathList = []
+            addedPathIdNumList = []
+            for i in currentItems:
+                if i not in self.checkDataAssociatedFileMultiLikeFilesDf["path"].values:
+                    addedPathList.append(i)
+                    nextAvailableIdNum = dsc_pkg_utils.get_id(self=self,prefix="resource-trk-resource-",folderPath=self.workingDataPkgDir)
+                    addedPathIdNumList.append(nextAvailableIdNum)
+
+            if addedPathList:
+                addedPathIdList = ["resource-" + str(n) for n in addedPathIdNumList]
+                addedPathSaveNameList = ["resource-trk-" + i + ".txt" for i in addedPathIdList]
+                addedPathSavePathList = [os.path.join(self.workingDataPkgDir,f) for f in addedPathSaveNameList]
+                addedPathDict = {
+                    "path":addedPathList,
+                    "id":addedPathIdList,
+                    "idNum":addedPathIdNumList,
+                    "saveName":addedPathSaveNameList,
+                    "savePath":addedPathSavePathList,
+                    }
+                addedPathDf = pd.DataFrame(addedPathDict)
+                addedPathDf["archiveName"] = ""
+                addedPathDf["archivePath"] = ""
+                addedPathDf["loadedFromFile"] = 0
+                addedPathDf["deleted"] = 0
+                addedPathDf["added"] = 1
+
+                self.checkDataAssociatedFileMultiLikeFilesDf = pd.concat([self.checkDataAssociatedFileMultiLikeFilesDf,addedPathDf])
+
+            self.checkDataAssociatedFileMultiLikeFilesDf = self.checkDataAssociatedFileMultiLikeFilesDf.merge(itemsDescriptionDf, on = "path", how = "left")
+            self.checkDataAssociatedFileMultiLikeFilesDf["fileDescription"] = self.checkDataAssociatedFileMultiLikeFilesDf["fileDescription"].fillna("")
+            if self.items:
+                multiLikeFilesIdList = self.checkDataAssociatedFileMultiLikeFilesDf["id"][self.checkDataAssociatedFileMultiLikeFilesDf["deleted"] == 0]
+                multiLikeFilesIdList = multiLikeFilesIdList.tolist()
+                resource["associatedFileMultiLikeFilesIds"] = multiLikeFilesIdList
+            self.saveDf = self.checkDataAssociatedFileMultiLikeFilesDf
+        else: # if mode is not edit
+        # if the user used the drag and drop to add multiple files, get a list of resource ids num, resource id, resource file name, and resource file save path for each file added
+        # assign a resource id to every resource file path added, construct a save file path for each resource      
+            if self.items:
+                
+                if len(self.items) > 1:
+
+                    self.resIdNumList = [self.resIdNum]
+                    self.resource_id_list = []
+                    self.resourceFileNameList = []
+                    self.saveFilePathList = []
+
+                    resCounter = 1
+                    for i in self.items[1:]:
+                        
+                        self.resIdNumList.append(self.resIdNum + resCounter)
+                        print(self.resIdNumList)
+                        resCounter += 1
+
+                    self.resource_id_list = ["resource-" + str(l) for l in self.resIdNumList]
+                    print(self.resource_id_list)
+                    self.resourceFileNameList = ["resource-trk-" + l + ".txt" for l in self.resource_id_list]
+                    print(self.resourceFileNameList)
+                    self.saveFilePathList = [os.path.join(self.saveFolderPath,l) for l in self.resourceFileNameList]
+                    print(self.saveFilePathList)
+
+                    resource["associatedFileMultiLikeFilesIds"] = self.resource_id_list
+
+                    saveDict = {
+                            "path":self.items,
+                            "id":self.resource_id_list,
+                            "idNum":self.resIdNumList,
+                            "saveName":self.resourceFileNameList,
+                            "savePath":self.saveFilePathList,
+                            }
+                    saveDf = pd.DataFrame(saveDict)
+                    saveDf["archiveName"] = ""
+                    saveDf["archivePath"] = ""
+                    saveDf["loadedFromFile"] = 0
+                    saveDf["deleted"] = 0
+                    saveDf["added"] = 0
+                    saveDf = saveDf.merge(itemsDescriptionDf, on = "path", how = "left")
+                    saveDf["fileDescription"] = saveDf["fileDescription"].fillna("")
+                    self.saveDf = saveDf
+            
+                else: # if length of self.items is 1
+                    self.resIdNumList = [self.resIdNum]
+                    self.resource_id_list = [self.resource_id]
+                    self.resourceFileNameList = [self.resourceFileName]
+                    self.saveFilePathList = [self.saveFilePath]
+                    self.items = [resource["path"]]
+                    #self.itemsDescriptionList = [resource["descriptionFile"]]
+
+                    resource["associatedFileMultiLikeFilesIds"] = self.resource_id_list
+
+                    saveDict = {
+                                "path":self.items,
+                                "id":self.resource_id_list,
+                                "idNum":self.resIdNumList,
+                                "saveName":self.resourceFileNameList,
+                                "savePath":self.saveFilePathList,
+                                }
+                    saveDf = pd.DataFrame(saveDict)
+                    saveDf["archiveName"] = ""
+                    saveDf["archivePath"] = ""
+                    saveDf["loadedFromFile"] = 0
+                    saveDf["deleted"] = 0
+                    saveDf["added"] = 0
+                    saveDf = saveDf.merge(itemsDescriptionDf, on = "path", how = "left")
+                    saveDf["fileDescription"] = saveDf["fileDescription"].fillna("")
+                    #saveDf["fileDescription"] = self.itemsDescriptionList
+                    self.saveDf = saveDf
+        
+            else: # if self.items is empty
+                self.resIdNumList = [self.resIdNum]
                 self.resource_id_list = [self.resource_id]
                 self.resourceFileNameList = [self.resourceFileName]
                 self.saveFilePathList = [self.saveFilePath]
-                self.items = [self.form.widget.state["path"]]
-                self.itemsDescriptionList = [self.form.widget.state["descriptionFile"]]
-        else:
-            self.resource_id_list = [self.resource_id]
-            self.resourceFileNameList = [self.resourceFileName]
-            self.saveFilePathList = [self.saveFilePath]
-            self.items = [self.form.widget.state["path"]]
-            self.itemsDescriptionList = [self.form.widget.state["descriptionFile"]]
-                
-        if self.editSingle:
-            self.resource_id_list = [self.resource_id]
-            self.resourceFileNameList = [self.resourceFileName]
-            self.saveFilePathList = [self.saveFilePath]
-            self.items = [self.form.widget.state["path"]]
-            self.itemsDescriptionList = [self.form.widget.state["descriptionFile"]]            
+                self.items = [resource["path"]]
+                #self.itemsDescriptionList = [resource["descriptionFile"]]
+
+                saveDict = {
+                                "path":self.items,
+                                "id":self.resource_id_list,
+                                "idNum":self.resIdNumList,
+                                "saveName":self.resourceFileNameList,
+                                "savePath":self.saveFilePathList,
+                                }
+                saveDf = pd.DataFrame(saveDict)
+                saveDf["archiveName"] = ""
+                saveDf["archivePath"] = ""
+                saveDf["loadedFromFile"] = 0
+                saveDf["deleted"] = 0
+                saveDf["added"] = 0
+                saveDf = saveDf.merge(itemsDescriptionDf, on = "path", how = "left")
+                print("saveDf col names: ",list(saveDf))
+                saveDf["fileDescription"] = saveDf["fileDescription"].fillna("")
+                #saveDf["fileDescription"] = self.itemsDescriptionList
+                self.saveDf = saveDf
+
+        # # this option has been removed at least for now so this should never be invoked   
+        # if self.editSingle:
+        #     self.resource_id_list = [self.resource_id]
+        #     self.resourceFileNameList = [self.resourceFileName]
+        #     self.saveFilePathList = [self.saveFilePath]
+        #     self.items = [resource["path"]]
+        #     self.itemsDescriptionList = [resource["descriptionFile"]]            
         
         #messageText = ""
 
@@ -1178,19 +1394,34 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         failSaveFilePathList = []
         resourceList = []
 
-        for idx, p in enumerate(self.saveFilePathList):
+        #for idx, p in enumerate(self.saveFilePathList):
+        for row in self.saveDf.itertuples():
+            # before saving each file, check if there's an old file that needs to be archived 
+            # if there's an old file to archive, archive before saving new content to file 
+            # move the annotation file user opened for editing to archive folder
+            #os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
+            if row.loadedFromFile == 1:
+                os.rename(row.savePath,row.archivePath)
+                messageText = "<br>In preparation for saving your edited resource annotation file, your original resource annotation file has been archived at:<br>" + row.archivePath + "<br><br>"
+                saveFormat = '<span style="color:blue;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
         
             # check if saveFilePath already exists (same as if a file for this resource id already exists); if exists, exit our with informative message;
             # otherwise go ahead and save
-            if os.path.isfile(p):
+            #if os.path.isfile(p):
+            if os.path.isfile(row.savePath):
                 #messageText = "A resource file for a resource with id " + self.resource_id_list[idx] + " already exists at " + self.saveFilePathList[idx] + "\n\n" + "You may want to do one or both of: 1) Use the View/Edit tab to view your resource tracker file and check which resource IDs you've already used and added to your tracker, 2) Use File Explorer to navigate to your DSC Data Package Directory and check which resource IDs you've already used and for which you've already created resource files - these files will be called \'resource-trk-resource-{a number}.txt\'. While you perform these checks, your resource tracker form will remain open unless you explicitly close it. You can come back to it, change your resource ID, and hit the save button again to save with a resource ID that is not already in use. If you meant to overwrite a resource file you previously created for an resource with this resource ID, please delete the previously created resource file and try saving again." + "\n\n" 
                 #errorFormat = '<span style="color:red;">{}</span>'
                 #self.userMessageBox.append(errorFormat.format(messageText))
-                failSaveFilePathList.append(p)
-                failResIdList.append(self.resource_id_list[idx])
+                #failSaveFilePathList.append(p)
+                failSaveFilePathList.append(row.savePath)
+                #failResIdList.append(self.resource_id_list[idx])
+                failResIdList.append(row.id)
             else:
-                successSaveFilePathList.append(p)
-                successResIdList.append(self.resource_id_list[idx])
+                # successSaveFilePathList.append(p)
+                # successResIdList.append(self.resource_id_list[idx])
+                successSaveFilePathList.append(row.savePath)
+                successResIdList.append(row.id)
 
         # if any of the potential resource id/resource id annotation files already exist - exit with informative message about checking/updating resource id        
         if failResIdList:
@@ -1201,7 +1432,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             return
         else:
             #print(self.form.widget.state)
-            resource = deepcopy(self.form.widget.state)
+            #resource = deepcopy(self.form.widget.state)
 
             resourceDependDataDict = resource["associatedFileDataDict"]
             resourceDependDataDictType = ["associatedFileDataDict"] * len(resourceDependDataDict)
@@ -1236,14 +1467,15 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 
                 resourceDependAllDf = pd.concat([resourceDependAllDf,resourceDependResultDependDf])
 
-            resourcesToAddOutputDir = os.path.join(self.workingDataPkgDir,"no-user-access")
-            if not os.path.exists(resourcesToAddOutputDir):
-                os.makedirs(resourcesToAddOutputDir)
-                print("creating no-user-access subdirectory")
-            else:
-                print("no-user-access subdirectory already exists")
+            # moved this check and dir creation up to the top so no longer needed here
+            # resourcesToAddOutputDir = os.path.join(self.workingDataPkgDir,"no-user-access")
+            # if not os.path.exists(resourcesToAddOutputDir):
+            #     os.makedirs(resourcesToAddOutputDir)
+            #     print("creating no-user-access subdirectory")
+            # else:
+            #     print("no-user-access subdirectory already exists")
             
-            resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"no-user-access","resources-to-add.csv")
+            # resourcesToAddOutputPath = os.path.join(self.workingDataPkgDir,"no-user-access","resources-to-add.csv")
 
             # if not os.path.isfile(resourcesToAddOutputPath):
             #     f=open(resourcesToAddOutputPath,'w')
@@ -1251,24 +1483,29 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
             if not resourceDependAllDf.empty:
 
+                validResourceIdDf = self.saveDf[self.saveDf["deleted"] == 0]
+                firstValidResourceId = validResourceIdDf["id"].iloc[0]
+                
                 # add timestamp at which time resource was added to the resources to add to tracker list
                 resourceDependAllDf["date-time"] = pd.Timestamp("now")
-                resourceDependAllDf["parent-resource-id"] = self.resource_id_list[0]
-                resourceDependAllDf["parent-resource-exp-name-belongs-to"] = self.form.widget.state["experimentNameBelongsTo"]
-                resourceDependAllDf["parent-resource-description"] = self.form.widget.state["description"]
-                resourceDependAllDf["parent-resource-path"] = self.form.widget.state["path"]
+                #resourceDependAllDf["parent-resource-id"] = self.resource_id_list[0]
+                resourceDependAllDf["parent-resource-id"] = firstValidResourceId
+                resourceDependAllDf["parent-resource-exp-name-belongs-to"] = resource["experimentNameBelongsTo"]
+                resourceDependAllDf["parent-resource-description"] = resource["description"]
+                resourceDependAllDf["parent-resource-path"] = resource["path"]
 
                 if os.path.isfile(resourcesToAddOutputPath):
 
-                    # check that file is closed (user doesn't have it open in excel for example)
-                    try: 
-                        with open(resourcesToAddOutputPath,'r+') as f:
-                            print("file is closed, proceed!!")
-                    except PermissionError:
-                        messageText = "<br>A crucial file in your working Data Package Directory called <b>" + Path(resourcesToAddOutputPath).stem + ".csv</b> is open in another application, and must be closed to proceed; Check if this is open in Excel or similar application, and close the file. Then try saving this resource again<br><br>."
-                        saveFormat = '<span style="color:red;">{}</span>'
-                        self.userMessageBox.append(saveFormat.format(messageText))
-                        return
+                    # moved this check up to the top so no longer needed here
+                    # # check that file is closed (user doesn't have it open in excel for example)
+                    # try: 
+                    #     with open(resourcesToAddOutputPath,'r+') as f:
+                    #         print("file is closed, proceed!!")
+                    # except PermissionError:
+                    #     messageText = "<br>A crucial file in your working Data Package Directory called <b>" + Path(resourcesToAddOutputPath).stem + ".csv</b> is open in another application, and must be closed to proceed; Check if this is open in Excel or similar application, and close the file. Then try saving this resource again<br><br>."
+                    #     saveFormat = '<span style="color:red;">{}</span>'
+                    #     self.userMessageBox.append(saveFormat.format(messageText))
+                    #     return
 
                     # if a file already exists then read it in, append new dependencies of the current resource that are now resources that need to be added to the resource tracker, deduplicate, and write result back to file
                     all_to_add_df = pd.read_csv(resourcesToAddOutputPath)
@@ -1290,25 +1527,38 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             
 
  
-            for idx, p in enumerate(self.saveFilePathList):
-                    
+            #for idx, p in enumerate(self.saveFilePathList):
+            for row in self.saveDf.itertuples():
+                
                 #resource = self.form.widget.state
                 currentResource = deepcopy(resource)
                     
-                currentResource["resourceId"] = self.resource_id_list[idx]
-                currentResource["path"] = self.items[idx]
-                currentResource["descriptionFile"] = self.itemsDescriptionList[idx]
+                # currentResource["resourceId"] = self.resource_id_list[idx]
+                # currentResource["path"] = self.items[idx]
+                # currentResource["descriptionFile"] = self.itemsDescriptionList[idx]
+
+                currentResource["resourceId"] = row.id
+                currentResource["path"] = row.path
+                currentResource["descriptionFile"] = row.fileDescription
+                currentResource["removed"] = 0
+                if row.deleted == 1:
+                    currentResource["removed"] = 1
                 
-                f=open(p,'w')
+                
+                #f=open(p,'w')
+                f=open(row.savePath,'w')
                 print(dumps(currentResource, indent=4), file=f)
                 f.close()
                 
-            if len(self.saveFilePathList) > 1:
+            #if len(self.saveFilePathList) > 1:
+            if self.saveDf.shape[0] > 1:
                 myString1 = "files were"
-                myString2 = ', '.join(self.saveFilePathList)
+                #myString2 = ', '.join(self.saveFilePathList)
+                myString2 = '<br>'.join(self.saveDf["savePath"].tolist())
             else: 
                 myString1 = "file was"
-                myString2 = self.saveFilePathList[0]
+                #myString2 = self.saveFilePathList[0]
+                myString2 = self.saveDf["savePath"][0]
 
             #self.messageText = self.messageText + '\n\n' + "Your resource file was successfully written at: " + self.saveFilePath + '\n' + "You'll want to head back to the \'Add Resource\' tab and use the \'Add Resource\' button to add this resource file to your resource tracker file! You can do this now, or later - You can add resource files to the resource tracker file one at a time, or you can add multiple resource files all at once, so you may choose to create resource files for several/all of your resources and then add them in one go to your resource tracker file."
             messageText = "<br>Your resource " + myString1 + " successfully written at: " + myString2 + "<br><br>Starting to add your resource(s) to the Resource Tracker now! See below for some final information about your saved resource(s) and then for updates on adding resource(s) to tracker: <br>"
@@ -1321,34 +1571,34 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
             self.userMessageBox.moveCursor(QTextCursor.End)
 
-            if self.form.widget.state["category"] == "tabular-data":
-                if not self.form.widget.state["associatedFileDataDict"]:
+            if resource["category"] == "tabular-data":
+                if not resource["associatedFileDataDict"]:
 
                     messageText = "<br>WARNING: You annotated a tabular data resource and did not include a data dictionary for this tabular data resource. If you don't already have a data dictionary, please visit the Data Dictionary tab to create a data dictionary for this resource. You can easily and automatically create a data dictionary using only your tabular data file. Once you have a data dictionary, you can come back here and edit this form to add your data dictionary and save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed." + "\n\n"
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
-            if "temporary-private" in self.form.widget.state["access"]:
-                if not any(map(lambda v: v in self.form.widget.state["access"], ["open-access","managed-access"])):
+            if "temporary-private" in resource["access"]:
+                if not any(map(lambda v: v in resource["access"], ["open-access","managed-access"])):
 
                     messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'open-access\n' or to \n'managed-access\n' once the temporary-private status expires. Please return to the form to indicate what the final access level of this resource will be by adding another value to the Access field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
-                if self.form.widget.state["accessDate"] == self.formDefaultState["accessDate"]:
+                if resource["accessDate"] == self.formDefaultState["accessDate"]:
 
                     messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'open-access\n' or to \n'managed-access\n'. Please return to the form to indicate the date at which temporary-provate access level will expire in the Access Date field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
-            if self.editSingle:
-                self.editSingle = False
-                messageText = "<br><b>WARNING: Exiting edit mode.</b> If you need to continue editing this single resource file that is part of a larger multi \'like\' file resource, or if you need to edit another existing resource file, please close out of this form and start again by using the Edit Existing Resource button on the Add Resource Sub-tab of the Resource Tracker Tab. You can clear this form using the Clear Form button above the form to use this form to continue annotating new resource files."
-                saveFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
+            # if self.editSingle:
+            #     self.editSingle = False
+            #     messageText = "<br><b>WARNING: Exiting edit mode.</b> If you need to continue editing this single resource file that is part of a larger multi \'like\' file resource, or if you need to edit another existing resource file, please close out of this form and start again by using the Edit Existing Resource button on the Add Resource Sub-tab of the Resource Tracker Tab. You can clear this form using the Clear Form button above the form to use this form to continue annotating new resource files."
+            #     saveFormat = '<span style="color:red;">{}</span>'
+            #     self.userMessageBox.append(saveFormat.format(messageText))
 
             QApplication.processEvents() # print accumulated user status messages 
             self.add_resource() # add resource file(s) to resource tracker
@@ -1362,26 +1612,27 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
     def add_resource(self):
 
-        # check if user has set a working data package dir - if not exit gracefully with informative message
-        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
-            return
+        # moved these checks to save function so no longer needed here
+        # # check if user has set a working data package dir - if not exit gracefully with informative message
+        # if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+        #     return
 
-        # check that resource tracker exists in working data pkg dir, if not, return
-        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
-            messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
-            saveFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(saveFormat.format(messageText))
-            return
+        # # check that resource tracker exists in working data pkg dir, if not, return
+        # if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+        #     messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+        #     saveFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(saveFormat.format(messageText))
+        #     return
         
-        # check that resource tracker is closed (user doesn't have it open in excel for example)
-        try: 
-            with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
-                print("file is closed, proceed!!")
-        except PermissionError:
-                messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, and close the file. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
-                saveFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
-                return
+        # # check that resource tracker is closed (user doesn't have it open in excel for example)
+        # try: 
+        #     with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
+        #         print("file is closed, proceed!!")
+        # except PermissionError:
+        #         messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, and close the file. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+        #         saveFormat = '<span style="color:red;">{}</span>'
+        #         self.userMessageBox.append(saveFormat.format(messageText))
+        #         return
         
         # get resource(s) file path
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Resource Txt Data file(s)",
@@ -1390,7 +1641,8 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select the Input Resource Txt Data file(s)",
         #        self.workingDataPkgDir, "Text (*.txt)")
 
-        ifileName = self.saveFilePathList
+        #ifileName = self.saveFilePathList
+        ifileName = self.saveDf["savePath"].tolist()
         
         if ifileName:
             print("ifileName: ",ifileName)
@@ -1617,7 +1869,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(invalidFiles) + "\n\n\n" + "cannot be added to a Resource Tracker file because they did not pass validation. Please review the validation errors printed above." 
                 self.userMessageBox.append(messageText)
             
-            messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(validFiles) + "\n\n\n" + "were added as a resource(s) to the Resource Tracker file: " + "\n\n\n" + output_path
+            messageText = "The contents of the Resource file(s): " + "\n\n\n" + ', '.join(validFiles) + "\n\n\n" + "were added as a resource(s) to the Resource Tracker file: " + "\n\n\n" + output_path 
             self.userMessageBox.append(messageText)
         else:
             messageText = "No Resource Tracker file exists at the designated directory. Are you sure this is a Data Package Directory? If you haven't yet created a Data Package Directory for your work, please head to the \"Data Package\" tab and use the \"Create new Data Package\" button to create your Data Package Directory. Your new Data Package Directory will contain your Resource Tracker file. You can then come back here and try adding your resource file again!" + "\n\n\n" + "Exiting \"Add Resource\" function now."
@@ -1714,7 +1966,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.saveFolderPath, "Text (*.txt)")
 
         if not ifileName: 
-            messageText = "<br>You have not selected a file to " + textBit + ". Close this form now. If you still want to " + textBit + " an existing resource, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button."
+            messageText = "<br>You have not selected a file to " + textBit + ". If you still want to " + textBit + " an existing resource, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText)) 
         else: 
@@ -1747,22 +1999,42 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             with open(ifileName, 'r') as stream:
                 data = load(stream)
 
+            checkDataAssociatedFileMultiLikeFiles = data["associatedFileMultiLikeFiles"]
+            checkDataAssociatedFileMultiLikeFiles = dsc_pkg_utils.convertStringifiedArrayOfStringsToList(myStringifiedArrayOfStrings=checkDataAssociatedFileMultiLikeFiles)
+            
+            checkDataAssociatedFileMultiLikeFilesIds = data["associatedFileMultiLikeFilesIds"]
+            checkDataAssociatedFileMultiLikeFilesIds = dsc_pkg_utils.convertStringifiedArrayOfStringsToList(myStringifiedArrayOfStrings=checkDataAssociatedFileMultiLikeFilesIds)
+            
             if self.mode == "add-based-on":
                 based_on_annotation_id = data["resourceId"]
+                
+                if checkDataAssociatedFileMultiLikeFiles: 
+                    messageText = "<br>You selected a resource txt file that is part of a multi-like file resource. It is currently not possible to add a new resource based upon an existing resource txt file that is part of a multi-like file resource. Instead, start a new resource from scratch using the \"Add a new resource\" push-button or start a new resource based on an existing resource using the \"Add a new resource based on an existing resource\" push-button, then select a resource txt file that is NOT part of a multi-like file resource upon which to base the new resource.<br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                    saveFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(saveFormat.format(messageText))
+                    return
 
             if self.mode == "edit": 
-                self.saveFilePath = ifileName # is this necessary?
-                print("setting saveFilePath to path of chosen file")
-                
+                # self.saveFilePath = ifileName # is this necessary?
+                # print("setting saveFilePath to path of chosen file")
+
+                if checkDataAssociatedFileMultiLikeFiles:
+                    if data["path"] != checkDataAssociatedFileMultiLikeFiles[0]: 
+                        messageText = "<br>You selected a resource txt file that is part of a multi-like file resource, but you did NOT select the resource txt file that is the first in the series for this multi-like file resource. In order to edit a resource that is part of a multi-like file resource you MUST select the first resource txt file in the series for the multi-like file resource. You can head to the \"View Tracker\" tab to view your Resource Tracker, identify the resource ID for the first resource txt file in the series for this multi-like file resource, then try again.<br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                        saveFormat = '<span style="color:red;">{}</span>'
+                        self.userMessageBox.append(saveFormat.format(messageText))
+                        return
+
+                    
                 self.resource_id = data["resourceId"]
                 self.resIdNum = int(self.resource_id.split("-")[1])
                 self.resourceFileName = 'resource-trk-'+ self.resource_id + '.txt'
-                #self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
 
-                # # make sure an archive folder exists, if not create it
-                # if not os.path.exists(os.path.join(self.saveFolderPath,"archive")):
-                #     os.makedirs(os.path.join(self.saveFolderPath,"archive"))
-
+                # save the full path at which the current file is saved and at which you will save the newly edited file if possible (e.g. valid, tool does not crash for any reason)
+                self.saveFilePath = os.path.join(self.saveFolderPath,self.resourceFileName)
+                
+                # at the moment, all files in multi like file resource must be edited at the same time
+                # so the archive suffix number should be the same for all - can just use the first to get it
                 archiveFileStartsWith = Path(ifileName).stem + "-"
                 print("archiveFileStartsWith: ",archiveFileStartsWith)
 
@@ -1783,11 +2055,49 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 #self.annotationArchiveFileName = 'exp-trk-'+ self.annotation_id + '-' + str(self.annotationArchiveFileNameNumber) + '.txt'    
                 self.annotationArchiveFileName = archiveFileStartsWith + str(self.annotationArchiveFileNameNumber) + '.txt'  
 
-                # move the resource annotation file user opened for editing to archive folder
-                os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
-                messageText = "<br>Your original resource annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName) + "<br><br>"
-                saveFormat = '<span style="color:blue;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
+                # save full path at which you will archive the file once the new file is saved
+                self.annotationArchiveFilePath = os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName)
+
+                if checkDataAssociatedFileMultiLikeFiles:
+                    idNumList = [int(x.split("-")[1]) for x in checkDataAssociatedFileMultiLikeFilesIds]
+                    saveNameList = ['resource-trk-'+ x + '.txt' for x in checkDataAssociatedFileMultiLikeFilesIds]
+                    savePathList = [os.path.join(self.saveFolderPath,x) for x in saveNameList]
+                    archiveNameStartsWithList = ['resource-trk-'+ x + '-' for x in checkDataAssociatedFileMultiLikeFilesIds]
+                    archiveNameList = [x + str(self.annotationArchiveFileNameNumber) + '.txt'  for x in archiveNameStartsWithList]
+                    archivePathList = [os.path.join(self.saveFolderPath,"archive",x) for x in archiveNameList]
+                    
+                    checkDataAssociatedFileMultiLikeFilesDict = {
+                        "path":checkDataAssociatedFileMultiLikeFiles,
+                        "id":checkDataAssociatedFileMultiLikeFilesIds,
+                        "idNum":idNumList,
+                        "saveName":saveNameList,
+                        "savePath":savePathList,
+                        "archiveName":archiveNameList,
+                        "archivePath":archivePathList
+                    }
+                    self.checkDataAssociatedFileMultiLikeFilesDf = pd.DataFrame(checkDataAssociatedFileMultiLikeFilesDict)
+                    self.checkDataAssociatedFileMultiLikeFilesDf["loadedFromFile"] = 1
+                
+                else: 
+                    checkDataAssociatedFileMultiLikeFilesDict = {
+                        "path":[data["path"]],
+                        "id":[self.resource_id],
+                        "idNum":[self.resIdNum],
+                        "saveName":[self.resourceFileName],
+                        "savePath":[self.saveFilePath],
+                        "archiveName":[self.annotationArchiveFileName],
+                        "archivePath":[self.annotationArchiveFilePath]
+                    }
+                    self.checkDataAssociatedFileMultiLikeFilesDf = pd.DataFrame(checkDataAssociatedFileMultiLikeFilesDict)
+                    self.checkDataAssociatedFileMultiLikeFilesDf["loadedFromFile"] = 1
+
+
+                # move this to end of save command and only do it if in edit mode
+                # # move the resource annotation file user opened for editing to archive folder
+                # os.rename(ifileName,os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName))
+                # messageText = "<br>Your original resource annotation file has been archived at:<br>" + os.path.join(self.saveFolderPath,"archive",self.annotationArchiveFileName) + "<br><br>"
+                # saveFormat = '<span style="color:blue;">{}</span>'
+                # self.userMessageBox.append(saveFormat.format(messageText))
 
             if data["associatedFileResultsDependOn"]:
                 self.popFormField = data.pop("associatedFileResultsDependOn")
@@ -1803,6 +2113,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.lstbox_view2.addItems(data["associatedFileDependsOn"])
                 self.add_multi_depend()
 
+            if self.mode == "edit":
+                self.form.widget.state = {
+                    "resourceIdNumber": self.resIdNum
+                }
+
             if self.mode == "add-based-on":
                 self.get_id()
                 messageText = "<br>Your new resource has been initialized based on information you entered for " + based_on_annotation_id + "<br><br>"
@@ -1813,11 +2128,16 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
     def take_inputs(self):
 
-        editOptions =["Single file within multi \'like\' file resource", "All files within multi \'like\' file resource"]
+        #editOptions =["Single file within multi \'like\' file resource", "All files within multi \'like\' file resource"]
+        editOptions =["All files within multi \'like\' file resource"]
+        # editOption, done = QtWidgets.QInputDialog.getItem(
+        #   self, 'Edit Mode', 'You have selected a resource file that was originally annotated as part of a multi \'like\' file resource. Would you like to edit the annotation for just this one single resource file, or would you like to use this form to edit the annotation for all resource files that are part of the multi \'like\' file resource?', editOptions)
         editOption, done = QtWidgets.QInputDialog.getItem(
-          self, 'Edit Mode', 'You have selected a resource file that was originally annotated as part of a multi \'like\' file resource. Would you like to edit the annotation for just this one single resource file, or would you like to use this form to edit the annotation for all resource files that are part of the multi \'like\' file resource?', editOptions)
+          self, 'Edit Mode', 'NOTE: You have selected a resource file that was originally annotated as part of a multi \'like\' file resource. If you proceed to edit this file and save the edits, you will edit the annotation for all resource files that are part of the multi \'like\' file resource.', editOptions)
+
 
         if done:
+            # removed the single option so the first condition now will never be true
             if str(editOption).startswith("Single"):
                 self.editSingle = True
                 messageText = "Edits you make in this form will be applied <b>only to this single resource file</b>. All other resource files within the larger multi \'like\' file resource of which this resource file is a part will remain unaltered."
@@ -1828,46 +2148,47 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 saveFormat = '<span style="color:blue;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText)) 
                 
-                # if the user used the drag and drop to add multiple files, get a list of resource ids num, resource id, resource file name, and resource file save path for each file added
+                # don't assume resource ids are always sequential from the first id (if a multi resource file is edited to add or delete files this may break)
+                # also, don't archive before the user tries to save the edited version AND the edits they have made have passed checks that make it clear save will go through AND
+                # other checks to make sure save will go through and files can be added to tracker
+                # self.resIdNumList = [self.resIdNum]
+                # self.resource_id_list = []
+                # self.resourceFileNameList = []
+                # self.saveFilePathList = []
         
-                self.resIdNumList = [self.resIdNum]
-                self.resource_id_list = []
-                self.resourceFileNameList = []
-                self.saveFilePathList = []
-        
-                # assign a resource id to every resource file path added, construct a save file path for each resource
-                if self.items:
-                    print("self.items: ", self.items)
-                    if len(self.items) > 1:
+                # # assign a resource id to every resource file path added, construct a save file path for each resource
+                # if self.items:
+                #     print("self.items: ", self.items)
+                #     if len(self.items) > 1:
                 
                 
-                        resCounter = 1
-                        for i in self.items[1:]:
+                #         resCounter = 1
+                #         for i in self.items[1:]:
                     
-                            self.resIdNumList.append(self.resIdNum + resCounter)
-                            print(self.resIdNumList)
-                            resCounter += 1
+                #             self.resIdNumList.append(self.resIdNum + resCounter)
+                #             print(self.resIdNumList)
+                #             resCounter += 1
 
-                        self.resource_id_list = ["resource-" + str(l) for l in self.resIdNumList]
-                        print(self.resource_id_list)
-                        self.resourceFileNameList = ["resource-trk-" + l + ".txt" for l in self.resource_id_list]
-                        print(self.resourceFileNameList)
-                        self.saveFilePathList = [os.path.join(self.saveFolderPath,l) for l in self.resourceFileNameList]
-                        print(self.saveFilePathList)
-                        self.archiveFilePathList = [os.path.join(self.saveFolderPath,"archive",l) for l in self.resourceFileNameList]
-                        print(self.saveFilePathList)
+                #         self.resource_id_list = ["resource-" + str(l) for l in self.resIdNumList]
+                #         print(self.resource_id_list)
+                #         self.resourceFileNameList = ["resource-trk-" + l + ".txt" for l in self.resource_id_list]
+                #         print(self.resourceFileNameList)
+                #         self.saveFilePathList = [os.path.join(self.saveFolderPath,l) for l in self.resourceFileNameList]
+                #         print(self.saveFilePathList)
+                #         self.archiveFilePathList = [os.path.join(self.saveFolderPath,"archive",l) for l in self.resourceFileNameList]
+                #         print(self.saveFilePathList)
 
-                        # already archived the first file so remove from list
-                        self.saveFilePathList.pop(0)
-                        self.archiveFilePathList.pop(0) # already archived the first file so remove from list
+                #         # already archived the first file so remove from list
+                #         self.saveFilePathList.pop(0)
+                #         self.archiveFilePathList.pop(0) # already archived the first file so remove from list
 
-                        for p, archiveP in zip(self.saveFilePathList,self.archiveFilePathList):
-                            # move the resource annotation file user opened for editing to archive folder
-                            print(p, "; ", archiveP)
-                            os.rename(p, archiveP)
-                            messageText = "<br>Your original resource annotation file has been archived at:<br>" + archiveP + "<br>"
-                            saveFormat = '<span style="color:blue;">{}</span>'
-                            self.userMessageBox.append(saveFormat.format(messageText))
+                #         for p, archiveP in zip(self.saveFilePathList,self.archiveFilePathList):
+                #             # move the resource annotation file user opened for editing to archive folder
+                #             print(p, "; ", archiveP)
+                #             os.rename(p, archiveP)
+                #             messageText = "<br>Your original resource annotation file has been archived at:<br>" + archiveP + "<br>"
+                #             saveFormat = '<span style="color:blue;">{}</span>'
+                #             self.userMessageBox.append(saveFormat.format(messageText))
 
 
 

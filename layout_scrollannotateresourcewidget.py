@@ -35,11 +35,12 @@ from jsonschema import validate
 from healdata_utils.validators.jsonschema import validate_against_jsonschema
 
 class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
-    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add", formSetState = {}, annotationMode = "standard", *args, **kwargs):
+    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, filesCheckList = [], mode = "add", formSetState = {}, annotationMode = "standard", *args, **kwargs):
         super().__init__(*args, **kwargs)
         #self.setWindowTitle("Annotate Resource")
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         self.workingDataPkgDir = workingDataPkgDir
+        self.filesCheckList = filesCheckList
         self.mode = mode
         self.formSetState = formSetState
         if self.formSetState:
@@ -1995,6 +1996,21 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
             # self.saveFolderPath = Path(ifileName).parent
             print("saveFolderPath: ", self.saveFolderPath)
+
+            if self.filesCheckList:
+                if ifileName in self.filesCheckList:
+                    pass
+                else:
+                    messageText = "<br>You selected a resource txt file that is not up to date with the current resource tracker schema, and it is not possible to edit or base a new resource upon a resource txt file that is not up to date. To proceed, close this form, then try again but select a resource txt file that is already updated OR head to the \"Data Package\" tab >> \"Update & Audit\" sub-tab to update all files. If it is not possible to update a the resource txt file you want to edit using the Update feature in the tool, please reach out to the DSC team for support. <br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window.<br>"
+                    saveFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(saveFormat.format(messageText))
+                    return
+                
+            else:
+                messageText = "<br>You selected a resource txt file that is not up to date with the current resource tracker schema, and it is not possible to edit or base a new resource upon a resource txt file that is not up to date. To proceed, close this form, then try again but select a resource txt file that is already updated OR head to the \"Data Package\" tab >> \"Update & Audit\" sub-tab to update all files it is possible to update. If it is not possible to update a the resource txt file you want to edit using the Update feature in the tool, please reach out to the DSC team for support. <br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window.<br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
             
             with open(ifileName, 'r') as stream:
                 data = load(stream)

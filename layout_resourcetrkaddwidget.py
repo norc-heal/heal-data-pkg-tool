@@ -154,6 +154,9 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         versionCheckDf = versionCheckDf[versionCheckDf["fileType"] == "json txt"]
         if not versionCheckDf.empty:
             print("found at least one json txt annotation file")
+            versionPassDf = versionCheckDf[versionCheckDf["upToDate"] == "Yes"]
+            versionPassList = versionPassDf["file"].tolist()
+            
             addToMessage = addToMessage + "found at least one json txt annotation file...<br>"
             versionCheckDf = versionCheckDf[versionCheckDf["upToDate"] != "Yes"]
             if not versionCheckDf.empty:

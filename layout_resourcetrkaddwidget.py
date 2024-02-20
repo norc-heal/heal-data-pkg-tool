@@ -141,15 +141,15 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
 
         # for editing need to check if json txt annotation files are updated - if not updated, will break the form import
         # so do full check for if update is necessary to get update status of trackers and json txt annotation files
-        versionCheck = version_check.version_check(self.pkgPath)
+        versionCheck = version_check.version_check(self.workingDataPkgDir)
         
         versionCheckAllUpToDate = versionCheck[0]
         versionCheckMessageText = versionCheck[1]
         versionCheckDf = versionCheck[2]
 
         filesCheckList = [] # initialize the list of json txt annotation files that are up to date and can be edited now as empty
-        versionCheckDf["path-stem"] = Path(versionCheckDf["file"])
-        versionCheckDf["path-stem"] = versionCheckDf["path-stem"].stem
+        versionCheckDf["path-stem"] = [Path(p) for p in versionCheckDf["file"]] 
+        versionCheckDf["path-stem"] = [p.stem for p in versionCheckDf["path-stem"]] 
         versionCheckDfSave = versionCheckDf
         
         addToMessage = "<br><br>checking json txt annotation files for ability to edit...<br>"
@@ -247,6 +247,9 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         else:
             self.w.close()  # Close window.
             self.w = None  # Discard reference.
+            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, filesCheckList=filesCheckList, mode="edit")
+            self.w.show()
+            self.w.load_file()
 
     def annotate_resource_based_on(self,checked):
 

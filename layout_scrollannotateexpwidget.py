@@ -35,10 +35,11 @@ import re
 from copy import deepcopy
 
 class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
-    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add"):
+    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, filesCheckList = [], mode = "add"):
         super().__init__()
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         self.workingDataPkgDir = workingDataPkgDir
+        self.filesCheckList = filesCheckList
         self.mode = mode
         self.schemaVersion = schema_experiment_tracker["version"]
         self.loadingFormDataFromFile = False
@@ -957,6 +958,8 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
         #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
         print("in load_file fx")
 
+        stringFilesCheckList = self.filesCheckList
+        self.filesCheckList = [Path(p) for p in self.filesCheckList]
         self.loadingFormDataFromFile = True
 
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Result Txt Data file you want to edit",
@@ -976,6 +979,11 @@ class ScrollAnnotateExpWindow(QtWidgets.QMainWindow):
             messageText = "<br>You have not selected a file to " + textBit + ". Close this form now. If you still want to " + textBit + " an existing experiment, Navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click the " + textButton + " push-button."
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText)) 
+        elif Path(ifileName) not in self.filesCheckList: 
+            #messageText = "My filename: "+ ifileName + "<br>The file you selected is not up to date with the current schema - You may not " + textBit + " a file that is not up to date with the current schema. Current files that are up to date and may be edited now are as follows: <br><br>" + "<br>".join(self.filesCheckList) + "<br><br>If you still want to " + textBit + " an existing resource that is up to date, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button. Then select a file that is up to date.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
+            messageText = "<br>The file you selected is not up to date with the current schema - You may not " + textBit + " a file that is not up to date with the current schema. Current files that are up to date and may be edited now are as follows: <br><br>" + "<br>".join(stringFilesCheckList) + "<br><br>If you still want to " + textBit + " an existing file that is up to date, Navigate to the \"Experiment Tracker\" tab >> \"Add Experiment\" sub-tab and click the " + textButton + " push-button. Then select a file that is up to date.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
         else: 
             #self.editMode = True
             # if self.mode == "edit":         

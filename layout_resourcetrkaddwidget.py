@@ -146,48 +146,73 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         versionCheckAllUpToDate = versionCheck[0]
         versionCheckMessageText = versionCheck[1]
         versionCheckDf = versionCheck[2]
+
+        filesCheckList = [] # initialize the list of json txt annotation files that are up to date and can be edited now as empty
+        versionCheckDf["path-stem"] = Path(versionCheckDf["file"])
+        versionCheckDf["path-stem"] = versionCheckDf["path-stem"].stem
+        versionCheckDfSave = versionCheckDf
         
         addToMessage = "<br><br>checking json txt annotation files for ability to edit...<br>"
         saveFormat = '<span style="color:blue;">{}</span>'
         # check if any json txt annotation files are not up to date and get a list if they exist
         versionCheckDf = versionCheckDf[versionCheckDf["trackerType"] == "resourceTracker"]
         versionCheckDf = versionCheckDf[versionCheckDf["fileType"] == "json txt"]
-        if not versionCheckDf.empty:
+        
+        if not versionCheckDf.empty: # at least one json txt annotation file
             print("found at least one json txt annotation file")
-            versionPassDf = versionCheckDf[versionCheckDf["upToDate"] == "Yes"]
-            versionPassList = versionPassDf["file"].tolist()
             
             addToMessage = addToMessage + "found at least one json txt annotation file...<br>"
-            versionCheckDf = versionCheckDf[versionCheckDf["upToDate"] != "Yes"]
-            if not versionCheckDf.empty:
-                print("found at least one json txt annotation file that is not up to date; json txt annotation files that are not up to date can NOT be edited")
-                addToMessage = addToMessage + "found at least one json txt annotation file that is not up to date; json txt annotation files that are not up to date can NOT be edited...<br>"
-                jsonTxt = versionCheckDf["file"].tolist()
-                jsonTxt = [Path(p) for p in jsonTxt]
-                jsonTxt = [p.stem for p in jsonTxt]
-                jsonTxtString = "<br>".join(jsonTxt)
-                addToMessage = addToMessage + "json txt annotation file(s) that are not up to date are as follows:<br><br>"+ jsonTxtString + "<br><br>These json txt annotation files may not be edited until they are updated.<br>"
+            versionCheckUpToDateDf = versionCheckDf[versionCheckDf["upToDate"] == "Yes"]
+            versionCheckNotUpToDateDf = versionCheckDf[versionCheckDf["upToDate"] != "Yes"]
+
+            if not versionCheckUpToDateDf.empty: # at least one json txt annotation file is up to date
+                print("found at least one json txt annotation file that is up to date; json txt annotation files that are up to date may be edited")
+                addToMessage = addToMessage + "found at least one json txt annotation file that is up to date; json txt annotation files that are up to date may be edited...<br>"
                 
-                versionCheckDf = versionCheckDf[versionCheckDf["canBeUpdated"] == "Yes"]
-                if not versionCheckDf.empty:
-                    jsonTxt = versionCheckDf["file"].tolist()
-                    jsonTxt = [Path(p) for p in jsonTxt]
-                    jsonTxt = [p.stem for p in jsonTxt]
-                    jsonTxtString = "<br>".join(jsonTxt)
-                    print("found at least one json txt annotation file that is not up to date and can be updated; json txt annotation files that are not up to date can NOT be edited; you can update these json txt annotation files and then return to try editing them")
-                    addToMessage = addToMessage + "found at least one json txt annotation file that is not up to date and can be updated; json txt annotation files that are not up to date can NOT be edited; you can update these json txt annotation files and then return to try editing them:<br><br>" + jsonTxtString + "<br><br>"
-                else: 
-                    print("none of the json txt annotation files that are not up to date can be updated")
-                    addToMessage = addToMessage + "none of the json txt annotation files that are not up to date (listed above) can currently be updated; these files may not be edited...<br>"
-                    saveFormat = '<span style="color:red;">{}</span>'            
-            else:
-                print("all json txt annotation files are up to date and may be edited")
-                addToMessage = "<br><br>all json txt annotation files are up to date and may be edited"
-                saveFormat = '<span style="color:green;">{}</span>'
-        else:
+                filesCheckList = versionCheckUpToDateDf["file"].tolist() # if at least one json txt annotation file is up to date and can be edited now, populate the list of json txt annotation files that are up to date and can be edited now
+                jsonTxtUpToDateList = versionCheckUpToDateDf["path-stem"].tolist()
+                jsonTxtUpToDateString = "<br>".join(jsonTxtUpToDateList) 
+
+                if not versionCheckNotUpToDateDf.empty: #at least one json txt annotation file is NOT up to date
+                    
+                    addToMessage = addToMessage + "found at least one json txt annotation file that is NOT up to date; json txt annotation files that are NOT up to date can NOT be edited...<br>"
+                
+                    jsonTxtNotUpToDateList = versionCheckNotUpToDateDf["path-stem"].tolist()
+                    jsonTxtNotUpToDateString = "<br>".join(jsonTxtNotUpToDateList)
+
+                    addToMessage = addToMessage + "the following json txt annotation files are up to date and can be edited NOW:<br><br>" + jsonTxtUpToDateString + "<br><br>"
+                    addToMessage = addToMessage + "the following json txt annotation files are NOT up to date and can NOT be edited NOW:<br><br>" + jsonTxtNotUpToDateString + "<br><br>"
+                
+                    versionCheckCanBeUpdatedDf = versionCheckNotUpToDateDf[versionCheckNotUpToDateDf["canBeUpdated"] == "Yes"]
+                    versionCheckCanNotBeUpdatedDf = versionCheckNotUpToDateDf[versionCheckNotUpToDateDf["canBeUpdated"] != "Yes"]
+
+                    if not versionCheckCanBeUpdatedDf.empty: # at least one json txt annotation file can be updated
+                        
+                        jsonTxtCanBeUpdatedList = versionCheckCanBeUpdatedDf["path-stem"].tolist()
+                        jsonTxtCanBeUpdatedString = "<br>".join(jsonTxtCanBeUpdatedList)
+
+                        addToMessage = addToMessage + "the following json txt annotation files are NOT up to date, but can be updated, and may be edited once they are updated:<br><br>" + jsonTxtCanBeUpdatedString + "<br><br>Head to the \"Data Package\" tab >> \"Audit and Update\" sub-tab to update your working data package directory files!<br>"
+                
+
+                else: # all json txt annotation files are up to date
+                    addToMessage = addToMessage + "all json txt annotation files are up to date and may be edited NOW..<br>"
+                    saveFormat = '<span style="color:green;">{}</span>'
+                    
+            else: # no json txt files are up to date - return
+                print("no json txt annotation files are up to date, none may be edited")
+                addToMessage = addToMessage + "<br><br>no json txt annotation files available to edit because none are up to date with current schema - head to the \"Data Package\" tab >> \"Update and Audit\" sub-tab to update your working data package directory files, then try again.<br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                messageText = addToMessage
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+                
+        else: # no json txt annotation files exist - return
             print("no json txt annotation files")
-            addToMessage = "<br><br>no json txt annotation files to edit"
+            addToMessage = "<br><br>no json txt annotation files available to edit because none exist yet - you must add at least one resource to the resource tracker before you can edit a resource...<br>"
             saveFormat = '<span style="color:red;">{}</span>'
+            messageText = addToMessage
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return 
         
         messageText = addToMessage
         self.userMessageBox.append(saveFormat.format(messageText)) 
@@ -214,7 +239,7 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
             #self.w.editState = True
-            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="edit")
+            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, filesCheckList=filesCheckList, mode="edit")
             self.w.show()
             self.w.load_file()
 

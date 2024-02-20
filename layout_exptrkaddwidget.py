@@ -33,6 +33,8 @@ from schema_experiment_tracker import schema_experiment_tracker
 from healdata_utils.validators.jsonschema import validate_against_jsonschema
 import datetime
 
+import version_check
+
 
 class ExpTrkAddWindow(QtWidgets.QMainWindow):
 
@@ -186,7 +188,7 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
                 
         else: # no json txt annotation files exist - return
             print("no json txt annotation files")
-            addToMessage = "<br><br>no json txt annotation files available to edit because none exist yet - you must add at least one resource to the resource tracker before you can edit a resource...<br>"
+            addToMessage = "<br><br>no json txt annotation files available to edit because none exist yet - you must add at least one experiment to the experiment tracker before you can edit an experiment...<br>"
             saveFormat = '<span style="color:red;">{}</span>'
             messageText = addToMessage
             self.userMessageBox.append(saveFormat.format(messageText))

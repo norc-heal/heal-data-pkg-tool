@@ -125,6 +125,8 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
         else:
             self.w.close()  # Close window.
             self.w = None  # Discard reference.
+            self.w = ScrollAnnotateResourceWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add")
+            self.w.show()
 
     def edit_resource(self,checked):
 

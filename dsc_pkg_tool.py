@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("DSC Data Packaging Tool - alpha - v0.1.0-h")
+        self.setWindowTitle("DSC Data Packaging Tool - alpha - v0.1.0-i")
 
         self.main_widget = QtWidgets.QWidget(self)
         self.main_widget.setFocus()

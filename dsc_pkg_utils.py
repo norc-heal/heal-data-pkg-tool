@@ -410,6 +410,52 @@ def get_added_resource_paths(self, latestEntryOnly=False, includeRemovedEntry=Tr
 
     return resourcePathList
 
+def get_tracker_entries(workingDataPkgDir, trackerType, latestEntryOnly=False, includeRemovedEntry=True):
+#def get_added_resource_paths():
+    
+    trackerType = "resource-tracker"
+    fileName = "heal-csv-" + trackerType + ".csv"
+
+    getDir = workingDataPkgDir
+    #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
+    getTrk = os.path.join(getDir,fileName)
+    #getResourcesToAdd = os.path.join(getDir,"resources-to-add.csv")
+
+    if os.path.isfile(getTrk):
+        trackerDf = pd.read_csv(getTrk)
+        trackerDf.fillna("", inplace = True)
+
+        print(trackerDf)
+        print(trackerDf.columns)
+
+        trackerDf["annotationModDateTime"] = pd.to_datetime(trackerDf["annotationModDateTime"])
+        
+        # sort by date-time (ascending), then drop duplicates of, keeping the last/latest instance of each path's occurrence
+        # to get the latest annotation entry
+        trackerDf.sort_values(by=["annotationModDateTime"],ascending=True,inplace=True)
+
+        if latestEntryOnly:
+            trackerDf.drop_duplicates(subset=["resourceId"],keep="last",inplace=True)
+
+        if not includeRemovedEntry:
+            if "removed" in resourceTrackerDf.columns:
+                resourceTrackerDf = resourceTrackerDf[resourceTrackerDf["removed"] == 0]
+
+        return trackerDf
+        # resourcePathSeries = resourceTrackerDf["path"].astype(str)
+        # print(resourcePathSeries,type(resourcePathSeries))
+        # resourcePathList = resourcePathSeries.tolist()
+        # print(resourcePathList,type(resourcePathList))
+        # resourcePathList = [x for x in resourcePathList if x] # remove empty strings
+        # print(resourcePathList,type(resourcePathList))
+        # resourcePathList = list(dict.fromkeys(resourcePathList)) # deduplicate list
+        # print(resourcePathList,type(resourcePathList))
+
+    else:
+        return False
+
+    
+
 def get_resources_to_add(self):
 #def get_resources_to_add():
     print("hiiii; getting resource to add file")

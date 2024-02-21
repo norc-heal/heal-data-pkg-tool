@@ -11,7 +11,7 @@ from pathlib import Path
 # defining the function to ignore the files 
 # if present in any folder that does not start with "dsc-pkg"
 # when folder starts with dsc-pkg do NOT ignore the files for copying
-def ignore_files(dir, files, workingDataPkgDir):
+def ignore_files(dir, files):
     dirStem = Path(dir)
     dirStem = dirStem.stem
     dirStemString = str(dirStem)

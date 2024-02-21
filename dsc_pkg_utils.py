@@ -386,7 +386,7 @@ def get_added_resource_paths(self, latestEntryOnly=False, includeRemovedEntry=Tr
             resourceTrackerDf.sort_values(by=["annotationModDateTime"],ascending=True,inplace=True)
 
             if latestEntryOnly:
-                resourceTrackerDf.drop_duplicates(subset=["path"],keep="last",inplace=True)
+                resourceTrackerDf.drop_duplicates(subset=["resourceId"],keep="last",inplace=True)
 
             if not includeRemovedEntry:
                 if "removed" in resourceTrackerDf.columns:

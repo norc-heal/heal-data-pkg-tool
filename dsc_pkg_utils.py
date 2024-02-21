@@ -362,7 +362,7 @@ def layoutInLayoutDelete(containerLayout,layoutInLayout):
 #             self.containerLayout.removeItem(layout_item)
 #             break
 
-def get_added_resource_paths(self):
+def get_added_resource_paths(self, latestEntryOnly=False, includeRemovedEntry=True):
 #def get_added_resource_paths():
     
     getDir = self.workingDataPkgDir
@@ -378,6 +378,19 @@ def get_added_resource_paths(self):
         print(resourceTrackerDf.columns)
 
         if "path" in resourceTrackerDf.columns:
+
+            resourceTrackerDf["annotationModDateTime"] = pd.to_datetime(resourceTrackerDf["annotationModDateTime"])
+            
+            # sort by date-time (ascending), then drop duplicates of, keeping the last/latest instance of each path's occurrence
+            # to get the latest annotation entry
+            resourceTrackerDf.sort_values(by=["annotationModDateTime"],ascending=True,inplace=True)
+
+            if latestEntryOnly:
+                resourceTrackerDf.drop_duplicates(subset=["path"],keep="last",inplace=True)
+
+            if not includeRemovedEntry:
+                if "removed" in resourceTrackerDf.columns:
+                    resourceTrackerDf = resourceTrackerDf[resourceTrackerDf["removed"] == 0]
 
             #experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
             resourcePathSeries = resourceTrackerDf["path"].astype(str)
@@ -439,7 +452,7 @@ def get_resources_share_status(self):
     if os.path.isfile(getShareStatus):
         shareStatusDf = pd.read_csv(getShareStatus)
         shareStatusDf.fillna("", inplace = True)
-        pd.to_datetime(shareStatusDf["date-time"])
+        shareStatusDf["date-time"] = pd.to_datetime(shareStatusDf["date-time"])
         
         print(shareStatusDf)
         print(shareStatusDf.columns)

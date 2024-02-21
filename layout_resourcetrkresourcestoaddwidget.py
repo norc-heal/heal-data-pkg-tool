@@ -258,7 +258,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         
         ##############################################################################################
         print("getting resources already added to resource tracker")
-        resourcePathList = dsc_pkg_utils.get_added_resource_paths(self=self)
+        resourcePathList = dsc_pkg_utils.get_added_resource_paths(self=self,latestEntryOnly=True, includeRemovedEntry=False)
         
         if not resourcePathList:
                    
@@ -733,7 +733,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         # return with message that update of tracker version is needed before new annotations can be added
         if not dsc_pkg_utils.checkTrackerCreatedSchemaVersionAgainstCurrent(self=self,trackerTypeFileNameString="resource-tracker",trackerTypeMessageString="Resource Tracker"):
             return
-            
+
         # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property so perform some checks
         # check that experiment tracker exists in working data pkg dir, if not, return
         if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):

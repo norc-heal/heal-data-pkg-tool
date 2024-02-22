@@ -586,7 +586,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
         # check that experiment tracker exists in working data pkg dir, if not, return
         if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
-            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
+            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. Then come back here and try saving again.<br><br>"
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
             return
@@ -596,10 +596,12 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
                 print("file is closed, proceed!!")
         except PermissionError:
-                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added"
-                saveFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
-                return
+            #messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added"
+            messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed with saving; You can leave this form window open while you check to see if the Experiment Tracker file is open in Excel or similar application. Make sure the file is closed, then return here and try saving again. <br><br>"
+            
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
 
         # don't check for results tracker exists as this function checks for appropriate trackers already existing and creates the needed results tracker(s) if they don't already exist
         # # check that resource tracker exists in working data pkg dir, if not, return
@@ -620,10 +622,10 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                     with open(os.path.join(self.workingDataPkgDir,tracker),'r+') as f:
                         print("file is closed, proceed!!")
                 except PermissionError:
-                        messageText = "<br>At least one Results Tracker file that already exists in your working Data Package Directory is open in another application, and must be closed to proceed; Check if any Results Tracker files are open in Excel or similar application, and close the file(s). <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
-                        saveFormat = '<span style="color:red;">{}</span>'
-                        self.userMessageBox.append(saveFormat.format(messageText))
-                        return
+                    messageText = "<br>At least one Results Tracker file that already exists in your working Data Package Directory is open in another application, and must be closed to proceed with saving; You can leave this form window open while you check to see if any Results Tracker files are open in Excel or similar application. Make sure any Results Tracker files are closed, then return here and try saving again.<br><br>."
+                    saveFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(saveFormat.format(messageText))
+                    return
 
 
         result = deepcopy(self.form.widget.state)

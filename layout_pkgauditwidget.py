@@ -28,6 +28,8 @@ from layout_csveditwidget import CSVEditWindow
 import version_check
 import version_update_tracker
 
+import schema_results_tracker
+
 class PkgAuditWindow(QtWidgets.QMainWindow):
 
     def __init__(self, workingDataPkgDirDisplay):
@@ -105,7 +107,39 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
 
                 
             if "tracker" in collectDf["fileType"].values:
+                
                 trackerDf = collectDf[collectDf["fileType"] == "tracker"]
+                
+                if "resultsTracker" not in trackerDf["trackerType"].values:
+                    messageText = "<br>A csv results tracker was not detected - Creating a \"collect all\" csv results tracker now...<br><br>This standard data package metadata file will be saved in your working data package directory as \"heal-csv-results-tracker-collect-all.csv\". This results tracker will collect all results you document as part of this data package, even if they will not be shared in the same publication.<br><br>When you start documenting results, they will be added to this \"collect all\" results tracker - If you add an associated publication for a result, a new results tracker will be created in the working data package directory for that publication (if it does not already exist) and the result will ALSO be added to this publication-specific results tracker.<br>"
+                    self.userMessageBox.append(messageText)
+
+                    # create a no user access subdir in working data pkg dir for operational files
+                    operationalFileSubDir = os.path.join(updateDir,"no-user-access")
+                    if not os.path.exists(operationalFileSubDir):
+                        os.mkdir(operationalFileSubDir)
+                        
+                    metadataTypeList = ["results-tracker"]
+                    metadataSchemaVersionList = [schema_results_tracker.schema_results_tracker["version"]]
+                    
+                    for metadataType, metadataSchemaVersion in zip(metadataTypeList,metadataSchemaVersionList):
+
+                        versionTxtFileName = "schema-version-" + metadataType + ".txt"
+                        with open(os.path.join(operationalFileSubDir,versionTxtFileName), "w") as text_file:
+                            text_file.write(metadataSchemaVersion)
+
+                        props = dsc_pkg_utils.heal_metadata_json_schema_properties(metadataType=metadataType)
+                        df = dsc_pkg_utils.empty_df_from_json_schema_properties(jsonSchemaProperties=props)
+
+                        if metadataType == "results-tracker":
+                            fName = "heal-csv-" + metadataType + "-collect-all.csv"
+                        else:
+                            fName = "heal-csv-" + metadataType + ".csv"
+                        
+                        df.to_csv(os.path.join(operationalFileSubDir, fName), index = False) 
+
+                    messageText = "<br>Successfully created and saved a \"collect all\" csv results tracker - Once your working data package directory is complete, you'll be ready to go to start documenting results.<br>"
+                    self.userMessageBox.append(messageText)
                 
                 messageText = "<br>The following csv trackers were detected:<br>" + "<br>".join(trackerDf["file"].tolist())
                 self.userMessageBox.append(messageText)

@@ -109,10 +109,25 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
             if "tracker" in collectDf["fileType"].values:
                 
                 trackerDf = collectDf[collectDf["fileType"] == "tracker"]
+
+                noResultsTracker = "resultsTracker" not in trackerDf["trackerType"].values
+                print("noResultsTracker: ",noResultsTracker)
+
+                trackerDf["fileStem"] = [Path(f) for f in trackerDf["file"]]
+                trackerDf["fileStem"] = [f.stem for f in trackerDf["fileStem"]]
                 
-                if "resultsTracker" not in trackerDf["trackerType"].values:
-                    messageText = "<br>A csv results tracker was not detected - Creating a \"collect all\" csv results tracker now...<br><br>This standard data package metadata file will be saved in your working data package directory as \"heal-csv-results-tracker-collect-all.csv\". This results tracker will collect all results you document as part of this data package, even if they will not be shared in the same publication.<br><br>When you start documenting results, they will be added to this \"collect all\" results tracker - If you add an associated publication for a result, a new results tracker will be created in the working data package directory for that publication (if it does not already exist) and the result will ALSO be added to this publication-specific results tracker.<br>"
-                    self.userMessageBox.append(messageText)
+                noCollectAllResultsTracker = "heal-csv-results-tracker-collect-all" not in trackerDf["fileStem"]
+                print("noCollectAllResultsTracker: ", noCollectAllResultsTracker)
+                
+                #if "resultsTracker" not in trackerDf["trackerType"].values:
+                if noCollectAllResultsTracker:
+                    if noResultsTracker:
+                        messageText = "<br>A csv results tracker was not detected - Creating a \"collect all\" csv results tracker now...<br><br>This standard data package metadata file will be saved in your working data package directory as \"heal-csv-results-tracker-collect-all.csv\". This results tracker will collect all results you document as part of this data package, even if they will not be shared in the same publication.<br><br>When you start documenting results, they will be added to this \"collect all\" results tracker - If you add an associated publication for a result, a new results tracker will be created in the working data package directory for that publication (if it does not already exist) and the result will ALSO be added to this publication-specific results tracker.<br>"
+                        self.userMessageBox.append(messageText)
+
+                    if noCollectAllResultsTracker:
+                        messageText = "<br>A csv results tracker was not detected - Creating a \"collect all\" csv results tracker now...<br><br>This standard data package metadata file will be saved in your working data package directory as \"heal-csv-results-tracker-collect-all.csv\". This results tracker will collect all results you document as part of this data package, even if they will not be shared in the same publication.<br><br>When you start documenting results, they will be added to this \"collect all\" results tracker - If you add an associated publication for a result, a new results tracker will be created in the working data package directory for that publication (if it does not already exist) and the result will ALSO be added to this publication-specific results tracker.<br>"
+                        self.userMessageBox.append(messageText)
 
                     # create a no user access subdir in working data pkg dir for operational files
                     operationalFileSubDir = os.path.join(updateDir,"no-user-access")

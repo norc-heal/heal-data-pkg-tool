@@ -28,6 +28,8 @@ from layout_csveditwidget import CSVEditWindow
 import version_check
 import version_update_tracker
 
+import schema_results_tracker
+
 class PkgAuditWindow(QtWidgets.QMainWindow):
 
     def __init__(self, workingDataPkgDirDisplay):
@@ -105,7 +107,56 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
 
                 
             if "tracker" in collectDf["fileType"].values:
+                
                 trackerDf = collectDf[collectDf["fileType"] == "tracker"]
+
+                noResultsTracker = "resultsTracker" not in trackerDf["trackerType"].values
+                print("noResultsTracker: ",noResultsTracker)
+
+                trackerDf["fileStem"] = [Path(f) for f in trackerDf["file"]]
+                trackerDf["fileStem"] = [f.stem for f in trackerDf["fileStem"]]
+                
+                noCollectAllResultsTracker = "heal-csv-results-tracker-collect-all" not in trackerDf["fileStem"]
+                print("noCollectAllResultsTracker: ", noCollectAllResultsTracker)
+                
+                #if "resultsTracker" not in trackerDf["trackerType"].values:
+                if noCollectAllResultsTracker:
+                    if noResultsTracker:
+                        messageText = "<br>A csv results tracker was not detected - Creating a \"collect all\" csv results tracker now...<br><br>This standard data package metadata file will be saved in your working data package directory as \"heal-csv-results-tracker-collect-all.csv\". This results tracker will collect all results you document as part of this data package, even if they will not be shared in the same publication.<br><br>When you start documenting results, they will be added to this \"collect all\" results tracker - If you add an associated publication for a result, a new results tracker will be created in the working data package directory for that publication (if it does not already exist) and the result will ALSO be added to this publication-specific results tracker.<br>"
+                        self.userMessageBox.append(messageText)
+
+                        # create a no user access subdir in working data pkg dir for operational files
+                        operationalFileSubDir = os.path.join(updateDir,"no-user-access")
+                        if not os.path.exists(operationalFileSubDir):
+                            os.mkdir(operationalFileSubDir)
+                            
+                        metadataTypeList = ["results-tracker"]
+                        metadataSchemaVersionList = [schema_results_tracker.schema_results_tracker["version"]]
+                        
+                        for metadataType, metadataSchemaVersion in zip(metadataTypeList,metadataSchemaVersionList):
+
+                            versionTxtFileName = "schema-version-" + metadataType + ".txt"
+                            with open(os.path.join(operationalFileSubDir,versionTxtFileName), "w") as text_file:
+                                text_file.write(metadataSchemaVersion)
+
+                    if not noResultsTracker:
+                        messageText = "<br>At least one publication-specific csv results tracker was detected, but a \"collect all\" csv results tracker was NOT detected - Creating a \"collect all\" csv results tracker now...<br><br>This standard data package metadata file will be saved in your working data package directory as \"heal-csv-results-tracker-collect-all.csv\". This results tracker will collect all results you document as part of this data package, even if they will not be shared in the same publication.<br><br>Results you have already added to a publication-specific results tracker will be added to the newly created \"collect all\" results tracker. When you start documenting new results, they will be added to this \"collect all\" results tracker - If you add an associated publication for a new result, a new results tracker will be created in the working data package directory for that publication (if it does not already exist) and the result will ALSO be added to the publication-specific results tracker.<br>"
+                        self.userMessageBox.append(messageText)
+
+                    # create an empty results tracker, call it results tracker collect all,
+                    # and save it in update dir 
+                    props = dsc_pkg_utils.heal_metadata_json_schema_properties(metadataType=metadataType)
+                    df = dsc_pkg_utils.empty_df_from_json_schema_properties(jsonSchemaProperties=props)
+
+                    if metadataType == "results-tracker":
+                        fName = "heal-csv-" + metadataType + "-collect-all.csv"
+                    else:
+                        fName = "heal-csv-" + metadataType + ".csv"
+                    
+                    df.to_csv(os.path.join(updateDir, fName), index = False) 
+
+                    messageText = "<br>Successfully created and saved a \"collect all\" csv results tracker - If you've already added results, these results will be added to the newly created \"collect all\" results tracker a bit later in the update process, and moving forward, any new results you add will be added both to the \"collect all\" results tracker and to a publication-specific results tracker (if you add an associated publication to the result). If you have not yet added any results, once your working data package directory update is complete, you'll be ready to go to start adding results.<br>"
+                    self.userMessageBox.append(messageText)
                 
                 messageText = "<br>The following csv trackers were detected:<br>" + "<br>".join(trackerDf["file"].tolist())
                 self.userMessageBox.append(messageText)
@@ -144,6 +195,20 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 # 3)        for those not added, if valid, update json directly and add to tracker
                                 # 4)        for those not added, if invalid, attempt to update the json directly anyway, and somehow alert user to check these files and correct them
                                 # 5)    for those added, write new json txt annotation file based on updated tracker contents for the annotation
+                                
+                                # for results tracker, if a collect-all results tracker exists, skip updating json txt annotation 
+                                # files based on results tracker if it's not the collect all results tracker - this prevent 
+                                # duplicative work to update result json txt annotation files if in more than one results tracker 
+                                # and prevents erroneous error messages that a json txt annotation file could not be updated in the 
+                                # case that not all results are in all results trackers
+                                if t == "resultsTracker":
+                                    if not noCollectAllResultsTracker:
+                                        currentFilePath = Path(p)
+                                        currentFileStem = currentFilePath.stem
+                                        currentFileStemStr = str(currentFileStem)
+                                        if not currentFileStemStr == "heal-csv-results-tracker-collect-all":
+                                            continue
+
                                 print("reading in tracker")
                                 trackerDf = pd.read_csv(p)
                                 trackerDf.fillna("", inplace = True)
@@ -232,6 +297,18 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 if writeFromTrackerToTxtFileIdNumList:
                                     writeFromTrackerToTxtFileDf = trackerDf[trackerDf[idNumCol].isin(writeFromTrackerToTxtFileIdNumList)]
                                     
+                                    # if at the beginning of the udpate there was not a collect-all results tracker, then should be updating 
+                                    # json txt files based on publication-specific results trackers if they exist, in this case, want to 
+                                    # add results that exist in the publication-specific results trackers to the newly created collect-all
+                                    # results tracker here
+                                    if t == "resultsTracker":
+                                        if noCollectAllResultsTracker:
+                                            newCollectAllDf = pd.read_csv(os.path.join(updateDir,"heal-csv-results-tracker-collect-all.csv")) 
+                                            newCollectAllDf = pd.concat([newCollectAllDf,writeFromTrackerToTxtFileDf],axis=0)  
+                                            newCollectAllDf = newCollectAllDf[-(newCollectAllDf.astype('string').duplicated())]
+                                            print("newCollectAllDf rows, without dupes: ", newCollectAllDf.shape[0])
+                                            newCollectAllDf.to_csv(os.path.join(updateDir,"heal-csv-results-tracker-collect-all.csv"), mode='w', header=True, index=False)
+
                                     if arrayTypeProps:
                                         for a in arrayTypeProps:
                                             writeFromTrackerToTxtFileDf[a] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(x) for x in writeFromTrackerToTxtFileDf[a]]
@@ -311,7 +388,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                     os.rename(origDir,origDir + "-archive")
                     os.rename(updateDir,origDir)
                     
-                    messageText = "<br>Your original working Data Package Directory has been archived as \"archive-\" plus the original directory name.<br>"
+                    messageText = "<br>Your original working Data Package Directory has been archived as the original directory name + \"-archive\" plus .<br>"
                     saveFormat = '<span style="color:green;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     return

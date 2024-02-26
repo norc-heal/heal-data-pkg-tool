@@ -339,7 +339,137 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                     notInTrackerInTxtFileIdNumStringList = [str(idNum) for idNum in notInTrackerInTxtFileIdNumList]
                                     notInTrackerInTxtFileFnameList = [jsonTxtPrefix + idNumString + ".txt" for idNumString in notInTrackerInTxtFileIdNumStringList]
                                     notInTrackerInTxtFileFpathList = [os.path.join(updateDir,fname) for fname in notInTrackerInTxtFileFnameList]
+
+                                    # 1) add content from each of the json txt annotation files to a df
+                                    # 2) write the df to file as a temporary tracker
+                                    # 3) run update tracker function on that temp tracker file
+                                    # 4) write updated json txt annotation files to file (overwriting old json txt annotation files)
+                                    # 5) read in content from each of updated json txt annotation files, and check if valid against schema
+                                    # 6) if valid add to appropriate tracker(s)
+
+                                    # 1) add content from each of the json txt annotation files to a df
+                                    # initialize an empty dataframe to collect data from each file in ifileName
+                                    # one row will be added to collect_df for each valid file in ifileName
+                                    collect_df = pd.DataFrame([])
+                                    # load data from json txt annotation file and convert to python object
+                                    for p1 in notInTrackerInTxtFileFpathList:
                                     
+                                        data = json.loads(Path(p1).read_text())
+                                        # convert json to pd df
+                                        df = pd.json_normalize(data) # df is a one row dataframe
+                                        #print(df)
+                                        # add this file's data to the dataframe that will collect data across all json txt annotation data files
+                                        collect_df = pd.concat([collect_df,df], axis=0) 
+                                        #print("collect_df rows: ", collect_df.shape[0])
+
+                                    # 2) write the df to file as a temporary tracker
+                                    tempTrkPath = os.path.join(updateDir,"temp-tracker.csv")
+                                    collect_df.to_csv(tempTrkPath, mode='w', header=True, index=False)
+                                    
+                                    # 3) run update tracker function on that temp tracker file
+                                    tempTrkUpdateStatus = version_update_tracker.version_update_tracker(getTrk=tempTrkPath,trackerTypeCamelCase=t)
+                                    
+                                    # 4) write updated json txt annotation files to file (overwriting old json txt annotation files)
+                                    if tempTrkUpdateStatus:
+                                        print("reading in tracker")
+                                        trackerDf = pd.read_csv(tempTrkPath)
+                                        trackerDf.fillna("", inplace = True)
+                                        pd.to_datetime(trackerDf["annotationModTimeStamp"])
+                                        print(trackerDf)
+                                        
+                                        idCol = dsc_pkg_utils.trkDict[t]["id"]
+                                        idNumCol = dsc_pkg_utils.trkDict[t]["id"] + "Number"
+                                        jsonTxtPrefix = dsc_pkg_utils.trkDict[t]["jsonTxtPrefix"]
+                                        schema = dsc_pkg_utils.trkDict[t]["schema"]
+
+                                        # get the array type properties in this tracker
+                                        # when pulling in from tracker, they will have become stringified lists instead of 
+                                        # true lists and will be incorrectly converted into json if not updated appropriately
+                                        arrayTypeProps = []
+                                        for key in schema["properties"]:
+                                            if schema["properties"][key]["type"] == "array":
+                                                arrayTypeProps.append(key) 
+                                        print("arrayTypeProps: ",arrayTypeProps)
+
+                                        # # get id nums based on updated tracker
+                                        # # if the tracker is empty, id nums in tracker is empty list
+                                        # if trackerDf.empty:
+                                        #     idNumFromTrackerList = []
+                                        # else:
+                                        #     # make sure the id num is an integer here 
+                                        #     trackerDf[idNumCol] = trackerDf[idNumCol].astype(int)
+                                        #     # sort by date-time (ascending), then drop duplicates of id, keeping the last/latest instance of each id's occurrence
+                                        #     # to get the latest annotation entry
+                                        #     trackerDf.sort_values(by=["annotationModTimeStamp"],ascending=True,inplace=True)
+                                        #     trackerDf.drop_duplicates(subset=[idNumCol],keep="last",inplace=True)
+
+                                        #     idNumFromTrackerList = trackerDf[idNumCol].tolist()
+                                        #     #idNumFromTrackerList = [int(item) for item in idNumFromTrackerList] 
+                                        #     print("idNumFromTrackerList: ",idNumFromTrackerList)
+
+                                        writeFromTrackerToTxtFileDf = trackerDf
+                                        if arrayTypeProps:
+                                            for a in arrayTypeProps:
+                                                writeFromTrackerToTxtFileDf[a] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(x) for x in writeFromTrackerToTxtFileDf[a]]
+                                            
+                                        writeFromTrackerToTxtFileDfToJson = writeFromTrackerToTxtFileDf.to_json(orient="records")
+                                        writeFromTrackerToTxtFileDfToJsonParsed = json.loads(writeFromTrackerToTxtFileDfToJson)
+                                        
+                                        messageText = "<br>A temporary " + t + " was used to successfully update the following json txt annotation files:<br>"
+
+                                        #for n,p in zip(writeFromTrackerToTxtFileIdNumList,writeFromTrackerToTxtFileFnameList):
+                                        for j in writeFromTrackerToTxtFileDfToJsonParsed:
+                                            print(j)
+                                            print(j[idCol])
+                                            print(j[idNumCol])
+                                            fname = jsonTxtPrefix + str(int(j[idNumCol])) + '.txt'
+                                            fpath = os.path.join(updateDir,fname)
+                                            jFinal = json.dumps(j, indent=4)
+                                            print(jFinal)
+                                            with open(fpath, "w") as outfile:
+                                                outfile.write(jFinal)
+                                            
+                                            messageText = messageText + fpath + "<br>"  
+                                        
+                                        saveFormat = '<span style="color:green;">{}</span>'
+                                        self.userMessageBox.append(saveFormat.format(messageText))
+
+                                        # 5) read in content from each of updated json txt annotation files, and check if valid against schema - 
+                                        # if valid collect into a df
+                                        
+                                        # initialize lists to collect valid and invalid files
+                                        validFiles = []
+                                        invalidFiles = []
+                                        # initialize an empty dataframe to collect data from each file in ifileName
+                                        # one row will be added to collect_df for each valid file in ifileName
+                                        collect_df = pd.DataFrame([])
+                                        # load data from json txt annotation file and convert to python object
+                                        for p2 in notInTrackerInTxtFileFpathList:
+                                        
+                                            data = json.loads(Path(p2).read_text())
+                                            # validate json txt annotation file content against schema
+                                            # for results and resource tracker, this should be the dynamically created schema with experimentNameBelongsTo enum populated with experiment names from experiment tracker
+                                            out = validate_against_jsonschema(data, self.schema) 
+                                            if not out["valid"]:
+                                                # add file to list of invalid files
+                                                invalidFiles.append(p2)
+                                                continue
+                                            else: 
+                                                # add file to list of valid files
+                                                validFiles.append(p2) 
+                                                # convert json to pd df
+                                                df = pd.json_normalize(data) # df is a one row dataframe
+                                                #print(df)
+                                                # add this file's data to the dataframe that will collect data across all json txt annotation data files
+                                                collect_df = pd.concat([collect_df,df], axis=0) 
+                                                #print("collect_df rows: ", collect_df.shape[0])
+                                        
+                                        # 6) if valid add to appropriate tracker(s)
+
+                                        if validFiles: 
+                                            # open appropriate tracker, append collect_df, save
+                                            print("add these valid files to tracker")
+
                                     messageText = "<br>The following json txt annotation files have not been added to the appropriate tracker(s). These json txt annotation files must be updated to the current schema version before they can be added to the tracker. It is also possible that they were originally not added to the tracker because they failed validation against the schema version under which they were originally created. Update capabilities for json txt annotation files as well as validation checks will be available in the near future. In the meantime, these json txt files cannot be added to the tracker AND they cannot be edited using this version of the tool. Please standby for tool updates that will help you to resolve these issues, and let us know that you are experiencing this issue - This will help us to prioritize this as a needed tool update:<br>" + "<br>".join(notInTrackerInTxtFileFpathList) + "<br"
                                     saveFormat = '<span style="color:red;">{}</span>'
                                     self.userMessageBox.append(saveFormat.format(messageText))

@@ -29,6 +29,7 @@ import version_check
 import version_update_tracker
 
 import schema_results_tracker
+from healdata_utils.validators.jsonschema import validate_against_jsonschema
 
 class PkgAuditWindow(QtWidgets.QMainWindow):
 
@@ -79,16 +80,17 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
         collectDf = checkVersions[2]
       
         
-        if not allUpToDate:
+        if not allUpToDate: # at least one file is not up to date
             # create a copy of working data pkg dir in which to do the update - 
             # at the end can clean up but don't want the possibility that the update fails and the original is corrupted in the process
             # if an update in progress folder already exists exit with informative message - this may indicate that the user had a previously failed update since a successful update would lead to clean up of this folder
-            if not dsc_pkg_utils.copyDataPkgDirToUpdate(self.workingDataPkgDir):
+            
+            if not dsc_pkg_utils.copyDataPkgDirToUpdate(self.workingDataPkgDir): # couldn't create update Dir because already exists
                 messageText = "<br>Updates are needed. However, an update of your working data package directory may already be in progress. Check for a folder in the same parent directory as your working data package directory that starts with \"dsc-pkg\" and ends with \"update-in-progress\". If this folder exists, an update may have been initiated but not completed. If you didn't purposely create or keep this folder, please delete this folder and then come back here and try to update again. <br>"
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return
-            else:
+            else: # created update dir (copy of working data pkg dir at same level with update-in-progress appended to orig name)
                 messageText = "<br>Updates are needed. An \"update-in-progress\" version of your working data package directory has been successfully created - This copy will be used to perform the updates and will be cleaned up at the end of a successful update - You should see a new folder in the same parent directory as your working data package directory that starts with \"dsc-pkg\" and ends with \"update-in-progress\".<br><br>Working on updates..<br>"
                 saveFormat = '<span style="color:green;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
@@ -106,7 +108,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                 collectDf["file"] = [os.path.join(updateDir,p) for p in collectDf["file"]]
 
                 
-            if "tracker" in collectDf["fileType"].values:
+            if "tracker" in collectDf["fileType"].values: # at least one tracker exists in update dir
                 
                 trackerDf = collectDf[collectDf["fileType"] == "tracker"]
 
@@ -116,7 +118,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                 trackerDf["fileStem"] = [Path(f) for f in trackerDf["file"]]
                 trackerDf["fileStem"] = [f.stem for f in trackerDf["fileStem"]]
                 
-                noCollectAllResultsTracker = "heal-csv-results-tracker-collect-all" not in trackerDf["fileStem"]
+                noCollectAllResultsTracker = "heal-csv-results-tracker-collect-all" not in trackerDf["fileStem"].values
                 print("noCollectAllResultsTracker: ", noCollectAllResultsTracker)
                 
                 #if "resultsTracker" not in trackerDf["trackerType"].values:
@@ -154,6 +156,22 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                         fName = "heal-csv-" + metadataType + ".csv"
                     
                     df.to_csv(os.path.join(updateDir, fName), index = False) 
+                    resultsTrackerCollectAllDict = {
+                        "trackerType":"resultsTracker",
+                        "fileType":"tracker",
+                        "schemaVersion":"",
+                        "schemaMapVersion":"",
+                        "file": os.path.join(updateDir,fname),
+                        "fileSchemaVersion":"",
+                        "upToDate":"No", # set this as not up to date so that it gets added to the list of trackers to update - needs content added from any pub specific results trackers or json txt files not yet added to a tracker
+                        "canBeUpdated":"Yes",
+                        "canBeUpdatedFully":"Yes",
+                        "message":"created during update",
+                        "updateCheckDateTime":pd.to_datetime("now"),
+                        "fileStem":"heal-csv-results-tracker-collect-all"
+                        }
+                    resultsTrackerCollectAllDf = pd.DataFrame(resultsTrackerCollectAllDict)
+                    trackerDf = pd.concat([trackerDf,resultsTrackerCollectAllDf], axis=0)
 
                     messageText = "<br>Successfully created and saved a \"collect all\" csv results tracker - If you've already added results, these results will be added to the newly created \"collect all\" results tracker a bit later in the update process, and moving forward, any new results you add will be added both to the \"collect all\" results tracker and to a publication-specific results tracker (if you add an associated publication to the result). If you have not yet added any results, once your working data package directory update is complete, you'll be ready to go to start adding results.<br>"
                     self.userMessageBox.append(messageText)
@@ -162,14 +180,14 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                 self.userMessageBox.append(messageText)
                 #QApplication.processEvents() # print accumulated user status messages 
                 
-                if "No" in trackerDf["upToDate"].values:
+                if "No" in trackerDf["upToDate"].values: # at least one tracker is not up to date
                     trackerDfNeedsUpdate = trackerDf[trackerDf["upToDate"] == "No"]
 
                     messageText = "<br>The following csv trackers need to be updated:<br>" + "<br>".join(trackerDfNeedsUpdate["file"].tolist())
                     self.userMessageBox.append(messageText)
                     #QApplication.processEvents() # print accumulated user status messages 
                     
-                    if "Yes" in trackerDfNeedsUpdate["canBeUpdated"].values:
+                    if "Yes" in trackerDfNeedsUpdate["canBeUpdated"].values: # at least one tracker can be updated
                         trackerDfCanBeUpdated = trackerDfNeedsUpdate[trackerDfNeedsUpdate["canBeUpdated"] == "Yes"]
 
                         messageText = "<br>The following csv trackers need to be updated AND can be updated:<br>" + "<br>".join(trackerDfCanBeUpdated["file"].tolist()) + "<br><br>Starting updates<br>"
@@ -212,7 +230,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 print("reading in tracker")
                                 trackerDf = pd.read_csv(p)
                                 trackerDf.fillna("", inplace = True)
-                                pd.to_datetime(trackerDf["annotationModTimeStamp"])
+                                trackerDf["annotationModTimeStamp"] = pd.to_datetime(trackerDf["annotationModTimeStamp"])
                                 print(trackerDf)
                                 
                                 idCol = dsc_pkg_utils.trkDict[t]["id"]
@@ -335,6 +353,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                     saveFormat = '<span style="color:green;">{}</span>'
                                     self.userMessageBox.append(saveFormat.format(messageText))
 
+
                                 if notInTrackerInTxtFileIdNumList:
                                     notInTrackerInTxtFileIdNumStringList = [str(idNum) for idNum in notInTrackerInTxtFileIdNumList]
                                     notInTrackerInTxtFileFnameList = [jsonTxtPrefix + idNumString + ".txt" for idNumString in notInTrackerInTxtFileIdNumStringList]
@@ -447,9 +466,12 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                         for p2 in notInTrackerInTxtFileFpathList:
                                         
                                             data = json.loads(Path(p2).read_text())
+                                            # get schema
+                                            schema = dsc_pkg_utils.getTrackerValidationSchema(trackerType=t, workingDataPkgDir=updateDir)
+                                            
                                             # validate json txt annotation file content against schema
                                             # for results and resource tracker, this should be the dynamically created schema with experimentNameBelongsTo enum populated with experiment names from experiment tracker
-                                            out = validate_against_jsonschema(data, self.schema) 
+                                            out = validate_against_jsonschema(data, schema) 
                                             if not out["valid"]:
                                                 # add file to list of invalid files
                                                 invalidFiles.append(p2)
@@ -469,6 +491,25 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                         if validFiles: 
                                             # open appropriate tracker, append collect_df, save
                                             print("add these valid files to tracker")
+                                            trackerDf = pd.read_csv(p)
+                                            trackerDf.fillna("", inplace = True)
+                                            trackerDf["annotationModTimeStamp"] = pd.to_datetime(trackerDf["annotationModTimeStamp"])
+                                            trackerDf = pd.concat([trackerDf,collect_df],axis=0)
+                                            trackerDf = trackerDf.sort_values([idNumCol, "annotationModTimeStamp"], ascending=[True, True])
+                                            trackerDf = trackerDf[-(trackerDf.astype('string').duplicated())]
+                                            trackerDf.to_csv(p, header=True, index=False)
+
+                                            if t == "resultsTracker":
+                                                if "heal-csv-results-tracker-collect-all" not in p:
+                                                    collectAllTrackerPath = os.path.join(updateDir,"heal-csv-results-tracker-collect-all.csv")
+                                                    trackerDf = pd.read_csv(collectAllTrackerPath)
+                                                    if not trackerDf.empty:
+                                                        trackerDf.fillna("", inplace = True)
+                                                        trackerDf["annotationModTimeStamp"] = pd.to_datetime(trackerDf["annotationModTimeStamp"])
+                                                    trackerDf = pd.concat([trackerDf,collect_df],axis=0)
+                                                    trackerDf = trackerDf.sort_values([idNumCol, "annotationModTimeStamp"], ascending=[True, True])
+                                                    trackerDf = trackerDf[-(trackerDf.astype('string').duplicated())]
+                                                    trackerDf.to_csv(collectAllTrackerPath, header=True, index=False)
 
                                     messageText = "<br>The following json txt annotation files have not been added to the appropriate tracker(s). These json txt annotation files must be updated to the current schema version before they can be added to the tracker. It is also possible that they were originally not added to the tracker because they failed validation against the schema version under which they were originally created. Update capabilities for json txt annotation files as well as validation checks will be available in the near future. In the meantime, these json txt files cannot be added to the tracker AND they cannot be edited using this version of the tool. Please standby for tool updates that will help you to resolve these issues, and let us know that you are experiencing this issue - This will help us to prioritize this as a needed tool update:<br>" + "<br>".join(notInTrackerInTxtFileFpathList) + "<br"
                                     saveFormat = '<span style="color:red;">{}</span>'
@@ -503,13 +544,14 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 else:
                                     with open(versionTxtFilePath, "w") as text_file:
                                         text_file.write(versionText)
-                    else:
+                    
+                    else: # at least one tracker needs to be updated but none can be updated
                         messageText = "<br>None of the csv trackers that need to be updated can be updated. This is likely because schema version mapping files for these trackers are not up to date."
                         self.userMessageBox.append(messageText)
                          
 
 
-                else:
+                else: # all trackers are up to date
                     messageText = "<br>All csv trackers are up to date - json txt file updates coming soon<br>"
                     saveFormat = '<span style="color:orange;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
@@ -522,7 +564,8 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                     saveFormat = '<span style="color:green;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     return
-            else:
+            
+            else: # no trackers in update dir
                 messageText = "<br>No csv trackers were detected - json txt file updates coming soon<br>"
                 saveFormat = '<span style="color:orange;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
@@ -544,7 +587,8 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
             messageText = "<br>Your original working Data Package Directory has been archived as \"archive-\" plus the original directory name.<br>"
             saveFormat = '<span style="color:green;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
-        else:
+        
+        else: # all files are up to date
 
             messageText = "<br>All dsc files are up to date - no updates needed!<br>"
             saveFormat = '<span style="color:green;">{}</span>'

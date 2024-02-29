@@ -544,7 +544,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                             saveFormat = '<span style="color:red;">{}</span>'
                                         else: 
                                             messageText = messageText + "<br>The following json txt annotation files were added to the appropriate tracker during the update:<br>" + "<br>".join(validFiles) + "<br>"
-                                            messageText = messageText + "<br>The following json txt annotation files were NOT added to the appropriate tracker during the update:<br>" + "<br>".join(invalidFiles) + "<br>This is likely because they did not pass validation against the schema. Please check these json txt annotation files for validity, fix any violations, and try again!<br>""
+                                            messageText = messageText + "<br>The following json txt annotation files were NOT added to the appropriate tracker during the update:<br>" + "<br>".join(invalidFiles) + "<br>This is likely because they did not pass validation against the schema. Please check these json txt annotation files for validity, fix any violations, and try again!<br>"
                                             saveFormat = '<span style="color:blue;">{}</span>'
 
                                     self.userMessageBox.append(saveFormat.format(messageText))

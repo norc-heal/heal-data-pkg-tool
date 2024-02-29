@@ -214,19 +214,24 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 # 4)        for those not added, if invalid, attempt to update the json directly anyway, and somehow alert user to check these files and correct them
                                 # 5)    for those added, write new json txt annotation file based on updated tracker contents for the annotation
                                 
-                                # for results tracker, if a collect-all results tracker exists, skip updating json txt annotation 
+                                # only results trackers that get past here are
+                                # 1) if there wasn't a collect all results tracker before update, pass all results trackers through
+                                # 2) if there was a collect all results tracker before update, pass only collect all results tracker through
+
+                                # for results tracker, if a collect-all results tracker existed prior to the update, skip updating json txt annotation 
                                 # files based on results tracker if it's not the collect all results tracker - this prevent 
                                 # duplicative work to update result json txt annotation files if in more than one results tracker 
                                 # and prevents erroneous error messages that a json txt annotation file could not be updated in the 
                                 # case that not all results are in all results trackers
-                                if t == "resultsTracker":
-                                    if not noCollectAllResultsTracker:
+                                if t == "resultsTracker": # if current tracker is results tracker
+                                    if not noCollectAllResultsTracker: # if there was already a collect all results tracker prior to the update
                                         currentFilePath = Path(p)
                                         currentFileStem = currentFilePath.stem
                                         currentFileStemStr = str(currentFileStem)
-                                        if not currentFileStemStr == "heal-csv-results-tracker-collect-all":
+                                        if not currentFileStemStr == "heal-csv-results-tracker-collect-all": # if the current results tracker is NOT the collect all results tracker, leave this iteration of the loop and continue at next iteration
                                             continue
-
+                                
+                                
                                 print("reading in tracker")
                                 trackerDf = pd.read_csv(p)
                                 trackerDf.fillna("", inplace = True)
@@ -315,18 +320,31 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                 if writeFromTrackerToTxtFileIdNumList:
                                     writeFromTrackerToTxtFileDf = trackerDf[trackerDf[idNumCol].isin(writeFromTrackerToTxtFileIdNumList)]
                                     
-                                    # if at the beginning of the udpate there was not a collect-all results tracker, then should be updating 
-                                    # json txt files based on publication-specific results trackers if they exist, in this case, want to 
+                                    # only results trackers that get past here are
+                                    # 1) if there wasn't a collect all results tracker before update, if the current results tracker is pub specific, write the results from pub specific tracker to collect all tracker, then exit this iteration of the loop - only results tracker collect all beyond this point
+                                    # 2) if there was a collect all results tracker before update, only collect all results tracker got past the first filter so don't have to do anything here to filter them out, only collect all results tracker
+
+                                    # if at the beginning of the udpate there was not a collect-all results tracker, then want to 
                                     # add results that exist in the publication-specific results trackers to the newly created collect-all
-                                    # results tracker here
+                                    # results tracker here, then leave this iteration of the loop; when we hit the newly created 
+                                    # results tracker collect all in the loop, we will update the json txt files based on the newly created
+                                    # results tracker collect all (as it will now have all of the results from pub specific); we'll also use the 
+                                    # collect all results tracker to check if all result json txt annotation files have been added to the 
+                                    # appropriate results tracker(s) an if not, update and then add them
                                     if t == "resultsTracker":
                                         if noCollectAllResultsTracker:
-                                            newCollectAllDf = pd.read_csv(os.path.join(updateDir,"heal-csv-results-tracker-collect-all.csv")) 
-                                            newCollectAllDf = pd.concat([newCollectAllDf,writeFromTrackerToTxtFileDf],axis=0)  
-                                            newCollectAllDf = newCollectAllDf[-(newCollectAllDf.astype('string').duplicated())]
-                                            print("newCollectAllDf rows, without dupes: ", newCollectAllDf.shape[0])
-                                            newCollectAllDf.to_csv(os.path.join(updateDir,"heal-csv-results-tracker-collect-all.csv"), mode='w', header=True, index=False)
-
+                                            currentFilePath = Path(p)
+                                            currentFileStem = currentFilePath.stem
+                                            currentFileStemStr = str(currentFileStem)
+                                            if not currentFileStemStr == "heal-csv-results-tracker-collect-all": # if the current results tracker is NOT the collect all results tracker, first write the contents of the updated pub specific results tracker to the newly created collect all results tracker, then leave this iteration of the loop and continue at next iteration
+                                                newCollectAllDf = pd.read_csv(os.path.join(updateDir,"heal-csv-results-tracker-collect-all.csv")) 
+                                                newCollectAllDf = pd.concat([newCollectAllDf,writeFromTrackerToTxtFileDf],axis=0)  
+                                                newCollectAllDf = newCollectAllDf[-(newCollectAllDf.astype('string').duplicated())]
+                                                print("newCollectAllDf rows, without dupes: ", newCollectAllDf.shape[0])
+                                                newCollectAllDf.to_csv(os.path.join(updateDir,"heal-csv-results-tracker-collect-all.csv"), mode='w', header=True, index=False)
+                                                continue
+                                    
+                                
                                     if arrayTypeProps:
                                         for a in arrayTypeProps:
                                             writeFromTrackerToTxtFileDf[a] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(x) for x in writeFromTrackerToTxtFileDf[a]]
@@ -393,7 +411,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                         print("reading in tracker")
                                         trackerDf = pd.read_csv(tempTrkPath)
                                         trackerDf.fillna("", inplace = True)
-                                        pd.to_datetime(trackerDf["annotationModTimeStamp"])
+                                        trackerDf["annotationModTimeStamp"] = pd.to_datetime(trackerDf["annotationModTimeStamp"])
                                         print(trackerDf)
                                         
                                         idCol = dsc_pkg_utils.trkDict[t]["id"]
@@ -430,7 +448,12 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                         if arrayTypeProps:
                                             for a in arrayTypeProps:
                                                 writeFromTrackerToTxtFileDf[a] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(x) for x in writeFromTrackerToTxtFileDf[a]]
-                                            
+
+                                        if t == "resultsTracker":
+                                            # this gets a list of lists of assoc pubs per result json txt annotation file that 
+                                            # has not yet been added to any results tracker
+                                            assocPubs = writeFromTrackerToTxtFileDf["associatedFilePublication"].tolist() 
+
                                         writeFromTrackerToTxtFileDfToJson = writeFromTrackerToTxtFileDf.to_json(orient="records")
                                         writeFromTrackerToTxtFileDfToJsonParsed = json.loads(writeFromTrackerToTxtFileDfToJson)
                                         
@@ -499,17 +522,17 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                             trackerDf = trackerDf[-(trackerDf.astype('string').duplicated())]
                                             trackerDf.to_csv(p, header=True, index=False)
 
-                                            if t == "resultsTracker":
-                                                if "heal-csv-results-tracker-collect-all" not in p:
-                                                    collectAllTrackerPath = os.path.join(updateDir,"heal-csv-results-tracker-collect-all.csv")
-                                                    trackerDf = pd.read_csv(collectAllTrackerPath)
-                                                    if not trackerDf.empty:
-                                                        trackerDf.fillna("", inplace = True)
-                                                        trackerDf["annotationModTimeStamp"] = pd.to_datetime(trackerDf["annotationModTimeStamp"])
-                                                    trackerDf = pd.concat([trackerDf,collect_df],axis=0)
-                                                    trackerDf = trackerDf.sort_values([idNumCol, "annotationModTimeStamp"], ascending=[True, True])
-                                                    trackerDf = trackerDf[-(trackerDf.astype('string').duplicated())]
-                                                    trackerDf.to_csv(collectAllTrackerPath, header=True, index=False)
+                                            #if t == "resultsTracker":
+                                                # if "heal-csv-results-tracker-collect-all" not in p:
+                                                #     collectAllTrackerPath = os.path.join(updateDir,"heal-csv-results-tracker-collect-all.csv")
+                                                #     trackerDf = pd.read_csv(collectAllTrackerPath)
+                                                #     if not trackerDf.empty:
+                                                #         trackerDf.fillna("", inplace = True)
+                                                #         trackerDf["annotationModTimeStamp"] = pd.to_datetime(trackerDf["annotationModTimeStamp"])
+                                                #     trackerDf = pd.concat([trackerDf,collect_df],axis=0)
+                                                #     trackerDf = trackerDf.sort_values([idNumCol, "annotationModTimeStamp"], ascending=[True, True])
+                                                #     trackerDf = trackerDf[-(trackerDf.astype('string').duplicated())]
+                                                #     trackerDf.to_csv(collectAllTrackerPath, header=True, index=False)
 
                                     messageText = "<br>The following json txt annotation files have not been added to the appropriate tracker(s). These json txt annotation files must be updated to the current schema version before they can be added to the tracker. It is also possible that they were originally not added to the tracker because they failed validation against the schema version under which they were originally created. Update capabilities for json txt annotation files as well as validation checks will be available in the near future. In the meantime, these json txt files cannot be added to the tracker AND they cannot be edited using this version of the tool. Please standby for tool updates that will help you to resolve these issues, and let us know that you are experiencing this issue - This will help us to prioritize this as a needed tool update:<br>" + "<br>".join(notInTrackerInTxtFileFpathList) + "<br"
                                     saveFormat = '<span style="color:red;">{}</span>'

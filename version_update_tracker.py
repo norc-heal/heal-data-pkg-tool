@@ -113,7 +113,12 @@ def version_update_tracker(getTrk,trackerTypeCamelCase):
                             propertyType = dsc_pkg_utils.trkDict[trackerTypeCamelCase]["schema"]["properties"][key]["type"]
 
                             if propertyType == "string":
-                                trackerDf[key] = "" # if the property is a string, empty is empty string
+                                
+                                if key == "experimentNameBelongsTo":
+                                    trackerDf[key] = "default-experiment-name"
+                                else:
+                                    trackerDf[key] = "" # if the property is a string, empty is empty string
+
                             elif propertyType == "array":
                                 trackerDf[key] = np.empty((len(trackerDf),0)).tolist() # if the property is an array, empty is empty list
                             elif propertyType == "number":
@@ -143,6 +148,10 @@ def version_update_tracker(getTrk,trackerTypeCamelCase):
                         #     trackerDf[key] = np.empty((len(trackerDf),0)).tolist()
 
                         if propertyType == "string":
+                            #trackerDf[key] = "" # if the property is a string, empty is empty string
+                            if key == "experimentNameBelongsTo":
+                                    trackerDf[key] = "default-experiment-name"
+                            else:
                                 trackerDf[key] = "" # if the property is a string, empty is empty string
                         elif propertyType == "array":
                             trackerDf[key] = np.empty((len(trackerDf),0)).tolist() # if the property is an array, empty is empty list

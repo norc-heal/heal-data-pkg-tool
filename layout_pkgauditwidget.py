@@ -147,30 +147,31 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
 
                     # create an empty results tracker, call it results tracker collect all,
                     # and save it in update dir 
-                    props = dsc_pkg_utils.heal_metadata_json_schema_properties(metadataType=metadataType)
+                    props = dsc_pkg_utils.heal_metadata_json_schema_properties(metadataType="results-tracker")
                     df = dsc_pkg_utils.empty_df_from_json_schema_properties(jsonSchemaProperties=props)
 
-                    if metadataType == "results-tracker":
-                        fName = "heal-csv-" + metadataType + "-collect-all.csv"
-                    else:
-                        fName = "heal-csv-" + metadataType + ".csv"
+                    fName = "heal-csv-results-tracker-collect-all.csv"
+                    # if metadataType == "results-tracker":
+                    #     fName = "heal-csv-" + metadataType + "-collect-all.csv"
+                    # else:
+                    #     fName = "heal-csv-" + metadataType + ".csv"
                     
                     df.to_csv(os.path.join(updateDir, fName), index = False) 
                     resultsTrackerCollectAllDict = {
-                        "trackerType":"resultsTracker",
-                        "fileType":"tracker",
-                        "schemaVersion":"",
-                        "schemaMapVersion":"",
-                        "file": os.path.join(updateDir,fname),
-                        "fileSchemaVersion":"",
-                        "upToDate":"No", # set this as not up to date so that it gets added to the list of trackers to update - needs content added from any pub specific results trackers or json txt files not yet added to a tracker
-                        "canBeUpdated":"Yes",
-                        "canBeUpdatedFully":"Yes",
-                        "message":"created during update",
-                        "updateCheckDateTime":pd.to_datetime("now"),
-                        "fileStem":"heal-csv-results-tracker-collect-all"
+                        "trackerType":["resultsTracker"],
+                        "fileType":["tracker"],
+                        "schemaVersion":[""],
+                        "schemaMapVersion":[""],
+                        "file": [os.path.join(updateDir,fName)],
+                        "fileSchemaVersion":[""],
+                        "upToDate":["No"], # set this as not up to date so that it gets added to the list of trackers to update - needs content added from any pub specific results trackers or json txt files not yet added to a tracker
+                        "canBeUpdated":["Yes"],
+                        "canBeUpdatedFully":["Yes"],
+                        "message":["created during update"],
+                        "updateCheckDateTime":[pd.Timestamp("now")],
+                        "fileStem":["heal-csv-results-tracker-collect-all"]
                         }
-                    resultsTrackerCollectAllDf = pd.DataFrame(resultsTrackerCollectAllDict)
+                    resultsTrackerCollectAllDf = pd.DataFrame.from_dict(resultsTrackerCollectAllDict)
                     trackerDf = pd.concat([trackerDf,resultsTrackerCollectAllDf], axis=0)
 
                     messageText = "<br>Successfully created and saved a \"collect all\" csv results tracker - If you've already added results, these results will be added to the newly created \"collect all\" results tracker a bit later in the update process, and moving forward, any new results you add will be added both to the \"collect all\" results tracker and to a publication-specific results tracker (if you add an associated publication to the result). If you have not yet added any results, once your working data package directory update is complete, you'll be ready to go to start adding results.<br>"
@@ -517,6 +518,9 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                             trackerDf = pd.read_csv(p)
                                             trackerDf.fillna("", inplace = True)
                                             trackerDf["annotationModTimeStamp"] = pd.to_datetime(trackerDf["annotationModTimeStamp"])
+                                            
+                                            collect_df["annotationModTimeStamp"] = pd.to_datetime(collect_df["annotationModTimeStamp"])
+                                            
                                             trackerDf = pd.concat([trackerDf,collect_df],axis=0)
                                             trackerDf = trackerDf.sort_values([idNumCol, "annotationModTimeStamp"], ascending=[True, True])
                                             trackerDf = trackerDf[-(trackerDf.astype('string').duplicated())]

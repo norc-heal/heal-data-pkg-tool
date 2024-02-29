@@ -534,8 +534,19 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                                                 #     trackerDf = trackerDf[-(trackerDf.astype('string').duplicated())]
                                                 #     trackerDf.to_csv(collectAllTrackerPath, header=True, index=False)
 
-                                    messageText = "<br>The following json txt annotation files have not been added to the appropriate tracker(s). These json txt annotation files must be updated to the current schema version before they can be added to the tracker. It is also possible that they were originally not added to the tracker because they failed validation against the schema version under which they were originally created. Update capabilities for json txt annotation files as well as validation checks will be available in the near future. In the meantime, these json txt files cannot be added to the tracker AND they cannot be edited using this version of the tool. Please standby for tool updates that will help you to resolve these issues, and let us know that you are experiencing this issue - This will help us to prioritize this as a needed tool update:<br>" + "<br>".join(notInTrackerInTxtFileFpathList) + "<br"
-                                    saveFormat = '<span style="color:red;">{}</span>'
+                                    messageText = "<br>The following json txt annotation files had not previously been added to the appropriate tracker:<br>" + "<br>".join(notInTrackerInTxtFileFpathList) + "<br>"
+                                    if not invalidFiles:
+                                        messageText = messageText + "<br>All of these json txt annotation files were added to the appropriate tracker during the update.<br>"
+                                        saveFormat = '<span style="color:green;">{}</span>'                                    
+                                    else:
+                                        if not validFiles:
+                                            messageText = messageText + "<br>None of these json txt annotation files were added to the appropriate tracker during the update. This is likely because they did not pass validation against the schema. Please check these json txt annotation files for validity, fix any violations, and try again!<br>"
+                                            saveFormat = '<span style="color:red;">{}</span>'
+                                        else: 
+                                            messageText = messageText + "<br>The following json txt annotation files were added to the appropriate tracker during the update:<br>" + "<br>".join(validFiles) + "<br>"
+                                            messageText = messageText + "<br>The following json txt annotation files were NOT added to the appropriate tracker during the update:<br>" + "<br>".join(invalidFiles) + "<br>This is likely because they did not pass validation against the schema. Please check these json txt annotation files for validity, fix any violations, and try again!<br>""
+                                            saveFormat = '<span style="color:blue;">{}</span>'
+
                                     self.userMessageBox.append(saveFormat.format(messageText))
 
 

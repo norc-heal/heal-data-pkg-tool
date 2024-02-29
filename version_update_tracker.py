@@ -122,7 +122,11 @@ def version_update_tracker(getTrk,trackerTypeCamelCase):
                             elif propertyType == "array":
                                 trackerDf[key] = np.empty((len(trackerDf),0)).tolist() # if the property is an array, empty is empty list
                             elif propertyType == "number":
-                                trackerDf[key] = 0 # if the property is a number, empty is zero (for now, maybe should be NaN?)
+                                #trackerDf[key] = 0 # if the property is a number, empty is zero (for now, maybe should be NaN?)
+                                if key == "annotationModTimeStamp":
+                                    trackerDf[key] = pd.Timestamp("now")
+                                else:
+                                    trackerDf[key] = 0 # if the property is a number, empty is zero (for now, maybe should be NaN?)
                             elif propertyType == "integer":
                                 trackerDf[key] = 0 # if the property is an integer, empty is zero (for now, maybe should be NaN?)
                                 # note - add check for if id number column, if yes, and id column exists, calculate it from id column
@@ -156,7 +160,10 @@ def version_update_tracker(getTrk,trackerTypeCamelCase):
                         elif propertyType == "array":
                             trackerDf[key] = np.empty((len(trackerDf),0)).tolist() # if the property is an array, empty is empty list
                         elif propertyType == "number":
-                            trackerDf[key] = 0 # if the property is a number, empty is zero (for now, maybe should be NaN?)
+                            if key == "annotationModTimeStamp":
+                                trackerDf[key] = pd.Timestamp("now")
+                            else:
+                                trackerDf[key] = 0 # if the property is a number, empty is zero (for now, maybe should be NaN?)
                         elif propertyType == "integer":
                             trackerDf[key] = 0 # if the property is an integer, empty is zero (for now, maybe should be NaN?)
                             # note - add check for if id number column, if yes, and id column exists, calculate it from id column

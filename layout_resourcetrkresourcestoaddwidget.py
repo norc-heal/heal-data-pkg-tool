@@ -326,9 +326,10 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         print(self.listRelPath)
         self.listType    = resourcesToAddDf["dependency-type"].tolist()
         self.listParent    = resourcesToAddDf["parent-resource-id"].tolist()
-        self.listParentDescription = resourcesToAddDf["parent-resource-description"].tolist()
-        self.listParentPath = resourcesToAddDf["parent-resource-path"].tolist()
-        self.listParentRelPath = [os.path.relpath(p,self.workingDataPkgDir) for p in self.listParentPath]
+        if "parent-resource-description" in list(resourcesToAddDf):
+            self.listParentDescription = resourcesToAddDf["parent-resource-description"].tolist()
+            self.listParentPath = resourcesToAddDf["parent-resource-path"].tolist()
+            self.listParentRelPath = [os.path.relpath(p,self.workingDataPkgDir) for p in self.listParentPath]
         self.listPushButton    = ['']*resourcesToAddDf.shape[0]
         self.listPushButton2    = ['']*resourcesToAddDf.shape[0]
         self.grid = QGridLayout()
@@ -459,28 +460,45 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
 
             setPath = self.listPath[i].text() 
             setType = self.listType[i].text()  
-            setParent = self.listParent[i].text() 
-            setParentDescription = self.listParentDescription[i]
-            setParentRelPath = self.listParentRelPath[i]
+            setParent = self.listParent[i].text()
+            if "parent-resource-description" in list(resourcesToAddDf): 
+                setParentDescription = self.listParentDescription[i]
+                setParentRelPath = self.listParentRelPath[i]
             print("setPath: ", setPath)
             print("setType: ", setType)
             print("setParent: ", setParent)
-            print("setParentDescription: ", setParentDescription)
-            print("setParentRelPath: ", setParentRelPath)
+            if "parent-resource-description" in list(resourcesToAddDf):
+                print("setParentDescription: ", setParentDescription)
+                print("setParentRelPath: ", setParentRelPath)
 
             if setType in ["associatedFileDataDict","associatedFileProtocol","associatedFileResultsTracker"]:
                 setCategory = "metadata"
                 if setType == "associatedFileProtocol":
                     setCategorySubMetadata = "protocol"
-                    setDescription = "protocol for " + setParent + " (description: " + setParentDescription + "; relative path: " + setParentRelPath + ")"
+                    
+                    if setParentDescription:
+                        setDescription = "protocol for " + setParent + " (description: " + setParentDescription + "; relative path: " + setParentRelPath + ")"
+                    else:
+                        setDescription = "protocol for " + setParent 
+                    
                     setAccess = ["open-access"]
                 elif setType == "associatedFileResultsTracker":
                     setCategorySubMetadata = "heal-formatted-results-tracker"
-                    setDescription = "heal formatted results tracker for " + setParent + " (description: " + setParentDescription + "; relative path: " + setParentRelPath + ")"
+                    
+                    if setParentDescription:
+                        setDescription = "heal formatted results tracker for " + setParent + " (description: " + setParentDescription + "; relative path: " + setParentRelPath + ")"
+                    else: 
+                        setDescription = "heal formatted results tracker for " + setParent
+
                     setAccess = ["temporary-private","open-access"]
                 elif setType == "associatedFileDataDict":
                     setCategorySubMetadata = "heal-formatted-data-dictionary"
-                    setDescription = "heal formatted data dictionary for " + setParent + " (description: " + setParentDescription + "; relative path: " + setParentRelPath + ")" 
+
+                    if setParentDescription:
+                        setDescription = "heal formatted data dictionary for " + setParent + " (description: " + setParentDescription + "; relative path: " + setParentRelPath + ")" 
+                    else:
+                        setDescription = "heal formatted data dictionary for " + setParent
+
                     setAccess = ["open-access"]
             else:
                 setCategory = ""

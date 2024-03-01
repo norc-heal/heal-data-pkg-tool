@@ -620,7 +620,8 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
             
             origDir = self.workingDataPkgDir
             os.rename(origDir,origDir + "-archive")
-            os.rename(updateDir,origDir)
+            #os.rename(updateDir,origDir)
+            dsc_pkg_utils.robustRename(src=upDateDir,dest=origDir)
             
             messageText = "<br>Your original working Data Package Directory has been archived as \"archive-\" plus the original directory name.<br>"
             saveFormat = '<span style="color:green;">{}</span>'

@@ -8,6 +8,7 @@ import pathlib
 from pathlib import Path
 
 import dsc_pkg_utils
+import pandas as pd
 
 
 
@@ -29,7 +30,7 @@ def ignore_files_1(dir, files):
 # defining the function to ignore the files 
 # if present in any folder that does not start with "dsc-pkg"
 # when folder starts with dsc-pkg do NOT ignore the files for copying
-def ignore_files_2(dir, files, filesToKeep):
+def ignore_files_2(dir, files, filesToKeep=[]):
     
     dirStem = Path(dir)
     dirStem = dirStem.stem
@@ -67,27 +68,43 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",shareableDataPkgShel
                 if not os.path.exists(shareableDirString):
                     os.mkdir(shareableDirString)
 
-                shareableShellDirStemString = studyFolderDirStemString + "-shareable-data-pkg-shell"
-                shareableShellDirString = os.path.join(shareableDirString,shareableShellDirStemString)
+                shareablePkgDirStemString = studyFolderDirStemString + "-shareable-data-pkg-" + flavor
+                shareablePkgDirString = os.path.join(shareableDirString,shareablePkgDirStemString)
                 
                 if flavor == "shell":
                     shutil.copytree(str(studyFolderDirPath),
-                                    shareableShellDirString,
+                                    shareablePkgDirString,
                                     ignore=ignore_files_1)
                 elif flavor == "open-access-now":
                     trackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=workingDataPkgDir,trackerType="resource-tracker",latestEntryOnly=True,includeRemovedEntry=False)
                     
+                    # get private date (access date) as a timestamp in order to be able to compare to today timestamp
+                    trackerEntries["accessDateTimeStamp"] = pd.to_datetime(trackerEntries["accessDate"])
+                    
                     trackerEntriesContainOpenAccess = trackerEntries[trackerEntries["access"].str.contains("open-access")]
                     
+                    # get df with open-access resources that never had temporary-private access also set (should be open access now) 
+                    trackerEntriesContainOpenAccessAndNOTTempPrivate = trackerEntries[-trackerEntries["access"].str.contains("temporary-private")]
+                    # get df with open-access resources that ALSO had temporary-private access set (only open access if today is >= private date)
                     trackerEntriesContainOpenAccessAndTempPrivate = trackerEntries[trackerEntries["access"].str.contains("temporary-private")]
-                    trackerEntriesContainOpenAccessAndTempPrivatePastPrivateDate = trackerEntries[trackerEntries["access"].str.contains("temporary-private")]
                     
-
-                    trackerEntriesContainOpenAccessAndNOTTempPrivate = trackerEntries[~trackerEntries["access"].str.contains("temporary-private")]
+                    # move this to the top so that all dfs have the private/access date timestamp column
+                    # # get private date (access date) as a timestamp in order to be able to compare to today timestamp
+                    # trackerEntriesContainOpenAccessAndTempPrivate["accessDateTimeStamp"] = pd.to_datetime(trackerEntriesContainOpenAccessAndTempPrivate["accessDate"])
+                    
+                    # get df with resources past private date (should be open access now)
+                    trackerEntriesContainOpenAccessAndTempPrivatePastPrivateDate = trackerEntriesContainOpenAccessAndTempPrivate[trackerEntriesContainOpenAccessAndTempPrivate["accessDateTimeStamp"] <= pd.Timestamp("now").normalize()]
+                    # get df with resources NOT past private date (still private now)
+                    trackerEntriesContainOpenAccessAndTempPrivateNOTPastPrivateDate = trackerEntriesContainOpenAccessAndTempPrivate[trackerEntriesContainOpenAccessAndTempPrivate["accessDateTimeStamp"] > pd.Timestamp("now").normalize()]
+                    
+                    # resources that are open access now are those that either 1) never had temp private access assigned, or 
+                    # 2) had temp private access assigned but today is >= the private/access date set by the user
+                    trackerEntriesOpenAccessNow = pd.concat([trackerEntriesContainOpenAccessAndNOTTempPrivate,trackerEntriesContainOpenAccessAndTempPrivatePastPrivateDate], axis=0)
+                    filesToKeep = trackerEntriesOpenAccessNow["path"].tolist()
                     
                     shutil.copytree(str(studyFolderDirPath),
-                                    shareableShellDirString,
-                                    ignore=ignore_files_2(filesToKeep=filesToKeep))
+                                    shareablePkgDirString,
+                                    ignore=ignore_files_2(dir,files,filesToKeep=filesToKeep))
 
 
                 # shutil.copytree(str(studyFolderDirPath),
@@ -96,4 +113,6 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",shareableDataPkgShel
 
 
 #createShareableDataPkgShell(workingDataPkgDir="C:/Users/tentner-andrea/Documents/vivli-test-study/dsc-pkg/")
-createShareableDataPkgShell(workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/")
+
+createShareableDataPkg(workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",flavor="shell")
+#createShareableDataPkg(workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",flavor="open-access-now")

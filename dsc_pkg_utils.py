@@ -74,6 +74,43 @@ trkDict = {
     
 }
 
+def robustRename(src, dst):
+    # https://github.com/conan-io/conan/issues/6560
+    """os.rename(src, dst) wrapper with support for long paths on Windows.
+
+    Availability: Unix, Windows."""
+    #if isWindows():
+    if os.name == "nt":
+    # On Windows, rename fails if destination exists, see
+    # https://docs.python.org/2/library/os.html#os.rename
+        try:
+            os.rename(src, dst)
+        except OSError as e:
+            # if e.errno == errno.EEXIST:
+            #     os.remove(dst)
+            #     os.rename(src, dst)
+            #elif e.errno == errno.EACCES:
+            if e.errno == errno.EACCES:
+                # Workaround for the sporadic problem on Windows:
+                # PermissionError: [WinError 5] Access denied
+                # Retry 3 times to rename with sleeping 500 ms in between
+                retry = 5
+                while retry:
+                    #print("*** Retry: " + str(4 - retry))
+                    time.sleep(0.5)
+                    try:
+                        os.rename(src, dst)
+                        retry = 0
+                    except OSError as e:
+                        if retry and e.errno == errno.EACCES:
+                            retry = retry - 1
+                        else:
+                            raise
+            else:
+                raise
+    else:
+        os.rename(src, dst)
+
 def getTrackerValidationSchema(trackerType, workingDataPkgDir=None):
     t=trackerType
     schema = trkDict[t]["schema"]

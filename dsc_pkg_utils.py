@@ -608,10 +608,10 @@ def get_added_resource_paths(self, latestEntryOnly=False, includeRemovedEntry=Tr
 
     return resourcePathList
 
-def get_tracker_entries(workingDataPkgDir, trackerType, latestEntryOnly=False, includeRemovedEntry=True):
+def get_tracker_entries(workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=False, includeRemovedEntry=True):
 #def get_added_resource_paths():
     
-    trackerType = "resource-tracker"
+    #trackerType = "resource-tracker"
     fileName = "heal-csv-" + trackerType + ".csv"
 
     getDir = workingDataPkgDir
@@ -636,8 +636,8 @@ def get_tracker_entries(workingDataPkgDir, trackerType, latestEntryOnly=False, i
             trackerDf.drop_duplicates(subset=["resourceId"],keep="last",inplace=True)
 
         if not includeRemovedEntry:
-            if "removed" in resourceTrackerDf.columns:
-                resourceTrackerDf = resourceTrackerDf[resourceTrackerDf["removed"] == 0]
+            if "removed" in trackerDf.columns:
+                trackerDf = trackerDf[trackerDf["removed"] == 0]
 
         return trackerDf
         # resourcePathSeries = resourceTrackerDf["path"].astype(str)

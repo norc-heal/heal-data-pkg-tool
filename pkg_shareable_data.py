@@ -64,7 +64,9 @@ def ignore_files_2(filesToKeep):
             return filesToIgnore
         else:
             print("dir: ", dir)
-            filesToIgnore = [f for f in os.listdir(dir) if f.endswith(".txt")]
+            #filesToIgnore = [f for f in os.listdir(dir) if f.endswith(".txt")]
+            filesToIgnore = [f for f in files if os.path.isfile(os.path.join(dir, f))]
+            filesToIgnore = [f for f in filesToIgnore if Path(os.path.join(dir, f)) not in filesToKeep]
             filesToIgnore.extend(["archive","no-user-access"])
             print("filesToIgnore: ", filesToIgnore)
             return filesToIgnore
@@ -128,6 +130,7 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",shareableDataPkgShel
                     # 2) had temp private access assigned but today is >= the private/access date set by the user
                     trackerEntriesOpenAccessNow = pd.concat([trackerEntriesContainOpenAccessAndNOTTempPrivate,trackerEntriesContainOpenAccessAndTempPrivatePastPrivateDate], axis=0)
                     filesToKeep = trackerEntriesOpenAccessNow["path"].tolist()
+                    filesToKeep.extend([os.path.join(workingDataPkgDir,"heal-csv-experiment-tracker.csv"),os.path.join(workingDataPkgDir,"heal-csv-resource-tracker.csv")])
                     filesToKeep = [Path(f) for f in filesToKeep]
                     print("filesToKeep: ",filesToKeep)
                     

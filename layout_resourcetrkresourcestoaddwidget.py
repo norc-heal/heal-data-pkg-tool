@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, QSize
 import os
 import pandas as pd
 from layout_scrollannotateresourcewidget import ScrollAnnotateResourceWindow
+from schema_resource_tracker import schema_resource_tracker
 
 
 #class Window(QWidget):
@@ -16,6 +17,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         super(ResourcesToAddWindow, self).__init__(parent)
         #self.workingDataPkgDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
+        self.schemaVersion = schema_resource_tracker["version"]
         self.w = None  # No external window yet.
         
         self.grid = None

@@ -21,8 +21,8 @@ def ignore_files_1(dir, files):
     dirStem = dirStem.stem
     dirStemString = str(dirStem)
 
-    #if not dirStemString.startswith("dsc-pkg"): # in this case subfolders in dsc pkg will not have files copied over
-    if not "dsc-pkg" in dir: # in this case subfolders in dsc pkg should have files copied over
+    if not dirStemString.startswith("dsc-pkg"): # in this case subfolders in dsc pkg will not have files copied over
+    #if not "dsc-pkg" in dir: # in this case subfolders in dsc pkg should have files copied over
         return [f for f in files if os.path.isfile(os.path.join(dir, f))]
     else:
         return []
@@ -54,8 +54,8 @@ def ignore_files_2(filesToKeep):
         dirStem = dirStem.stem
         dirStemString = str(dirStem)
 
-        #if not dirStemString.startswith("dsc-pkg"): # in this case subfolders in dsc pkg will not have files copied over
-        if not "dsc-pkg" in dir: # in this case subfolders in dsc pkg should have files copied over
+        if not dirStemString.startswith("dsc-pkg"): # in this case subfolders in dsc pkg will not have files copied over
+        #if not "dsc-pkg" in dir: # in this case subfolders in dsc pkg should have files copied over
             filesToIgnore = [f for f in files if os.path.isfile(os.path.join(dir, f))]
             #filesToIgnore = set(filesToIgnore) - set(filesToKeep)
             filesToIgnore = [f for f in filesToIgnore if Path(os.path.join(dir, f)) not in filesToKeep]
@@ -63,7 +63,11 @@ def ignore_files_2(filesToKeep):
             print("filesToIgnore: ", filesToIgnore)
             return filesToIgnore
         else:
-            return ()
+            print("dir: ", dir)
+            filesToIgnore = [f for f in os.listdir(dir) if f.endswith(".txt")]
+            filesToIgnore.extend(["archive","no-user-access"])
+            print("filesToIgnore: ", filesToIgnore)
+            return filesToIgnore
     return ignoref
 
 def createShareableDataPkg(workingDataPkgDir,flavor="shell",shareableDataPkgShellDir="",StudyFolderCentralized=True,workingDataPkgDirInStudyFolder=True):

@@ -74,6 +74,29 @@ trkDict = {
     
 }
 
+def relPathResultsDependOn(resultsDependOnListOfDicts, relToPath, pathKey="resultIdDependsOn"):
+    # convert absolute paths in associatedFilesResultsDependOn field in resource tracker
+    # res = [dict([key, os.path.relpath(p,workingDataPkgDir)] 
+    #    for key, value in dicts.items()) 
+    #    for dicts in resultsDependOnListOfDicts]
+    print("resultsDependOnListOfDicts - before: ", resultsDependOnListOfDicts)
+    for dict in resultsDependOnListOfDicts:
+        print("dictBefore: ",dict)
+        for key in dict:
+            if key == pathKey:
+                if dict[key]:
+                    pathList = dict[key]
+                    print(pathList)
+                    print(isinstance(pathList,list))
+                    #relPathList = [convertStringifiedArrayOfStringsToList(p) for p in pathList]
+                    relPathList = [os.path.relpath(p,relToPath) for p in pathList]
+                    print(relPathList)
+                    dict[key] = relPathList
+        print("dictAfter: ",dict)
+    print("resultsDependOnListOfDicts - before: ", resultsDependOnListOfDicts)  
+    return resultsDependOnListOfDicts               
+                
+
 def robustRename(src, dst):
     # https://github.com/conan-io/conan/issues/6560
     """os.rename(src, dst) wrapper with support for long paths on Windows.

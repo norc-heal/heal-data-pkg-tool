@@ -9,6 +9,7 @@ from pathlib import Path
 
 import dsc_pkg_utils
 import pandas as pd
+import ast
 
 
 
@@ -121,6 +122,10 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",shareableDataPkgShel
                     for c in colWithPathList:
                         trackerEntriesTransformed[c] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(l) for l in trackerEntriesTransformed[c]]
                         trackerEntriesTransformed[c] = [[os.path.relpath(p,workingDataPkgDir) for p in l] if l else [] for l in trackerEntriesTransformed[c]]
+
+                    #trackerEntriesTransformed["associatedFileResultsDependOn"] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(l) for l in trackerEntriesTransformed[associatedFileResultsDependOn]]
+                    trackerEntriesTransformed["associatedFileResultsDependOn"] = [ast.literal_eval(l) for l in trackerEntriesTransformed["associatedFileResultsDependOn"]] # convert stringified list of dicts to actual list of dicts
+                    trackerEntriesTransformed["associatedFileResultsDependOn"] = [dsc_pkg_utils.relPathResultsDependOn(l, relToPath=workingDataPkgDir, pathKey="resultIdDependsOn") if l else [] for l in trackerEntriesTransformed["associatedFileResultsDependOn"]]  
 
 
                     # get private date (access date) as a timestamp in order to be able to compare to today timestamp

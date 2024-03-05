@@ -76,6 +76,7 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",shareableDataPkgShel
     # calling the shutil.copytree() method and
     # passing the src,dst,and ignore parameter
     workingDataPkgDirPath = Path(workingDataPkgDir)
+    workingDataPkgDirStem = workingDataPkgDirPath.stem
     workingDataPkgDirParentPath = workingDataPkgDirPath.parent
 
     if StudyFolderCentralized:
@@ -103,9 +104,25 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",shareableDataPkgShel
                     shutil.copytree(str(studyFolderDirPath),
                                     shareablePkgDirString,
                                     ignore=ignore_files_1)
+                    return
                 elif flavor == "open-access-now":
                     trackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=workingDataPkgDir,trackerType="resource-tracker",latestEntryOnly=True,includeRemovedEntry=False)
                     
+                    # get version of resource tracker where all absolute paths (to resource and to resource dependencies) are 
+                    # converted to relative paths (relative to working data pkg dir)
+                    trackerEntriesTransformed = trackerEntries.copy()
+                    
+                    trackerEntriesTransformed["path"] = [os.path.relpath(p,workingDataPkgDir) for p in trackerEntriesTransformed["path"]]
+                    
+                    colWithPathList = list(trackerEntriesTransformed)
+                    colWithPathList = [c for c in colWithPathList if c.startswith("associatedFile")]
+                    colWithPathList = [c for c in colWithPathList if c not in ["associatedFileResultsDependOn","associatedFileMultiLikeFilesIds"]]
+                    print("colWithPathList: ",colWithPathList)
+                    for c in colWithPathList:
+                        trackerEntriesTransformed[c] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(l) for l in trackerEntriesTransformed[c]]
+                        trackerEntriesTransformed[c] = [[os.path.relpath(p,workingDataPkgDir) for p in l] if l else [] for l in trackerEntriesTransformed[c]]
+
+
                     # get private date (access date) as a timestamp in order to be able to compare to today timestamp
                     trackerEntries["accessDateTimeStamp"] = pd.to_datetime(trackerEntries["accessDate"])
                     
@@ -137,13 +154,16 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",shareableDataPkgShel
                     shutil.copytree(str(studyFolderDirPath),
                                     shareablePkgDirString,
                                     ignore=ignore_files_2(filesToKeep=filesToKeep))
+                    
+                    trackerEntriesTransformed.to_csv(os.path.join(shareablePkgDirString,workingDataPkgDirStem,"test-resource-trk-rel-paths.csv"))
+                    return 
 
 
                 # shutil.copytree(str(studyFolderDirPath),
                 #                 shareableShellDirString,
                 #                 ignore=ignore_files_2(workingDataPkgDir=workingDataPkgDir))
 
-
+    
 #createShareableDataPkgShell(workingDataPkgDir="C:/Users/tentner-andrea/Documents/vivli-test-study/dsc-pkg/")
 
 #createShareableDataPkg(workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",flavor="shell")
@@ -169,6 +189,10 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",shareableDataPkgShel
 createShareableDataPkg(
     workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",
     flavor="open-access-now")
+
+# print(hi["path"])
+# print(hi["associatedFileDataDict"])
+
 
 
 

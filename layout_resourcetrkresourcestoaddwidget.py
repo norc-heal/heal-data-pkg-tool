@@ -324,7 +324,8 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                         
         self.listCheckBox    = ['']*resourcesToAddDf.shape[0]
         self.listPath    = resourcesToAddDf["path"].tolist()
-        self.listRelPath = [os.path.relpath(p,self.workingDataPkgDir) for p in self.listPath]
+        #self.listRelPath = [os.path.relpath(p,self.workingDataPkgDir) for p in self.listPath]
+        self.listRelPath = [os.path.relpath(p,self.workingDataPkgDir) if os.path.splitdrive(p)[0] == os.path.splitdrive(self.workingDataPkgDir)[0] else p for p in self.listPath]
         print(self.listRelPath)
         self.listType    = resourcesToAddDf["dependency-type"].tolist()
         self.listParent    = resourcesToAddDf["parent-resource-id"].tolist()

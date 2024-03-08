@@ -238,6 +238,27 @@ class ResourceTrkAddWindow(QtWidgets.QMainWindow):
             self.userMessageBox.append(saveFormat.format(messageText))
             return
         
+        # resource tracker is needed at least in the case that user wants to edit a multi like file resource that 
+        # was originally annotated using an older version of the tool that did not have the associatedfilemultilikefilesids property
+        # (needs to be calculated using the resource tracker in that case) so perform some checks
+        # check that resource tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
+            messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that resource tracker is closed (user doesn't have it open in excel for example)
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+            messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, and close the file. <br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+
+
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
             #self.w.editState = True

@@ -2058,6 +2058,24 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             checkDataAssociatedFileMultiLikeFilesIds = data["associatedFileMultiLikeFilesIds"]
             checkDataAssociatedFileMultiLikeFilesIds = dsc_pkg_utils.convertStringifiedArrayOfStringsToList(myStringifiedArrayOfStrings=checkDataAssociatedFileMultiLikeFilesIds)
             
+            # if this is a multi like file resource, check if in addition to a list of paths of all files in multi like file resource,
+            # there is also a list of resource ids associated with each file path in the set - if not then this annotation file was 
+            # created using an older version of the tool/resource tracker schema before the associatedFileMultiLikeFilesIds 
+            # property was added - in this case, fill in this property value here by loading the resource tracker, finding the 
+            # resource tracker entries for all of the resources in the multi like file resource, and getting their associated resource ids
+            # from their tracker entry - make sure the list of ids is ordered complementary to the list of file paths, so that the 
+            # correct id is associated with the correct resource file path 
+            if checkDataAssociatedFileMultiLikeFiles:
+                if not checkDataAssociatedFileMultiLikeFilesIds:
+                    # get most recent resource tracker entry for each resource id, only entries for resources that have not been removed
+                    resourceTrackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False)
+                    # filter to only keep resource tracker entries for resources in the multi like file resource
+                    keepEntries = resourceTrackerEntries[resourceTrackerEntries["path"].str.isin(checkDataAssociatedFileMultiLikeFiles)]
+                    # make sure the entries are in the same order as the list of file paths
+                    orderedKeepEntries = keepEntries.set_index("path").reindex(checkDataAssociatedFileMultiLikeFilesIds).reset_index()
+                    # get the correctly ordered list of resource ids for the multi like file resource
+                    checkDataAssociatedFileMultiLikeFilesIds = orderedKeepEntries["resourceId"].tolist()
+
             if self.mode == "add-based-on":
                 based_on_annotation_id = data["resourceId"]
                 

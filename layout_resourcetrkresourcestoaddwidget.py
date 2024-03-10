@@ -332,7 +332,9 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         if "parent-resource-description" in list(resourcesToAddDf):
             self.listParentDescription = resourcesToAddDf["parent-resource-description"].tolist()
             self.listParentPath = resourcesToAddDf["parent-resource-path"].tolist()
-            self.listParentRelPath = [os.path.relpath(p,self.workingDataPkgDir) for p in self.listParentPath]
+            #self.listParentRelPath = [os.path.relpath(p,self.workingDataPkgDir) for p in self.listParentPath]
+            self.listParentRelPath = [os.path.relpath(p,self.workingDataPkgDir) if os.path.splitdrive(p)[0] == os.path.splitdrive(self.workingDataPkgDir)[0] else p for p in self.listParentPath]
+        
         self.listPushButton    = ['']*resourcesToAddDf.shape[0]
         self.listPushButton2    = ['']*resourcesToAddDf.shape[0]
         self.grid = QGridLayout()

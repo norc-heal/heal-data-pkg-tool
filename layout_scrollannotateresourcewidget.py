@@ -2077,7 +2077,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     # get most recent resource tracker entry for each resource id, only entries for resources that have not been removed
                     resourceTrackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False)
                     # filter to only keep resource tracker entries for resources in the multi like file resource
-                    keepEntries = resourceTrackerEntries[resourceTrackerEntries["path"].str.isin(checkDataAssociatedFileMultiLikeFiles)]
+                    keepEntries = resourceTrackerEntries[resourceTrackerEntries["path"].isin(checkDataAssociatedFileMultiLikeFiles)]
                     # make sure the entries are in the same order as the list of file paths
                     orderedKeepEntries = keepEntries.set_index("path").reindex(checkDataAssociatedFileMultiLikeFilesIds).reset_index()
                     # get the correctly ordered list of resource ids for the multi like file resource

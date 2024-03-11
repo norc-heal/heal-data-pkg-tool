@@ -113,11 +113,20 @@ def version_update_tracker(getTrk,trackerTypeCamelCase):
                             propertyType = dsc_pkg_utils.trkDict[trackerTypeCamelCase]["schema"]["properties"][key]["type"]
 
                             if propertyType == "string":
-                                trackerDf[key] = "" # if the property is a string, empty is empty string
+                                
+                                if key == "experimentNameBelongsTo":
+                                    trackerDf[key] = "default-experiment-name"
+                                else:
+                                    trackerDf[key] = "" # if the property is a string, empty is empty string
+
                             elif propertyType == "array":
                                 trackerDf[key] = np.empty((len(trackerDf),0)).tolist() # if the property is an array, empty is empty list
                             elif propertyType == "number":
-                                trackerDf[key] = 0 # if the property is a number, empty is zero (for now, maybe should be NaN?)
+                                #trackerDf[key] = 0 # if the property is a number, empty is zero (for now, maybe should be NaN?)
+                                if key == "annotationModTimeStamp":
+                                    trackerDf[key] = pd.Timestamp("now")
+                                else:
+                                    trackerDf[key] = 0 # if the property is a number, empty is zero (for now, maybe should be NaN?)
                             elif propertyType == "integer":
                                 trackerDf[key] = 0 # if the property is an integer, empty is zero (for now, maybe should be NaN?)
                                 # note - add check for if id number column, if yes, and id column exists, calculate it from id column
@@ -143,11 +152,18 @@ def version_update_tracker(getTrk,trackerTypeCamelCase):
                         #     trackerDf[key] = np.empty((len(trackerDf),0)).tolist()
 
                         if propertyType == "string":
+                            #trackerDf[key] = "" # if the property is a string, empty is empty string
+                            if key == "experimentNameBelongsTo":
+                                    trackerDf[key] = "default-experiment-name"
+                            else:
                                 trackerDf[key] = "" # if the property is a string, empty is empty string
                         elif propertyType == "array":
                             trackerDf[key] = np.empty((len(trackerDf),0)).tolist() # if the property is an array, empty is empty list
                         elif propertyType == "number":
-                            trackerDf[key] = 0 # if the property is a number, empty is zero (for now, maybe should be NaN?)
+                            if key == "annotationModTimeStamp":
+                                trackerDf[key] = pd.Timestamp("now")
+                            else:
+                                trackerDf[key] = 0 # if the property is a number, empty is zero (for now, maybe should be NaN?)
                         elif propertyType == "integer":
                             trackerDf[key] = 0 # if the property is an integer, empty is zero (for now, maybe should be NaN?)
                             # note - add check for if id number column, if yes, and id column exists, calculate it from id column

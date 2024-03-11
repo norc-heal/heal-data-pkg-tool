@@ -1267,11 +1267,18 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             
             addedPathList = []
             addedPathIdNumList = []
+            myIterator = 0
             for i in currentItems:
                 if i not in self.checkDataAssociatedFileMultiLikeFilesDf["path"].values:
                     addedPathList.append(i)
-                    nextAvailableIdNum = dsc_pkg_utils.get_id(self=self,prefix="resource-trk-resource-",folderPath=self.workingDataPkgDir)
+                    
+                    if myIterator == 0:
+                        nextAvailableIdNum = dsc_pkg_utils.get_id(self=self,prefix="resource-trk-resource-",folderPath=self.workingDataPkgDir)
+                    else:
+                        nextAvailableIdNum += 1
+
                     addedPathIdNumList.append(nextAvailableIdNum)
+                    myIterator += 1
 
             if addedPathList:
                 addedPathIdList = ["resource-" + str(n) for n in addedPathIdNumList]
@@ -1596,7 +1603,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if resource["category"] == "tabular-data":
                 if not resource["associatedFileDataDict"]:
 
-                    messageText = "<br>WARNING: You annotated a tabular data resource and did not include a data dictionary for this tabular data resource. If you don't already have a data dictionary, please visit the Data Dictionary tab to create a data dictionary for this resource. You can easily and automatically create a data dictionary using only your tabular data file. Once you have a data dictionary, you can come back here and edit this form to add your data dictionary and save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed." + "\n\n"
+                    messageText = "<br>WARNING: You annotated a tabular data resource and did not include a data dictionary for this tabular data resource. If you don't already have a data dictionary, please visit the \"Data Dictionary\" tab to create a data dictionary for this resource. You can easily and automatically create a data dictionary using only your tabular data file - You may need to fill in the \"description\" field of the created data dictionary manually (providing a description of each variable included in your tabular data file) depending on the type of tabular data file you use to create your data dictionary. Once you have a data dictionary, you can head back to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and use the \"Edit an existing resource\" push-button to re-open this resource for editing, then add the file path to the data dictionary you created in the \"Associated Data Dictionary\" form field, and save the updated form." + "<br><br>Please close this form now to proceed.<br>"
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
@@ -1604,14 +1611,14 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if "temporary-private" in resource["access"]:
                 if not any(map(lambda v: v in resource["access"], ["open-access","managed-access"])):
 
-                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'open-access\n' or to \n'managed-access\n' once the temporary-private status expires. Please return to the form to indicate what the final access level of this resource will be by adding another value to the Access field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
+                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'open-access\n' or to \n'managed-access\n' once the temporary-private status expires. You can head back to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and use the \"Edit an existing resource\" push-button to re-open this resource for editing, then indicate what the final access level of this resource will be by adding another value (\"open-access\" or \"managed-access\") to the \"Access\" form field, and save the updated form." + "<br><br>Please close this form now to proceed.<br>"
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
                 if resource["accessDate"] == self.formDefaultState["accessDate"]:
 
-                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'open-access\n' or to \n'managed-access\n'. Please return to the form to indicate the date at which temporary-provate access level will expire in the Access Date field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
+                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'open-access\n' or to \n'managed-access\n'. You can head back to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and use the \"Edit an existing resource\" push-button to re-open this resource for editing, then indicate the date at which the temporary-private access level will expire in the \"Access Date\" form field, and save the updated form." + "<br><br>Please close this form now to proceed.<br>"
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
@@ -2058,6 +2065,24 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             checkDataAssociatedFileMultiLikeFilesIds = data["associatedFileMultiLikeFilesIds"]
             checkDataAssociatedFileMultiLikeFilesIds = dsc_pkg_utils.convertStringifiedArrayOfStringsToList(myStringifiedArrayOfStrings=checkDataAssociatedFileMultiLikeFilesIds)
             
+            # if this is a multi like file resource, check if in addition to a list of paths of all files in multi like file resource,
+            # there is also a list of resource ids associated with each file path in the set - if not then this annotation file was 
+            # created using an older version of the tool/resource tracker schema before the associatedFileMultiLikeFilesIds 
+            # property was added - in this case, fill in this property value here by loading the resource tracker, finding the 
+            # resource tracker entries for all of the resources in the multi like file resource, and getting their associated resource ids
+            # from their tracker entry - make sure the list of ids is ordered complementary to the list of file paths, so that the 
+            # correct id is associated with the correct resource file path 
+            if checkDataAssociatedFileMultiLikeFiles:
+                if not checkDataAssociatedFileMultiLikeFilesIds:
+                    # get most recent resource tracker entry for each resource id, only entries for resources that have not been removed
+                    resourceTrackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False)
+                    # filter to only keep resource tracker entries for resources in the multi like file resource
+                    keepEntries = resourceTrackerEntries[resourceTrackerEntries["path"].isin(checkDataAssociatedFileMultiLikeFiles)]
+                    # make sure the entries are in the same order as the list of file paths
+                    orderedKeepEntries = keepEntries.set_index("path").reindex(checkDataAssociatedFileMultiLikeFilesIds).reset_index()
+                    # get the correctly ordered list of resource ids for the multi like file resource
+                    checkDataAssociatedFileMultiLikeFilesIds = orderedKeepEntries["resourceId"].tolist()
+
             if self.mode == "add-based-on":
                 based_on_annotation_id = data["resourceId"]
                 

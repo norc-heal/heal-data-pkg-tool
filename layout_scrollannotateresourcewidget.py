@@ -1267,11 +1267,18 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             
             addedPathList = []
             addedPathIdNumList = []
+            myIterator = 0
             for i in currentItems:
                 if i not in self.checkDataAssociatedFileMultiLikeFilesDf["path"].values:
                     addedPathList.append(i)
-                    nextAvailableIdNum = dsc_pkg_utils.get_id(self=self,prefix="resource-trk-resource-",folderPath=self.workingDataPkgDir)
+                    
+                    if myIterator == 0:
+                        nextAvailableIdNum = dsc_pkg_utils.get_id(self=self,prefix="resource-trk-resource-",folderPath=self.workingDataPkgDir)
+                    else:
+                        nextAvailableIdNum += 1
+
                     addedPathIdNumList.append(nextAvailableIdNum)
+                    myIterator += 1
 
             if addedPathList:
                 addedPathIdList = ["resource-" + str(n) for n in addedPathIdNumList]

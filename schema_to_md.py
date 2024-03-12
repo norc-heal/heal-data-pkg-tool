@@ -17,10 +17,11 @@ from dsc_pkg_utils import heal_metadata_json_schema
 # md_results_tracker_props = ".\md_results_tracker_props.md"
 # md_data_dictionary_props = ".\md_data_dictionary_props.md"
 
-schema_type_list = ["experiment-tracker","resource-tracker","results-tracker","data-dictionary"]
-#output_md_list = [".\md_experiment_tracker_props.md",".\md_resource_tracker_props.md",".\md_results_tracker_props.md",".\md_data_dictionary_props.md"]
-output_md_list = [".\md_experiment_tracker.md",".\md_resource_tracker.md",".\md_results_tracker.md",".\md_data_dictionary.md"]
+# schema_type_list = ["experiment-tracker","resource-tracker","results-tracker","data-dictionary"]
+# output_md_list = [".\md_experiment_tracker.md",".\md_resource_tracker.md",".\md_results_tracker.md",".\md_data_dictionary.md"]
 
+schema_type_list = ["experiment-tracker","resource-tracker","results-tracker"]
+output_md_list = [".\md_experiment_tracker.md",".\md_resource_tracker.md",".\md_results_tracker.md"]
 #################################################
 
 # input_schema = schema_results_tracker

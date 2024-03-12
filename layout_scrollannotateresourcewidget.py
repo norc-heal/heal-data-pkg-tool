@@ -2073,7 +2073,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             # from their tracker entry - make sure the list of ids is ordered complementary to the list of file paths, so that the 
             # correct id is associated with the correct resource file path 
             if checkDataAssociatedFileMultiLikeFiles:
+                print("loading a multi like file resource")
                 if not checkDataAssociatedFileMultiLikeFilesIds:
+                    print("the multi like file ids property is not populated; working to populate now")
                     # get most recent resource tracker entry for each resource id, only entries for resources that have not been removed
                     resourceTrackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False)
                     # filter to only keep resource tracker entries for resources in the multi like file resource
@@ -2082,6 +2084,11 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     orderedKeepEntries = keepEntries.set_index("path").reindex(checkDataAssociatedFileMultiLikeFilesIds).reset_index()
                     # get the correctly ordered list of resource ids for the multi like file resource
                     checkDataAssociatedFileMultiLikeFilesIds = orderedKeepEntries["resourceId"].tolist()
+                    print("here are the ids: ", checkDataAssociatedFileMultiLikeFilesIds)
+                    generatedNewMultiLikeFileIds = True
+                else:
+                    print("the multi like file ids property is already populated")
+                    generatedNewMultiLikeFileIds = False
 
             if self.mode == "add-based-on":
                 based_on_annotation_id = data["resourceId"]
@@ -2153,6 +2160,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                         "archiveName":archiveNameList,
                         "archivePath":archivePathList
                     }
+                    print("checkDataAssociatedFileMultiLikeFilesDict: ",checkDataAssociatedFileMultiLikeFilesDict)
                     self.checkDataAssociatedFileMultiLikeFilesDf = pd.DataFrame(checkDataAssociatedFileMultiLikeFilesDict)
                     self.checkDataAssociatedFileMultiLikeFilesDf["loadedFromFile"] = 1
                 

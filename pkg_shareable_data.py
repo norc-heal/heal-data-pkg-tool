@@ -151,6 +151,30 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",shareableDataPkgShel
                     # resources that are open access now are those that either 1) never had temp private access assigned, or 
                     # 2) had temp private access assigned but today is >= the private/access date set by the user
                     trackerEntriesOpenAccessNow = pd.concat([trackerEntriesContainOpenAccessAndNOTTempPrivate,trackerEntriesContainOpenAccessAndTempPrivatePastPrivateDate], axis=0)
+                    
+                    # get any results trackers that will be shared and convert full paths to relative paths
+                    if "heal-formatted-results-tracker" in trackerEntriesOpenAccessNow["categorySubMetadata"].values:
+                        resultsTrackerDf = trackerEntriesOpenAccessNow[trackerEntriesOpenAccessNow["categorySubMetadata"] == "heal-formatted-results-tracker"]
+                        resultsTrackerList = resultsTrackerDf["path"].tolist()
+
+                        resultsTrackerEntriesTransformedDfList = []
+                        resultsTrackerStemList = []
+                        for resultsTracker in resultsTrackerList: 
+                            resultsTrackerStem = Path(resultsTracker).stem
+                            resultsTrackerString = resultsTrackerStem.split("heal-csv-")[1]
+                            resultsTrackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=workingDataPkgDir,trackerType=resultsTrackerString,latestEntryOnly=True,includeRemovedEntry=False)
+
+                            colWithPathList = list(resultsTrackerEntries)
+                            colWithPathList = [c for c in colWithPathList if c.startswith("associatedFile")]
+                            print("colWithPathList: ",colWithPathList)
+                            for c in colWithPathList:
+                                resultsTrackerEntries[c] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(l) for l in resultsTrackerEntries[c]]
+                                resultsTrackerEntries[c] = [[os.path.relpath(p,workingDataPkgDir) for p in l] if l else [] for l in resultsTrackerEntries[c]]
+
+                            resultsTrackerEntriesTransformedDfList.append(resultsTrackerEntries)
+                            resultsTrackerStemList.append(resultsTrackerStem)
+
+
                     filesToKeep = trackerEntriesOpenAccessNow["path"].tolist()
                     filesToKeep.extend([os.path.join(workingDataPkgDir,"heal-csv-experiment-tracker.csv"),os.path.join(workingDataPkgDir,"heal-csv-resource-tracker.csv")])
                     filesToKeep = [Path(f) for f in filesToKeep]
@@ -161,6 +185,9 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",shareableDataPkgShel
                                     ignore=ignore_files_2(filesToKeep=filesToKeep))
                     
                     trackerEntriesTransformed.to_csv(os.path.join(shareablePkgDirString,workingDataPkgDirStem,"test-resource-trk-rel-paths.csv"))
+                    for stem,df in zip(resultsTrackerStemList,resultsTrackerEntriesTransformedDfList):
+                        fname = "test-" + stem + ".csv"
+                        df.to_csv(os.path.join(shareablePkgDirString,workingDataPkgDirStem,fname))
                     return 
 
 

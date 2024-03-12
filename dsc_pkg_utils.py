@@ -637,6 +637,11 @@ def get_tracker_entries(workingDataPkgDir, trackerType="resource-tracker", lates
     #trackerType = "resource-tracker"
     fileName = "heal-csv-" + trackerType + ".csv"
 
+    trackerTypeSub = trackerType.split("-tracker")[0]
+    if trackerTypeSub == "results":
+        trackerTypeSub = "result"
+    trackerIdString = trackerTypeSub + "Id"
+
     getDir = workingDataPkgDir
     #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
     getTrk = os.path.join(getDir,fileName)
@@ -656,7 +661,8 @@ def get_tracker_entries(workingDataPkgDir, trackerType="resource-tracker", lates
         trackerDf.sort_values(by=["annotationModDateTime"],ascending=True,inplace=True)
 
         if latestEntryOnly:
-            trackerDf.drop_duplicates(subset=["resourceId"],keep="last",inplace=True)
+            #trackerDf.drop_duplicates(subset=["resourceId"],keep="last",inplace=True)
+            trackerDf.drop_duplicates(subset=[trackerIdString],keep="last",inplace=True)
 
         if not includeRemovedEntry:
             if "removed" in trackerDf.columns:

@@ -59,9 +59,13 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
         self.buttonOpenAccessNow.clicked.connect(self.open_access_now)
 
         self.buttonManagedAccessNow = QtWidgets.QPushButton(text="Managed Access, Now",parent=self)
-        self.buttonOpenAccessByDate = QtWidgets.QPushButton(text="Open Access, By Specified Date",parent=self)
-        self.buttonManagedAccessByDate = QtWidgets.QPushButton(text="Managed Access, By Specified Date",parent=self)
+        self.buttonManagedAccessNow.clicked.connect(self.managed_access_now) 
 
+        self.buttonOpenAccessByDate = QtWidgets.QPushButton(text="Open Access, By Specified Date",parent=self)
+        self.buttonOpenAccessByDate.clicked.connect(self.open_access_by_date)
+
+        self.buttonManagedAccessByDate = QtWidgets.QPushButton(text="Managed Access, By Specified Date",parent=self)
+        self.buttonManagedAccessByDate.clicked.connect(self.managed_access_by_date)
         
 
         # maybe switch Line edit to this: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QPlainTextEdit.html#more
@@ -93,8 +97,59 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
         
-        
-        
-   
+        pkg_shareable_data.createShareableDataPkg(
+            workingDataPkgDir=self.workingDataPkgDir,
+            flavor="open-access-now")
 
+        print("success")
+
+    def managed_access_now(self):
+        print("creating shareable data pkg with flavor: managed-access-now")
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+        
+        pkg_shareable_data.createShareableDataPkg(
+            workingDataPkgDir=self.workingDataPkgDir,
+            flavor="managed-access-now")
+
+        print("success")
+        
+    def open_access_by_date(self):
+        print("creating shareable data pkg with flavor: open-access-by-date")
+
+        byDate = self.dateEdit.date().toString("MM/dd/yyyy")
+
+        print("byDate: ",byDate)
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+        
+        pkg_shareable_data.createShareableDataPkg(
+            workingDataPkgDir=self.workingDataPkgDir,
+            flavor="open-access-by-date",
+            byDate=byDate) 
+
+        print("success")   
+   
+    def managed_access_by_date(self):
+        print("creating shareable data pkg with flavor: managed-access-by-date")
+
+        byDate = self.dateEdit.date().toString("MM/dd/yyyy")
+
+        print("byDate: ",byDate)
+
+        # check if user has set a working data package dir - if not exit gracefully with informative message
+        if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
+            return
+        
+        pkg_shareable_data.createShareableDataPkg(
+            workingDataPkgDir=self.workingDataPkgDir,
+            flavor="managed-access-by-date",
+            byDate=byDate) 
+
+        print("success")   
+   
     

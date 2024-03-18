@@ -18,8 +18,12 @@ from dsc_pkg_utils import empty_df_from_json_schema_properties
 # md_results_tracker_props = ".\md_results_tracker_props.md"
 # md_data_dictionary_props = ".\md_data_dictionary_props.md"
 
+# schema_type_list = ["experiment-tracker","resource-tracker","results-tracker","data-dictionary"]
+# #output_md_list = [".\md_experiment_tracker_props.md",".\md_resource_tracker_props.md",".\md_results_tracker_props.md",".\md_data_dictionary_props.md"]
+# output_csv_list = [".\heal-csv-experiment-tracker.csv",".\heal-csv-resource-tracker.csv",".\heal-csv-results-tracker.csv",".\heal-csv-data-dictionary.csv"]
+
+
 schema_type_list = ["experiment-tracker","resource-tracker","results-tracker","data-dictionary"]
-#output_md_list = [".\md_experiment_tracker_props.md",".\md_resource_tracker_props.md",".\md_results_tracker_props.md",".\md_data_dictionary_props.md"]
 output_csv_list = [".\heal-csv-experiment-tracker.csv",".\heal-csv-resource-tracker.csv",".\heal-csv-results-tracker.csv",".\heal-csv-data-dictionary.csv"]
 
 #################################################

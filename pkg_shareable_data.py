@@ -275,31 +275,33 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
 #     workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",
 #     flavor="shell")
 
-createShareableDataPkg(
-    workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",
-    flavor="open-access-now")
 
-createShareableDataPkg(
-    workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",
-    flavor="open-access-by-date",
-    byDate="6/1/2024")
+# # test
+# createShareableDataPkg(
+#     workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",
+#     flavor="open-access-now")
 
-createShareableDataPkg(
-    workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",
-    flavor="managed-access-now")
+# createShareableDataPkg(
+#     workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",
+#     flavor="open-access-by-date",
+#     byDate="6/1/2024")
 
-createShareableDataPkg(
-    workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",
-    flavor="managed-access-by-date",
-    byDate="6/1/2024")
+# createShareableDataPkg(
+#     workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",
+#     flavor="managed-access-now")
 
-createShareableDataPkg(
-    workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",
-    flavor="managed-access-by-date",
-    byDate="1/1/2025")
+# createShareableDataPkg(
+#     workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",
+#     flavor="managed-access-by-date",
+#     byDate="6/1/2024")
 
-# print(hi["path"])
-# print(hi["associatedFileDataDict"])
+# createShareableDataPkg(
+#     workingDataPkgDir="P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg/",
+#     flavor="managed-access-by-date",
+#     byDate="1/1/2025")
+
+# # print(hi["path"])
+# # print(hi["associatedFileDataDict"])
 
 
 

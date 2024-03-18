@@ -17,6 +17,7 @@ from layout_pkgcreatewidget import PkgCreateWindow
 from layout_csvpushtoloadwidget import CSVPushToLoadWindow
 from layout_infotextbrowsewidget import InfoTextBrowserWindow
 from layout_pkgauditwidget import PkgAuditWindow
+from layout_pkgshareablewidget import PkgShareableWindow
 
 
         
@@ -35,6 +36,7 @@ class PkgTabsWindow(QWidget):
         
         self.pkgCreateWindow = PkgCreateWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay)
         self.pkgAuditWindow = PkgAuditWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay)
+        self.PkgShareableWindow = PkgShareableWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay)
         #self.pkgPath = self.pkgCreateWindow.pkgPath
 
         # if self.pkgPath:
@@ -45,7 +47,8 @@ class PkgTabsWindow(QWidget):
         tabs.addTab(InfoTextBrowserWindow(infoText=self.infoText), "Info")
         tabs.addTab(self.pkgCreateWindow, "Create or Continue Data Package")
         #tabs.addTab(CSVPushToLoadWindow(), "View/Edit")
-        tabs.addTab(self.pkgAuditWindow,"Audit and Update")
+        tabs.addTab(self.pkgAuditWindow,"Update Data Package")
+        tabs.addTab(self.PkgShareableWindow,"Prepare Data Package for Submission")
         
         layout.addWidget(tabs)
 

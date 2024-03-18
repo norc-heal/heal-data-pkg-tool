@@ -36,7 +36,7 @@ class PkgTabsWindow(QWidget):
         
         self.pkgCreateWindow = PkgCreateWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay)
         self.pkgAuditWindow = PkgAuditWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay)
-        self.PkgShareableWindow = PkgShareableWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay)
+        self.pkgShareableWindow = PkgShareableWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay)
         #self.pkgPath = self.pkgCreateWindow.pkgPath
 
         # if self.pkgPath:
@@ -48,7 +48,7 @@ class PkgTabsWindow(QWidget):
         tabs.addTab(self.pkgCreateWindow, "Create or Continue Data Package")
         #tabs.addTab(CSVPushToLoadWindow(), "View/Edit")
         tabs.addTab(self.pkgAuditWindow,"Update Data Package")
-        tabs.addTab(self.PkgShareableWindow,"Prepare Data Package for Submission")
+        tabs.addTab(self.pkgShareableWindow,"Prepare Data Package for Submission")
         
         layout.addWidget(tabs)
 

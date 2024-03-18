@@ -52,7 +52,8 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
         self.dateEdit = QtWidgets.QDateEdit(calendarPopup=True,parent=self)
         self.dateEdit.setCalendarPopup(True)
         self.dateEdit.setDateTime(QtCore.QDateTime.currentDateTime())
-        self.labelDateEdit = QtWidgets.QLabel(text = "<b>If creating a flavor of Shareable Data Package that requires a user-specified date, please set the user-specified date here:</b><br>", parent=self)
+        self.dateEdit.setStyleSheet("background-color: lightgreen") 
+        self.labelDateEdit = QtWidgets.QLabel(text = "<b>If creating a flavor of Shareable Data Package that requires a user-specified date, please set the user-specified date here:</b><br>(Click the arrow all the way on the right to pop out a calendar widget)", parent=self)
         self.labelDateEdit.setStyleSheet("background-color: lightgreen") 
 
         self.buttonOpenAccessNow = QtWidgets.QPushButton(text="Open Access, Now",parent=self)

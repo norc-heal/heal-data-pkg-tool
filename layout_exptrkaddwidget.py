@@ -33,6 +33,8 @@ from schema_experiment_tracker import schema_experiment_tracker
 from healdata_utils.validators.jsonschema import validate_against_jsonschema
 import datetime
 
+import version_check
+
 
 class ExpTrkAddWindow(QtWidgets.QMainWindow):
 
@@ -117,16 +119,98 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.checkTrackerCreatedSchemaVersionAgainstCurrent(self=self,trackerTypeFileNameString="experiment-tracker",trackerTypeMessageString="Experiment Tracker"):
             return
 
+        # for editing need to check if json txt annotation files are updated - if not updated, will break the form import
+        # so do full check for if update is necessary to get update status of trackers and json txt annotation files
+        versionCheck = version_check.version_check(self.workingDataPkgDir)
+        
+        versionCheckAllUpToDate = versionCheck[0]
+        versionCheckMessageText = versionCheck[1]
+        versionCheckDf = versionCheck[2]
+
+        filesCheckList = [] # initialize the list of json txt annotation files that are up to date and can be edited now as empty
+        versionCheckDf["path-stem"] = [Path(p) for p in versionCheckDf["file"]] 
+        versionCheckDf["path-stem"] = [p.stem for p in versionCheckDf["path-stem"]] 
+        versionCheckDfSave = versionCheckDf
+        
+        addToMessage = "<br><br>checking json txt annotation files for ability to edit...<br>"
+        saveFormat = '<span style="color:blue;">{}</span>'
+        # check if any json txt annotation files are not up to date and get a list if they exist
+        versionCheckDf = versionCheckDf[versionCheckDf["trackerType"] == "experimentTracker"]
+        versionCheckDf = versionCheckDf[versionCheckDf["fileType"] == "json txt"]
+        
+        if not versionCheckDf.empty: # at least one json txt annotation file
+            print("found at least one json txt annotation file")
+            
+            addToMessage = addToMessage + "found at least one json txt annotation file...<br>"
+            versionCheckUpToDateDf = versionCheckDf[versionCheckDf["upToDate"] == "Yes"]
+            versionCheckNotUpToDateDf = versionCheckDf[versionCheckDf["upToDate"] != "Yes"]
+
+            if not versionCheckUpToDateDf.empty: # at least one json txt annotation file is up to date
+                print("found at least one json txt annotation file that is up to date; json txt annotation files that are up to date may be edited")
+                addToMessage = addToMessage + "found at least one json txt annotation file that is up to date; json txt annotation files that are up to date may be edited...<br>"
+                
+                filesCheckList = versionCheckUpToDateDf["file"].tolist() # if at least one json txt annotation file is up to date and can be edited now, populate the list of json txt annotation files that are up to date and can be edited now
+                jsonTxtUpToDateList = versionCheckUpToDateDf["path-stem"].tolist()
+                jsonTxtUpToDateString = "<br>".join(jsonTxtUpToDateList) 
+
+                if not versionCheckNotUpToDateDf.empty: #at least one json txt annotation file is NOT up to date
+                    
+                    addToMessage = addToMessage + "found at least one json txt annotation file that is NOT up to date; json txt annotation files that are NOT up to date can NOT be edited...<br>"
+                
+                    jsonTxtNotUpToDateList = versionCheckNotUpToDateDf["path-stem"].tolist()
+                    jsonTxtNotUpToDateString = "<br>".join(jsonTxtNotUpToDateList)
+
+                    addToMessage = addToMessage + "the following json txt annotation files are up to date and can be edited NOW:<br><br>" + jsonTxtUpToDateString + "<br><br>"
+                    addToMessage = addToMessage + "the following json txt annotation files are NOT up to date and can NOT be edited NOW:<br><br>" + jsonTxtNotUpToDateString + "<br><br>"
+                
+                    versionCheckCanBeUpdatedDf = versionCheckNotUpToDateDf[versionCheckNotUpToDateDf["canBeUpdated"] == "Yes"]
+                    versionCheckCanNotBeUpdatedDf = versionCheckNotUpToDateDf[versionCheckNotUpToDateDf["canBeUpdated"] != "Yes"]
+
+                    if not versionCheckCanBeUpdatedDf.empty: # at least one json txt annotation file can be updated
+                        
+                        jsonTxtCanBeUpdatedList = versionCheckCanBeUpdatedDf["path-stem"].tolist()
+                        jsonTxtCanBeUpdatedString = "<br>".join(jsonTxtCanBeUpdatedList)
+
+                        addToMessage = addToMessage + "the following json txt annotation files are NOT up to date, but can be updated, and may be edited once they are updated:<br><br>" + jsonTxtCanBeUpdatedString + "<br><br>Head to the \"Data Package\" tab >> \"Audit and Update\" sub-tab to update your working data package directory files!<br>"
+                
+
+                else: # all json txt annotation files are up to date
+                    addToMessage = addToMessage + "all json txt annotation files are up to date and may be edited NOW..<br>"
+                    saveFormat = '<span style="color:green;">{}</span>'
+                    
+            else: # no json txt files are up to date - return
+                print("no json txt annotation files are up to date, none may be edited")
+                addToMessage = addToMessage + "<br><br>no json txt annotation files available to edit because none are up to date with current schema - head to the \"Data Package\" tab >> \"Update and Audit\" sub-tab to update your working data package directory files, then try again.<br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                messageText = addToMessage
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+                
+        else: # no json txt annotation files exist - return
+            print("no json txt annotation files")
+            addToMessage = "<br><br>no json txt annotation files available to edit because none exist yet - you must add at least one experiment to the experiment tracker before you can edit an experiment...<br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            messageText = addToMessage
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return 
+        
+        messageText = addToMessage
+        self.userMessageBox.append(saveFormat.format(messageText)) 
+
+
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
             #self.w.editState = True
-            self.w = ScrollAnnotateExpWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="edit")
+            self.w = ScrollAnnotateExpWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, filesCheckList=filesCheckList, mode="edit")
             self.w.show()
             self.w.load_file()
 
         else:
             self.w.close()  # Close window.
             self.w = None  # Discard reference.
+            self.w = ScrollAnnotateExpWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, filesCheckList=filesCheckList, mode="edit")
+            self.w.show()
+            self.w.load_file()
 
     def annotate_exp_based_on(self,checked):
 
@@ -141,16 +225,98 @@ class ExpTrkAddWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.checkTrackerCreatedSchemaVersionAgainstCurrent(self=self,trackerTypeFileNameString="experiment-tracker",trackerTypeMessageString="Experiment Tracker"):
             return
 
+        # for adding based on need to check if json txt annotation files are updated - if not updated, will break the form import
+        # so do full check for if update is necessary to get update status of trackers and json txt annotation files
+        versionCheck = version_check.version_check(self.workingDataPkgDir)
+        
+        versionCheckAllUpToDate = versionCheck[0]
+        versionCheckMessageText = versionCheck[1]
+        versionCheckDf = versionCheck[2]
+
+        filesCheckList = [] # initialize the list of json txt annotation files that are up to date and can be edited now as empty
+        versionCheckDf["path-stem"] = [Path(p) for p in versionCheckDf["file"]] 
+        versionCheckDf["path-stem"] = [p.stem for p in versionCheckDf["path-stem"]] 
+        versionCheckDfSave = versionCheckDf
+        
+        addToMessage = "<br><br>checking json txt annotation files for ability to add new file based on existing file...<br>"
+        saveFormat = '<span style="color:blue;">{}</span>'
+        # check if any json txt annotation files are not up to date and get a list if they exist
+        versionCheckDf = versionCheckDf[versionCheckDf["trackerType"] == "experimentTracker"]
+        versionCheckDf = versionCheckDf[versionCheckDf["fileType"] == "json txt"]
+        
+        if not versionCheckDf.empty: # at least one json txt annotation file
+            print("found at least one json txt annotation file")
+            
+            addToMessage = addToMessage + "found at least one json txt annotation file...<br>"
+            versionCheckUpToDateDf = versionCheckDf[versionCheckDf["upToDate"] == "Yes"]
+            versionCheckNotUpToDateDf = versionCheckDf[versionCheckDf["upToDate"] != "Yes"]
+
+            if not versionCheckUpToDateDf.empty: # at least one json txt annotation file is up to date
+                print("found at least one json txt annotation file that is up to date; json txt annotation files that are up to date may be used as the basis for a new annotation file")
+                addToMessage = addToMessage + "found at least one json txt annotation file that is up to date; json txt annotation files that are up to date may be used as the basis for a new annotation file...<br>"
+                
+                filesCheckList = versionCheckUpToDateDf["file"].tolist() # if at least one json txt annotation file is up to date and can be edited now, populate the list of json txt annotation files that are up to date and can be edited now
+                jsonTxtUpToDateList = versionCheckUpToDateDf["path-stem"].tolist()
+                jsonTxtUpToDateString = "<br>".join(jsonTxtUpToDateList) 
+
+                if not versionCheckNotUpToDateDf.empty: #at least one json txt annotation file is NOT up to date
+                    
+                    addToMessage = addToMessage + "found at least one json txt annotation file that is NOT up to date; json txt annotation files that are NOT up to date can NOT be used as the basis for a new annotation file...<br>"
+                
+                    jsonTxtNotUpToDateList = versionCheckNotUpToDateDf["path-stem"].tolist()
+                    jsonTxtNotUpToDateString = "<br>".join(jsonTxtNotUpToDateList)
+
+                    addToMessage = addToMessage + "the following json txt annotation files are up to date and can be used as the basis for a new annotation file NOW:<br><br>" + jsonTxtUpToDateString + "<br><br>"
+                    addToMessage = addToMessage + "the following json txt annotation files are NOT up to date and can NOT be used as the basis for a new annotation file NOW:<br><br>" + jsonTxtNotUpToDateString + "<br><br>"
+                
+                    versionCheckCanBeUpdatedDf = versionCheckNotUpToDateDf[versionCheckNotUpToDateDf["canBeUpdated"] == "Yes"]
+                    versionCheckCanNotBeUpdatedDf = versionCheckNotUpToDateDf[versionCheckNotUpToDateDf["canBeUpdated"] != "Yes"]
+
+                    if not versionCheckCanBeUpdatedDf.empty: # at least one json txt annotation file can be updated
+                        
+                        jsonTxtCanBeUpdatedList = versionCheckCanBeUpdatedDf["path-stem"].tolist()
+                        jsonTxtCanBeUpdatedString = "<br>".join(jsonTxtCanBeUpdatedList)
+
+                        addToMessage = addToMessage + "the following json txt annotation files are NOT up to date, but can be updated, and may be used as the basis for a new annotation file once they are updated:<br><br>" + jsonTxtCanBeUpdatedString + "<br><br>Head to the \"Data Package\" tab >> \"Audit and Update\" sub-tab to update your working data package directory files!<br>"
+                
+
+                else: # all json txt annotation files are up to date
+                    addToMessage = addToMessage + "all json txt annotation files are up to date and may be used as the basis for a new annotation file NOW..<br>"
+                    saveFormat = '<span style="color:green;">{}</span>'
+                    
+            else: # no json txt files are up to date - return
+                print("no json txt annotation files are up to date, none may be edited")
+                addToMessage = addToMessage + "<br><br>no json txt annotation files available to be used as the basis for a new annotation file because none are up to date with current schema - head to the \"Data Package\" tab >> \"Update and Audit\" sub-tab to update your working data package directory files, then try again.<br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                messageText = addToMessage
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+                
+        else: # no json txt annotation files exist - return
+            print("no json txt annotation files")
+            addToMessage = "<br><br>no json txt annotation files available to be used as the basis for a new annotation file because none exist yet - you must add at least one experiment to the experiment tracker before you can edit a experiment...<br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            messageText = addToMessage
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return 
+        
+        messageText = addToMessage
+        self.userMessageBox.append(saveFormat.format(messageText)) 
+
+
         # form will only be opened if a valid working data pkg dir is set, and that dir will be passed to the form widget
         if self.w is None:
             #self.w.editState = True
-            self.w = ScrollAnnotateExpWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, mode="add-based-on")
+            self.w = ScrollAnnotateExpWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, filesCheckList=filesCheckList, mode="add-based-on")
             self.w.show()
             self.w.load_file()
 
         else:
             self.w.close()  # Close window.
             self.w = None  # Discard reference.
+            self.w = ScrollAnnotateExpWindow(workingDataPkgDirDisplay=self.workingDataPkgDirDisplay, workingDataPkgDir=self.workingDataPkgDir, filesCheckList=filesCheckList, mode="add-based-on")
+            self.w.show()
+            self.w.load_file()
 
     
     def add_exp(self):

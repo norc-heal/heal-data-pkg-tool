@@ -74,6 +74,227 @@ trkDict = {
     
 }
 
+def relPathResultsDependOn(resultsDependOnListOfDicts, relToPath, pathKey="resultIdDependsOn"):
+    # convert absolute paths in associatedFilesResultsDependOn field in resource tracker
+    # res = [dict([key, os.path.relpath(p,workingDataPkgDir)] 
+    #    for key, value in dicts.items()) 
+    #    for dicts in resultsDependOnListOfDicts]
+    print("resultsDependOnListOfDicts - before: ", resultsDependOnListOfDicts)
+    for dict in resultsDependOnListOfDicts:
+        print("dictBefore: ",dict)
+        for key in dict:
+            if key == pathKey:
+                if dict[key]:
+                    pathList = dict[key]
+                    print(pathList)
+                    print(isinstance(pathList,list))
+                    #relPathList = [convertStringifiedArrayOfStringsToList(p) for p in pathList]
+                    relPathList = [os.path.relpath(p,relToPath) for p in pathList]
+                    print(relPathList)
+                    dict[key] = relPathList
+        print("dictAfter: ",dict)
+    print("resultsDependOnListOfDicts - before: ", resultsDependOnListOfDicts)  
+    return resultsDependOnListOfDicts               
+                
+
+def robustRename(src, dst):
+    # https://github.com/conan-io/conan/issues/6560
+    """os.rename(src, dst) wrapper with support for long paths on Windows.
+
+    Availability: Unix, Windows."""
+    #if isWindows():
+    if os.name == "nt":
+    # On Windows, rename fails if destination exists, see
+    # https://docs.python.org/2/library/os.html#os.rename
+        try:
+            os.rename(src, dst)
+        except OSError as e:
+            # if e.errno == errno.EEXIST:
+            #     os.remove(dst)
+            #     os.rename(src, dst)
+            #elif e.errno == errno.EACCES:
+            if e.errno == errno.EACCES:
+                # Workaround for the sporadic problem on Windows:
+                # PermissionError: [WinError 5] Access denied
+                # Retry 3 times to rename with sleeping 500 ms in between
+                retry = 5
+                while retry:
+                    #print("*** Retry: " + str(4 - retry))
+                    time.sleep(0.5)
+                    try:
+                        os.rename(src, dst)
+                        retry = 0
+                    except OSError as e:
+                        if retry and e.errno == errno.EACCES:
+                            retry = retry - 1
+                        else:
+                            raise
+            else:
+                raise
+    else:
+        os.rename(src, dst)
+
+def getTrackerValidationSchema(trackerType, workingDataPkgDir=None):
+    t=trackerType
+    schema = trkDict[t]["schema"]
+
+    if t in ["resourceTracker","resultsTracker"]:
+        if not workingDataPkgDir:
+            print("i need the working data pkg dir to update experiment name belongs to enum values")
+            return
+        experimentNameList = []
+        experimentNameList, _ = get_exp_names(self=None, workingDataPkgDir=workingDataPkgDir, perResource=False) # gets self.experimentNameList
+
+        #print("self.experimentNameList: ",self.experimentNameList)
+        
+        if experimentNameList:
+            #self.schema = self.add_exp_names_to_schema() # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+            schema = add_exp_names_to_schema(self=None,schema=schema,experimentNameList=experimentNameList) # uses self.experimentNameList and self.schema to update schema property experimentNameBelongs to be an enum with values equal to experimentNameList
+
+    return schema
+
+def writeJsonTxtAnnotationFromTracker(trackerPath,trackerType):
+    p=trackerPath
+    t=trackerType
+
+    workingDataPkgDir = Path(p).parent
+    
+    print("reading in tracker")
+    
+    trackerDf = pd.read_csv(p)
+    trackerDf.fillna("", inplace = True)
+    trackerDf["annotationModTimeStamp"] = pd.to_datetime(trackerDf["annotationModTimeStamp"])
+    #print(trackerDf)
+    
+    idCol = trkDict[t]["id"]
+    idNumCol = trkDict[t]["id"] + "Number"
+    jsonTxtPrefix = trkDict[t]["jsonTxtPrefix"]
+    #schema = trkDict[t]["schema"]
+    schema = getTrackerValidationSchema(trackerType=t, workingDataPkgDir=workingDataPkgDir)
+
+    # get the array type properties in this tracker
+    # when pulling in from tracker, they will have become stringified lists instead of 
+    # true lists and will be incorrectly converted into json if not updated appropriately
+    arrayTypeProps = []
+    for key in schema["properties"]:
+        if schema["properties"][key]["type"] == "array":
+            arrayTypeProps.append(key) 
+    print("arrayTypeProps: ",arrayTypeProps)
+
+    # get id nums based on updated tracker
+    # if the tracker is empty, id nums in tracker is empty list
+    if trackerDf.empty:
+        idNumFromTrackerList = []
+        print("no json txt files to write")
+        messageText = "no json txt files to write from this tracker"
+        return
+    else:
+        # make sure the id num is an integer here 
+        trackerDf[idNumCol] = trackerDf[idNumCol].astype(int)
+        # sort by date-time (ascending), then drop duplicates of id, keeping the last/latest instance of each id's occurrence
+        # to get the latest annotation entry
+        trackerDf.sort_values(by=["annotationModTimeStamp"],ascending=True,inplace=True)
+        trackerDf.drop_duplicates(subset=[idNumCol],keep="last",inplace=True)
+
+    #     idNumFromTrackerList = trackerDf[idNumCol].tolist()
+    #     #idNumFromTrackerList = [int(item) for item in idNumFromTrackerList] 
+    #     print("idNumFromTrackerList: ",idNumFromTrackerList)
+        
+    # # get id nums based on annotation files that already exist
+    # existingFileList = [filename for filename in os.listdir(updateDir) if filename.startswith(jsonTxtPrefix)]
+    # print(existingFileList)
+
+    # if existingFileList: # if the list is not empty
+    #     existingFileStemList = [Path(filename).stem for filename in existingFileList]
+    #     print(existingFileStemList)
+    #     existingFileIdNumList = [int(filename.split(jsonTxtPrefix)[1]) for filename in existingFileStemList]
+    #     print(existingFileIdNumList)
+    # else: 
+    #     existingFileIdNumList = []
+    
+    # # get the id nums in just annotation file, just tracker, or both (list of json txt annotation files that have and have not already been added to tracker - also check if some annotations added to tracker with no corresponding annotation file)
+    # if not idNumFromTrackerList:
+    #     if not existingFileIdNumList:
+    #         print("NO json txt annotation files, and NO annotations in the tracker - There are no json txt annotation files to update or write")
+    #         #continue
+    #     else:
+    #         # in tracker, no json txt annotation file - this shouldn't happen unless someone added to tracker manually or using another tool
+    #         inTrackerNotInTxtFileIdNumList = []
+    #         # in tracker, with corresponding json txt annotation file - this should be most common especially if using updated tool
+    #         inTrackerInTxtFileIdNumList = []
+    #         # NOT in tracker, with a json txt annotation file - this may happen if the using an old version of the tool that does not auto add to tracker OR if the json txt file failed validation during the add to tracker step
+    #         notInTrackerInTxtFileIdNumList = existingFileIdNumList
+    # else:
+    #     if not existingFileIdNumList:
+    #         # in tracker, no json txt annotation file - this shouldn't happen unless someone added to tracker manually or using another tool
+    #         inTrackerNotInTxtFileIdNumList = idNumFromTrackerList
+    #         # in tracker, with corresponding json txt annotation file - this should be most common especially if using updated tool
+    #         inTrackerInTxtFileIdNumList = []
+    #         # NOT in tracker, with a json txt annotation file - this may happen if the using an old version of the tool that does not auto add to tracker OR if the json txt file failed validation during the add to tracker step
+    #         notInTrackerInTxtFileIdNumList = []
+    #         print("NO json txt annotation files, but there ARE annotations in the tracker - There are no json txt annotation files to update, but we can try to write json txt annotation files de novo for the annotations already in the tracker")
+    #     else:
+    #         # in tracker, no json txt annotation file - this shouldn't happen unless someone added to tracker manually or using another tool
+    #         inTrackerNotInTxtFileIdNumList = [n for n in idNumFromTrackerList if n not in existingFileIdNumList]
+    #         # in tracker, with corresponding json txt annotation file - this should be most common especially if using updated tool
+    #         inTrackerInTxtFileIdNumList = [n for n in existingFileIdNumList if n in idNumFromTrackerList]
+    #         # NOT in tracker, with a json txt annotation file - this may happen if the using an old version of the tool that does not auto add to tracker OR if the json txt file failed validation during the add to tracker step
+    #         notInTrackerInTxtFileIdNumList = [n for n in existingFileIdNumList if n not in idNumFromTrackerList]
+
+    # print("inTrackerNotInTxtFileIdNumList: ",inTrackerNotInTxtFileIdNumList)
+    # print("inTrackerInTxtFileIdNumList: ",inTrackerInTxtFileIdNumList)
+    # print("notInTrackerInTxtFileIdNumList: ",notInTrackerInTxtFileIdNumList)
+
+    # writeFromTrackerToTxtFileIdNumList = inTrackerNotInTxtFileIdNumList + inTrackerInTxtFileIdNumList
+    # # writeFromTrackerToTxtFileIdNumStringList = [str(idNum) for idNum in writeFromTrackerToTxtFileIdNumList]
+    # # writeFromTrackerToTxtFileFnameList = [jsonTxtPrefix + idNumString + ".txt" for idNumString in writeFromTrackerToTxtFileIdNumStringList]
+    
+    # if writeFromTrackerToTxtFileIdNumList:
+    #     writeFromTrackerToTxtFileDf = trackerDf[trackerDf[idNumCol].isin(writeFromTrackerToTxtFileIdNumList)]
+        
+        # # if at the beginning of the udpate there was not a collect-all results tracker, then should be updating 
+        # # json txt files based on publication-specific results trackers if they exist, in this case, want to 
+        # # add results that exist in the publication-specific results trackers to the newly created collect-all
+        # # results tracker here
+        # if t == "resultsTracker":
+        #     if noCollectAllResultsTracker:
+        #         newCollectAllDf = pd.read_csv(os.path.join(updateDir,"heal-csv-results-tracker-collect-all.csv")) 
+        #         newCollectAllDf = pd.concat([newCollectAllDf,writeFromTrackerToTxtFileDf],axis=0)  
+        #         newCollectAllDf = newCollectAllDf[-(newCollectAllDf.astype('string').duplicated())]
+        #         print("newCollectAllDf rows, without dupes: ", newCollectAllDf.shape[0])
+        #         newCollectAllDf.to_csv(os.path.join(updateDir,"heal-csv-results-tracker-collect-all.csv"), mode='w', header=True, index=False)
+
+    writeFromTrackerToTxtFileDf = trackerDf
+    if arrayTypeProps:
+        for a in arrayTypeProps:
+            writeFromTrackerToTxtFileDf[a] = [convertStringifiedArrayOfStringsToList(x) for x in writeFromTrackerToTxtFileDf[a]]
+        
+    writeFromTrackerToTxtFileDfToJson = writeFromTrackerToTxtFileDf.to_json(orient="records")
+    writeFromTrackerToTxtFileDfToJsonParsed = json.loads(writeFromTrackerToTxtFileDfToJson)
+    
+    messageText = "<br>"+ t + ": "+ p +"<br>The " + t + " was used to successfully update the following json txt annotation files:<br>"
+
+    #for n,p in zip(writeFromTrackerToTxtFileIdNumList,writeFromTrackerToTxtFileFnameList):
+    for j in writeFromTrackerToTxtFileDfToJsonParsed:
+        print(j)
+        print(j[idCol])
+        print(j[idNumCol])
+        fname = jsonTxtPrefix + str(int(j[idNumCol])) + '.txt'
+        fpath = os.path.join(workingDataPkgDir,fname)
+        jFinal = json.dumps(j, indent=4)
+        print(jFinal)
+        with open(fpath, "w") as outfile:
+            outfile.write(jFinal)
+        
+        messageText = messageText + fpath + "<br>"  
+    
+    
+    # saveFormat = '<span style="color:green;">{}</span>'
+    # self.userMessageBox.append(saveFormat.format(messageText))
+    return messageText
+
+
+
 def validateFormData(self, formData):
     # validate experiment file json content against experiment tracker json schema
     #out = validate_against_jsonschema(data, schema_results_tracker)
@@ -362,7 +583,7 @@ def layoutInLayoutDelete(containerLayout,layoutInLayout):
 #             self.containerLayout.removeItem(layout_item)
 #             break
 
-def get_added_resource_paths(self):
+def get_added_resource_paths(self, latestEntryOnly=False, includeRemovedEntry=True):
 #def get_added_resource_paths():
     
     getDir = self.workingDataPkgDir
@@ -378,6 +599,19 @@ def get_added_resource_paths(self):
         print(resourceTrackerDf.columns)
 
         if "path" in resourceTrackerDf.columns:
+
+            resourceTrackerDf["annotationModDateTime"] = pd.to_datetime(resourceTrackerDf["annotationModDateTime"])
+            
+            # sort by date-time (ascending), then drop duplicates of, keeping the last/latest instance of each path's occurrence
+            # to get the latest annotation entry
+            resourceTrackerDf.sort_values(by=["annotationModDateTime"],ascending=True,inplace=True)
+
+            if latestEntryOnly:
+                resourceTrackerDf.drop_duplicates(subset=["resourceId"],keep="last",inplace=True)
+
+            if not includeRemovedEntry:
+                if "removed" in resourceTrackerDf.columns:
+                    resourceTrackerDf = resourceTrackerDf[resourceTrackerDf["removed"] == 0]
 
             #experimentTrackerDf["experimentName"] = experimentTrackerDf["experimentName"].astype(str)
             resourcePathSeries = resourceTrackerDf["path"].astype(str)
@@ -396,6 +630,58 @@ def get_added_resource_paths(self):
         resourcePathList = []
 
     return resourcePathList
+
+def get_tracker_entries(workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=False, includeRemovedEntry=True):
+#def get_added_resource_paths():
+    
+    #trackerType = "resource-tracker"
+    fileName = "heal-csv-" + trackerType + ".csv"
+
+    trackerTypeSub = trackerType.split("-tracker")[0]
+    if trackerTypeSub == "results":
+        trackerTypeSub = "result"
+    trackerIdString = trackerTypeSub + "Id"
+
+    getDir = workingDataPkgDir
+    #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
+    getTrk = os.path.join(getDir,fileName)
+    #getResourcesToAdd = os.path.join(getDir,"resources-to-add.csv")
+
+    if os.path.isfile(getTrk):
+        trackerDf = pd.read_csv(getTrk)
+        trackerDf.fillna("", inplace = True)
+
+        print(trackerDf)
+        print(trackerDf.columns)
+
+        trackerDf["annotationModDateTime"] = pd.to_datetime(trackerDf["annotationModDateTime"])
+        
+        # sort by date-time (ascending), then drop duplicates of, keeping the last/latest instance of each path's occurrence
+        # to get the latest annotation entry
+        trackerDf.sort_values(by=["annotationModDateTime"],ascending=True,inplace=True)
+
+        if latestEntryOnly:
+            #trackerDf.drop_duplicates(subset=["resourceId"],keep="last",inplace=True)
+            trackerDf.drop_duplicates(subset=[trackerIdString],keep="last",inplace=True)
+
+        if not includeRemovedEntry:
+            if "removed" in trackerDf.columns:
+                trackerDf = trackerDf[trackerDf["removed"] == 0]
+
+        return trackerDf
+        # resourcePathSeries = resourceTrackerDf["path"].astype(str)
+        # print(resourcePathSeries,type(resourcePathSeries))
+        # resourcePathList = resourcePathSeries.tolist()
+        # print(resourcePathList,type(resourcePathList))
+        # resourcePathList = [x for x in resourcePathList if x] # remove empty strings
+        # print(resourcePathList,type(resourcePathList))
+        # resourcePathList = list(dict.fromkeys(resourcePathList)) # deduplicate list
+        # print(resourcePathList,type(resourcePathList))
+
+    else:
+        return False
+
+    
 
 def get_resources_to_add(self):
 #def get_resources_to_add():
@@ -439,7 +725,7 @@ def get_resources_share_status(self):
     if os.path.isfile(getShareStatus):
         shareStatusDf = pd.read_csv(getShareStatus)
         shareStatusDf.fillna("", inplace = True)
-        pd.to_datetime(shareStatusDf["date-time"])
+        shareStatusDf["date-time"] = pd.to_datetime(shareStatusDf["date-time"])
         
         print(shareStatusDf)
         print(shareStatusDf.columns)
@@ -517,15 +803,35 @@ def get_id(self, prefix, folderPath, firstIdNum=1):
 
        
 
-def get_exp_names(self, perResource):
-        
-    getDir = self.workingDataPkgDir
+def get_exp_names(self=None, workingDataPkgDir=None, perResource=False):
+
+    if self:    
+        getDir = self.workingDataPkgDir
+    elif workingDataPkgDir:
+        getDir = workingDataPkgDir
+    else:
+        print("I need a working data pkg dir path")
+        return
+    
+    print(getDir)
     getExpTrk = os.path.join(getDir,"heal-csv-experiment-tracker.csv")
 
     if os.path.isfile(getExpTrk):
         experimentTrackerDf = pd.read_csv(getExpTrk)
         #experimentTrackerDf.replace(np.nan, "")
         experimentTrackerDf.fillna("", inplace = True)
+
+        # get only the experiment names that are associated with the latest annotation entry for each experiment
+        # and only if latest entry for that experiment is NOT removed - removed property not yet implemented for 
+        # experiment tracker, but this will work currently AND future proof for when removed property is added
+        experimentTrackerDf["annotationModTimeStamp"] = pd.to_datetime(experimentTrackerDf["annotationModTimeStamp"])
+        # sort by date-time (ascending), then drop duplicates of id, keeping the last/latest instance of each id's occurrence
+        # to get the latest annotation entry
+        experimentTrackerDf.sort_values(by=["annotationModTimeStamp"],ascending=True,inplace=True)
+        experimentTrackerDf.drop_duplicates(subset=["experimentIdNumber"],keep="last",inplace=True)
+
+        if "removed" in experimentTrackerDf.columns:
+            experimentTrackerDf = experimentTrackerDf[experimentTrackerDf["removed"] == 0]
 
         print(experimentTrackerDf)
         print(experimentTrackerDf.columns)
@@ -592,11 +898,44 @@ def get_exp_names(self, perResource):
     print("experimentNameList: ", experimentNameList)
     return experimentNameList, experimentNameDf
 
-def add_exp_names_to_schema(self):
+def add_exp_names_to_schema(self=None,schema=None,experimentNameList=None):
+
+    if self:
+        if ((hasattr(self,"schema")) and (hasattr(self,"experimentNameList"))):
+            schemaOrig = self.schema
+            experimentNameList = self.experimentNameList
+        else:
+            messageText = "You've provided an object but the object does not have one or both of the required schema and experimentNameList properties."
+            return
+    else:
+        if not schema:
+            print("i need a base schema")
+            return
+        if not experimentNameList:
+            print("i need a list of experiment names")
+            return
+        schemaOrig = schema
+        experimentNameList = experimentNameList
 
 
-    schemaOrig = self.schema
-    experimentNameList = self.experimentNameList
+
+    # if self.schema:
+    #     schemaOrig = self.schema
+    # elif schema:
+    #     schemaOrig = schema
+    # else:
+    #     print("i need a base schema")
+    #     return
+
+    # if self.experimentNameList:
+    #     experimentNameList = self.experimentNameList
+    # elif experimentNameList:
+    #     experimentNameList = experimentNameList
+    # else:
+    #     print("i need a list of experiment names")
+    #     return
+
+    
 
     experimentNameListUpdate = {}
     

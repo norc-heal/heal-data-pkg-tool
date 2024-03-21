@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, QSize
 import os
 import pandas as pd
 from layout_scrollannotateresourcewidget import ScrollAnnotateResourceWindow
+from schema_resource_tracker import schema_resource_tracker
 
 
 #class Window(QWidget):
@@ -16,6 +17,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         super(ResourcesToAddWindow, self).__init__(parent)
         #self.workingDataPkgDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
+        self.schemaVersion = schema_resource_tracker["version"]
         self.w = None  # No external window yet.
         
         self.grid = None
@@ -258,7 +260,7 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         
         ##############################################################################################
         print("getting resources already added to resource tracker")
-        resourcePathList = dsc_pkg_utils.get_added_resource_paths(self=self)
+        resourcePathList = dsc_pkg_utils.get_added_resource_paths(self=self,latestEntryOnly=True, includeRemovedEntry=False)
         
         if not resourcePathList:
                    
@@ -322,13 +324,17 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
                         
         self.listCheckBox    = ['']*resourcesToAddDf.shape[0]
         self.listPath    = resourcesToAddDf["path"].tolist()
-        self.listRelPath = [os.path.relpath(p,self.workingDataPkgDir) for p in self.listPath]
+        #self.listRelPath = [os.path.relpath(p,self.workingDataPkgDir) for p in self.listPath]
+        self.listRelPath = [os.path.relpath(p,self.workingDataPkgDir) if os.path.splitdrive(p)[0] == os.path.splitdrive(self.workingDataPkgDir)[0] else p for p in self.listPath]
         print(self.listRelPath)
         self.listType    = resourcesToAddDf["dependency-type"].tolist()
         self.listParent    = resourcesToAddDf["parent-resource-id"].tolist()
-        self.listParentDescription = resourcesToAddDf["parent-resource-description"].tolist()
-        self.listParentPath = resourcesToAddDf["parent-resource-path"].tolist()
-        self.listParentRelPath = [os.path.relpath(p,self.workingDataPkgDir) for p in self.listParentPath]
+        if "parent-resource-description" in list(resourcesToAddDf):
+            self.listParentDescription = resourcesToAddDf["parent-resource-description"].tolist()
+            self.listParentPath = resourcesToAddDf["parent-resource-path"].tolist()
+            #self.listParentRelPath = [os.path.relpath(p,self.workingDataPkgDir) for p in self.listParentPath]
+            self.listParentRelPath = [os.path.relpath(p,self.workingDataPkgDir) if os.path.splitdrive(p)[0] == os.path.splitdrive(self.workingDataPkgDir)[0] else p for p in self.listParentPath]
+        
         self.listPushButton    = ['']*resourcesToAddDf.shape[0]
         self.listPushButton2    = ['']*resourcesToAddDf.shape[0]
         self.grid = QGridLayout()
@@ -459,28 +465,45 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
 
             setPath = self.listPath[i].text() 
             setType = self.listType[i].text()  
-            setParent = self.listParent[i].text() 
-            setParentDescription = self.listParentDescription[i]
-            setParentRelPath = self.listParentRelPath[i]
+            setParent = self.listParent[i].text()
+            if "parent-resource-description" in list(resourcesToAddDf): 
+                setParentDescription = self.listParentDescription[i]
+                setParentRelPath = self.listParentRelPath[i]
             print("setPath: ", setPath)
             print("setType: ", setType)
             print("setParent: ", setParent)
-            print("setParentDescription: ", setParentDescription)
-            print("setParentRelPath: ", setParentRelPath)
+            if "parent-resource-description" in list(resourcesToAddDf):
+                print("setParentDescription: ", setParentDescription)
+                print("setParentRelPath: ", setParentRelPath)
 
             if setType in ["associatedFileDataDict","associatedFileProtocol","associatedFileResultsTracker"]:
                 setCategory = "metadata"
                 if setType == "associatedFileProtocol":
                     setCategorySubMetadata = "protocol"
-                    setDescription = "protocol for " + setParent + " (description: " + setParentDescription + "; relative path: " + setParentRelPath + ")"
+                    
+                    if setParentDescription:
+                        setDescription = "protocol for " + setParent + " (description: " + setParentDescription + "; relative path: " + setParentRelPath + ")"
+                    else:
+                        setDescription = "protocol for " + setParent 
+                    
                     setAccess = ["open-access"]
                 elif setType == "associatedFileResultsTracker":
                     setCategorySubMetadata = "heal-formatted-results-tracker"
-                    setDescription = "heal formatted results tracker for " + setParent + " (description: " + setParentDescription + "; relative path: " + setParentRelPath + ")"
+                    
+                    if setParentDescription:
+                        setDescription = "heal formatted results tracker for " + setParent + " (description: " + setParentDescription + "; relative path: " + setParentRelPath + ")"
+                    else: 
+                        setDescription = "heal formatted results tracker for " + setParent
+
                     setAccess = ["temporary-private","open-access"]
                 elif setType == "associatedFileDataDict":
                     setCategorySubMetadata = "heal-formatted-data-dictionary"
-                    setDescription = "heal formatted data dictionary for " + setParent + " (description: " + setParentDescription + "; relative path: " + setParentRelPath + ")" 
+
+                    if setParentDescription:
+                        setDescription = "heal formatted data dictionary for " + setParent + " (description: " + setParentDescription + "; relative path: " + setParentRelPath + ")" 
+                    else:
+                        setDescription = "heal formatted data dictionary for " + setParent
+
                     setAccess = ["open-access"]
             else:
                 setCategory = ""
@@ -727,8 +750,14 @@ class ResourcesToAddWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
 
-        # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property so perform some checks
+        # check self.schemaVersion against version in operational schema version file 
+        # if no operational schema version file exists OR 
+        # if version in operational schema version file is less than self.schemaVersion 
+        # return with message that update of tracker version is needed before new annotations can be added
+        if not dsc_pkg_utils.checkTrackerCreatedSchemaVersionAgainstCurrent(self=self,trackerTypeFileNameString="resource-tracker",trackerTypeMessageString="Resource Tracker"):
+            return
 
+        # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property so perform some checks
         # check that experiment tracker exists in working data pkg dir, if not, return
         if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
             messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br>"

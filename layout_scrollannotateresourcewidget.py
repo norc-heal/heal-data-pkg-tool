@@ -35,11 +35,12 @@ from jsonschema import validate
 from healdata_utils.validators.jsonschema import validate_against_jsonschema
 
 class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
-    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add", formSetState = {}, annotationMode = "standard", *args, **kwargs):
+    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, filesCheckList = [], mode = "add", formSetState = {}, annotationMode = "standard", *args, **kwargs):
         super().__init__(*args, **kwargs)
         #self.setWindowTitle("Annotate Resource")
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         self.workingDataPkgDir = workingDataPkgDir
+        self.filesCheckList = filesCheckList
         self.mode = mode
         self.formSetState = formSetState
         if self.formSetState:
@@ -1095,9 +1096,30 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
 
+        # experiment tracker is needed to populate the enum of experimentNameBelongsTo schema property (in this case for validation purposes) so perform some checks
+
+        # check that experiment tracker exists in working data pkg dir, if not, return
+        if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
+            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. Then come back here and try saving again.<br><br>"
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+        
+        # check that experiment tracker is closed (user doesn't have it open in excel for example)
+        try: 
+            with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
+                print("file is closed, proceed!!")
+        except PermissionError:
+            #messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added"
+            messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed with saving; You can leave this form window open while you check to see if the Experiment Tracker file is open in Excel or similar application. Make sure the file is closed, then return here and try saving again. <br><br>"
+            
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
+
         # check that resource tracker exists in working data pkg dir, if not, return
         if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv")):
-            messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+            messageText = "<br>There is no Resource Tracker file in your working Data Package Directory; Your working Data Package Directory must contain a Resource Tracker file to proceed with saving. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. Then return here and try saving again.<br><br>"
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
             return
@@ -1107,7 +1129,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             with open(os.path.join(self.workingDataPkgDir,"heal-csv-resource-tracker.csv"),'r+') as f:
                 print("file is closed, proceed!!")
         except PermissionError:
-                messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Resource Tracker file is open in Excel or similar application, and close the file. <br><br>The resource was saved but was not added to the Resource Tracker. To add this resource to your Resource Tracker, first set your working Data Package Directory, then navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click on the \"Batch add resource(s) to tracker\" push-button. You can select just this resource, or all resources to add to the Resource Tracker. If some resources you select to add to the Resource Tracker have already been added they will be not be re-added."
+                messageText = "<br>The Resource Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed with saving; You can leave this form window open while you check to see if the Resource Tracker file is open in Excel or similar application. Make sure the file is closed, then return here and try saving again. <br><br>"
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return
@@ -1245,11 +1267,18 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             
             addedPathList = []
             addedPathIdNumList = []
+            myIterator = 0
             for i in currentItems:
                 if i not in self.checkDataAssociatedFileMultiLikeFilesDf["path"].values:
                     addedPathList.append(i)
-                    nextAvailableIdNum = dsc_pkg_utils.get_id(self=self,prefix="resource-trk-resource-",folderPath=self.workingDataPkgDir)
+                    
+                    if myIterator == 0:
+                        nextAvailableIdNum = dsc_pkg_utils.get_id(self=self,prefix="resource-trk-resource-",folderPath=self.workingDataPkgDir)
+                    else:
+                        nextAvailableIdNum += 1
+
                     addedPathIdNumList.append(nextAvailableIdNum)
+                    myIterator += 1
 
             if addedPathList:
                 addedPathIdList = ["resource-" + str(n) for n in addedPathIdNumList]
@@ -1574,7 +1603,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if resource["category"] == "tabular-data":
                 if not resource["associatedFileDataDict"]:
 
-                    messageText = "<br>WARNING: You annotated a tabular data resource and did not include a data dictionary for this tabular data resource. If you don't already have a data dictionary, please visit the Data Dictionary tab to create a data dictionary for this resource. You can easily and automatically create a data dictionary using only your tabular data file. Once you have a data dictionary, you can come back here and edit this form to add your data dictionary and save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed." + "\n\n"
+                    messageText = "<br>WARNING: You annotated a tabular data resource and did not include a data dictionary for this tabular data resource. If you don't already have a data dictionary, please visit the \"Data Dictionary\" tab to create a data dictionary for this resource. You can easily and automatically create a data dictionary using only your tabular data file - You may need to fill in the \"description\" field of the created data dictionary manually (providing a description of each variable included in your tabular data file) depending on the type of tabular data file you use to create your data dictionary. Once you have a data dictionary, you can head back to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and use the \"Edit an existing resource\" push-button to re-open this resource for editing, then add the file path to the data dictionary you created in the \"Associated Data Dictionary\" form field, and save the updated form." + "<br><br>Please close this form now to proceed.<br>"
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
@@ -1582,14 +1611,14 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if "temporary-private" in resource["access"]:
                 if not any(map(lambda v: v in resource["access"], ["open-access","managed-access"])):
 
-                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'open-access\n' or to \n'managed-access\n' once the temporary-private status expires. Please return to the form to indicate what the final access level of this resource will be by adding another value to the Access field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
+                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not indicate whether the access level would transition to \n'open-access\n' or to \n'managed-access\n' once the temporary-private status expires. You can head back to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and use the \"Edit an existing resource\" push-button to re-open this resource for editing, then indicate what the final access level of this resource will be by adding another value (\"open-access\" or \"managed-access\") to the \"Access\" form field, and save the updated form." + "<br><br>Please close this form now to proceed.<br>"
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
 
                 if resource["accessDate"] == self.formDefaultState["accessDate"]:
 
-                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'open-access\n' or to \n'managed-access\n'. Please return to the form to indicate the date at which temporary-provate access level will expire in the Access Date field on the form. Once you have done so, you can save again. You may need to delete the file that was just saved before saving again, as overwriting is not currently allowed."
+                    messageText = "<br>WARNING: You indicated that this resource has an access level of \n'temporary-private\n' but did not provide a date at which the temporary-private access level would transition from private to either \n'open-access\n' or to \n'managed-access\n'. You can head back to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and use the \"Edit an existing resource\" push-button to re-open this resource for editing, then indicate the date at which the temporary-private access level will expire in the \"Access Date\" form field, and save the updated form." + "<br><br>Please close this form now to proceed.<br>"
                     saveFormat = '<span style="color:red;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     self.userMessageBox.moveCursor(QTextCursor.End)
@@ -1951,7 +1980,9 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         print("in load_file fx")
         # ifileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the Resource Txt Data file you want to edit",
         #        (QtCore.QDir.homePath()), "Text (*.txt)")
-
+        
+        stringFilesCheckList = self.filesCheckList
+        self.filesCheckList = [Path(p) for p in self.filesCheckList]
         self.loadingFormDataFromFile = True
         
         if self.mode == "edit":
@@ -1969,6 +2000,12 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             messageText = "<br>You have not selected a file to " + textBit + ". If you still want to " + textBit + " an existing resource, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText)) 
+            return
+        # elif Path(ifileName) not in self.filesCheckList: 
+        #     #messageText = "My filename: "+ ifileName + "<br>The file you selected is not up to date with the current schema - You may not " + textBit + " a file that is not up to date with the current schema. Current files that are up to date and may be edited now are as follows: <br><br>" + "<br>".join(self.filesCheckList) + "<br><br>If you still want to " + textBit + " an existing resource that is up to date, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button. Then select a file that is up to date.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
+        #     messageText = "<br>The file you selected is not up to date with the current schema - You may not " + textBit + " a file that is not up to date with the current schema. Current files that are up to date and may be edited now are as follows: <br><br>" + "<br>".join(stringFilesCheckList) + "<br><br>If you still want to " + textBit + " an existing resource that is up to date, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button. Then select a file that is up to date.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
+        #     saveFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(saveFormat.format(messageText)) 
         else: 
             #self.editMode = True
                      
@@ -1993,8 +2030,31 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return
 
+            
+            if Path(ifileName) not in self.filesCheckList: 
+                #messageText = "My filename: "+ ifileName + "<br>The file you selected is not up to date with the current schema - You may not " + textBit + " a file that is not up to date with the current schema. Current files that are up to date and may be edited now are as follows: <br><br>" + "<br>".join(self.filesCheckList) + "<br><br>If you still want to " + textBit + " an existing resource that is up to date, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button. Then select a file that is up to date.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                messageText = "<br>The file you selected is not up to date with the current schema - You may not " + textBit + " a file that is not up to date with the current schema. Current files that are up to date and may be edited now are as follows: <br><br>" + "<br>".join(stringFilesCheckList) + "<br><br>If you still want to " + textBit + " an existing resource that is up to date, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button. Then select a file that is up to date.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
+            
             # self.saveFolderPath = Path(ifileName).parent
             print("saveFolderPath: ", self.saveFolderPath)
+
+            # if self.filesCheckList:
+            #     if ifileName in self.filesCheckList:
+            #         pass
+            #     else:
+            #         messageText = "<br>You selected a resource txt file that is not up to date with the current resource tracker schema, and it is not possible to edit or base a new resource upon a resource txt file that is not up to date. To proceed, close this form, then try again but select a resource txt file that is already updated OR head to the \"Data Package\" tab >> \"Update & Audit\" sub-tab to update all files. If it is not possible to update a the resource txt file you want to edit using the Update feature in the tool, please reach out to the DSC team for support. <br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window.<br>"
+            #         saveFormat = '<span style="color:red;">{}</span>'
+            #         self.userMessageBox.append(saveFormat.format(messageText))
+            #         return
+                
+            # else:
+            #     messageText = "<br>You selected a resource txt file that is not up to date with the current resource tracker schema, and it is not possible to edit or base a new resource upon a resource txt file that is not up to date. To proceed, close this form, then try again but select a resource txt file that is already updated OR head to the \"Data Package\" tab >> \"Update & Audit\" sub-tab to update all files it is possible to update. If it is not possible to update a the resource txt file you want to edit using the Update feature in the tool, please reach out to the DSC team for support. <br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window.<br>"
+            #     saveFormat = '<span style="color:red;">{}</span>'
+            #     self.userMessageBox.append(saveFormat.format(messageText))
+            #     return
             
             with open(ifileName, 'r') as stream:
                 data = load(stream)
@@ -2005,6 +2065,33 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             checkDataAssociatedFileMultiLikeFilesIds = data["associatedFileMultiLikeFilesIds"]
             checkDataAssociatedFileMultiLikeFilesIds = dsc_pkg_utils.convertStringifiedArrayOfStringsToList(myStringifiedArrayOfStrings=checkDataAssociatedFileMultiLikeFilesIds)
             
+            # if this is a multi like file resource, check if in addition to a list of paths of all files in multi like file resource,
+            # there is also a list of resource ids associated with each file path in the set - if not then this annotation file was 
+            # created using an older version of the tool/resource tracker schema before the associatedFileMultiLikeFilesIds 
+            # property was added - in this case, fill in this property value here by loading the resource tracker, finding the 
+            # resource tracker entries for all of the resources in the multi like file resource, and getting their associated resource ids
+            # from their tracker entry - make sure the list of ids is ordered complementary to the list of file paths, so that the 
+            # correct id is associated with the correct resource file path 
+            if checkDataAssociatedFileMultiLikeFiles:
+                print("loading a multi like file resource")
+                if not checkDataAssociatedFileMultiLikeFilesIds:
+                    print("the multi like file ids property is not populated; working to populate now")
+                    # get most recent resource tracker entry for each resource id, only entries for resources that have not been removed
+                    resourceTrackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False)
+                    # filter to only keep resource tracker entries for resources in the multi like file resource
+                    keepEntries = resourceTrackerEntries[resourceTrackerEntries["path"].isin(checkDataAssociatedFileMultiLikeFiles)]
+                    print("keepEntries: ",keepEntries)
+                    # make sure the entries are in the same order as the list of file paths
+                    orderedKeepEntries = keepEntries.set_index("path").reindex(checkDataAssociatedFileMultiLikeFiles).reset_index()
+                    print("orderedKeepEntries: ",orderedKeepEntries)
+                    # get the correctly ordered list of resource ids for the multi like file resource
+                    checkDataAssociatedFileMultiLikeFilesIds = orderedKeepEntries["resourceId"].tolist()
+                    print("here are the ids: ", checkDataAssociatedFileMultiLikeFilesIds)
+                    generatedNewMultiLikeFileIds = True
+                else:
+                    print("the multi like file ids property is already populated")
+                    generatedNewMultiLikeFileIds = False
+
             if self.mode == "add-based-on":
                 based_on_annotation_id = data["resourceId"]
                 
@@ -2075,6 +2162,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                         "archiveName":archiveNameList,
                         "archivePath":archivePathList
                     }
+                    print("checkDataAssociatedFileMultiLikeFilesDict: ",checkDataAssociatedFileMultiLikeFilesDict)
                     self.checkDataAssociatedFileMultiLikeFilesDf = pd.DataFrame(checkDataAssociatedFileMultiLikeFilesDict)
                     self.checkDataAssociatedFileMultiLikeFilesDf["loadedFromFile"] = 1
                 

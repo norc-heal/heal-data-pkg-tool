@@ -34,10 +34,11 @@ from jsonschema import validate
 from healdata_utils.validators.jsonschema import validate_against_jsonschema
 
 class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
-    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, mode = "add"):
+    def __init__(self, workingDataPkgDirDisplay, workingDataPkgDir, filesCheckList = [],mode = "add"):
         super().__init__()
         self.workingDataPkgDirDisplay = workingDataPkgDirDisplay
         self.workingDataPkgDir = workingDataPkgDir
+        self.filesCheckList = filesCheckList
         self.mode = mode
         self.schemaVersion = schema_results_tracker["version"]
         self.loadingFormDataFromFile = False
@@ -585,7 +586,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
 
         # check that experiment tracker exists in working data pkg dir, if not, return
         if not os.path.exists(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv")):
-            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. <br><br> The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
+            messageText = "<br>There is no Experiment Tracker file in your working Data Package Directory; Your working Data Package Directory must contain an Experiment Tracker file to proceed. If you need to change your working Data Package Directory or create a new one, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory or create a new one. Then come back here and try saving again.<br><br>"
             saveFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
             return
@@ -595,10 +596,12 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             with open(os.path.join(self.workingDataPkgDir,"heal-csv-experiment-tracker.csv"),'r+') as f:
                 print("file is closed, proceed!!")
         except PermissionError:
-                messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added"
-                saveFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(saveFormat.format(messageText))
-                return
+            #messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed; Check if the Experiment Tracker file is open in Excel or similar application, and close the file. <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added"
+            messageText = "<br>The Experiment Tracker file in your working Data Package Directory is open in another application, and must be closed to proceed with saving; You can leave this form window open while you check to see if the Experiment Tracker file is open in Excel or similar application. Make sure the file is closed, then return here and try saving again. <br><br>"
+            
+            saveFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return
 
         # don't check for results tracker exists as this function checks for appropriate trackers already existing and creates the needed results tracker(s) if they don't already exist
         # # check that resource tracker exists in working data pkg dir, if not, return
@@ -619,10 +622,10 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                     with open(os.path.join(self.workingDataPkgDir,tracker),'r+') as f:
                         print("file is closed, proceed!!")
                 except PermissionError:
-                        messageText = "<br>At least one Results Tracker file that already exists in your working Data Package Directory is open in another application, and must be closed to proceed; Check if any Results Tracker files are open in Excel or similar application, and close the file(s). <br><br>The result was saved but was not added to a Results Tracker. To add this result to a Results Tracker, first set your working Data Package Directory, then navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click on the \"Batch add result(s) to tracker\" push-button. You can select just this result, or all results to add to Results Tracker. If some results you select to add to Results Tracker have already been added they will be not be re-added."
-                        saveFormat = '<span style="color:red;">{}</span>'
-                        self.userMessageBox.append(saveFormat.format(messageText))
-                        return
+                    messageText = "<br>At least one Results Tracker file that already exists in your working Data Package Directory is open in another application, and must be closed to proceed with saving; You can leave this form window open while you check to see if any Results Tracker files are open in Excel or similar application. Make sure any Results Tracker files are closed, then return here and try saving again.<br><br>."
+                    saveFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(saveFormat.format(messageText))
+                    return
 
 
         result = deepcopy(self.form.widget.state)
@@ -1182,6 +1185,8 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         #f_name = QFileDialog.getOpenFileName(self, 'Load data', '', f'{_json_filter};;All (*)')
         print("in load_file fx")
 
+        stringFilesCheckList = self.filesCheckList
+        self.filesCheckList = [Path(p) for p in self.filesCheckList]
         self.loadingFormDataFromFile = True
 
         if self.mode == "edit":
@@ -1198,7 +1203,13 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
         if not ifileName: 
             messageText = "<br>You have not selected a file to " + textBit + ". Close this form now. If you still want to " + textBit + " an existing result, Navigate to the \"Result Tracker\" tab >> \"Add Result\" sub-tab and click the " + textButton + " push-button."
             saveFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(saveFormat.format(messageText)) 
+            self.userMessageBox.append(saveFormat.format(messageText))
+            return 
+        # elif Path(ifileName) not in self.filesCheckList: 
+        #     #messageText = "My filename: "+ ifileName + "<br>The file you selected is not up to date with the current schema - You may not " + textBit + " a file that is not up to date with the current schema. Current files that are up to date and may be edited now are as follows: <br><br>" + "<br>".join(self.filesCheckList) + "<br><br>If you still want to " + textBit + " an existing resource that is up to date, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button. Then select a file that is up to date.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
+        #     messageText = "<br>The file you selected is not up to date with the current schema - You may not " + textBit + " a file that is not up to date with the current schema. Current files that are up to date and may be edited now are as follows: <br><br>" + "<br>".join(stringFilesCheckList) + "<br><br>If you still want to " + textBit + " an existing result that is up to date, Navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click the " + textButton + " push-button. Then select a file that is up to date.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
+        #     saveFormat = '<span style="color:red;">{}</span>'
+        #     self.userMessageBox.append(saveFormat.format(messageText)) 
         else: 
             #self.editMode = True
                      
@@ -1221,6 +1232,13 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 messageText = "<br>You selected a result txt file that is not in your working Data Package Directory; You must select a result txt file that is in your working Data Package Directory to proceed. If you need to change your working Data Package Directory, head to the \"Data Package\" tab >> \"Create or Continue Data Package\" sub-tab to set a new working Data Package Directory. <br><br> To proceed, close this form and return to the main DSC Data Packaging Tool window."
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
+                return
+
+            if Path(ifileName) not in self.filesCheckList: 
+                #messageText = "My filename: "+ ifileName + "<br>The file you selected is not up to date with the current schema - You may not " + textBit + " a file that is not up to date with the current schema. Current files that are up to date and may be edited now are as follows: <br><br>" + "<br>".join(self.filesCheckList) + "<br><br>If you still want to " + textBit + " an existing resource that is up to date, Navigate to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab and click the " + textButton + " push-button. Then select a file that is up to date.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                messageText = "<br>The file you selected is not up to date with the current schema - You may not " + textBit + " a file that is not up to date with the current schema. Current files that are up to date and may be edited now are as follows: <br><br>" + "<br>".join(stringFilesCheckList) + "<br><br>If you still want to " + textBit + " an existing result that is up to date, Navigate to the \"Results Tracker\" tab >> \"Add Result\" sub-tab and click the " + textButton + " push-button. Then select a file that is up to date.<br><br>To proceed, close this form and return to the main DSC Data Packaging Tool window."
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText)) 
                 return
 
             #self.saveFolderPath = Path(ifileName).parent

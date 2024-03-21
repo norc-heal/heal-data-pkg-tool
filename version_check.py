@@ -182,7 +182,8 @@ def version_check(workingDataPkgDir):
                     elif schemaMapVersionParse < schemaVersionParse:
                         canBeUpdatedFully = "No"
                         message = "File is NOT up to date - It can be updated, but it cannot be FULLY updated at this time because the current mapping file does allow updating beyond the file's current version but does NOT allow updating to the latest schema version - Updating will update this file to the latest schema version for which the schema mapping file has been completed"
-                
+
+                    
             addDf = pd.DataFrame([[key,t,schemaVersionParse,schemaMapVersionParse,p,fileVersionParse,upToDate,canBeUpdated,canBeUpdatedFully,message]], columns=cols)
             collectDf = pd.concat([collectDf,addDf],axis=0)
             
@@ -214,7 +215,8 @@ def version_check(workingDataPkgDir):
             else: 
                 message = message + "<br>3. Out of " + str(messageDf2.shape[0]) + " total dsc-pkg files that are NOT up to date and can be updated, 0 files can be fully updated based on available version mapping files - Updating these files to latest/current schema version will require that version mapping files be updated to reflect mapping to latest/current schema versions."
 
-
+            message = message + "<br><br>You can head to the \"Data Package\" tab >> \"Audit and Update\" sub-tab to update Standard Data Package Metadata files in your working Data Package Directory!<br>"
+            
         else:
             message = message + "<br>2. Out of " + str(messageDf1.shape[0]) + " total dsc-pkg files that are NOT up to date, 0 files can be updated based on available version mapping files."
             print(messageDf1["canBeUpdated"])

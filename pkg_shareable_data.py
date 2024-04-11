@@ -8,6 +8,7 @@ import pathlib
 from pathlib import Path
 
 import dsc_pkg_utils
+import numpy as np
 import pandas as pd
 import ast
 
@@ -109,23 +110,6 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                 # get resource tracker entries - latest entry per resource id; no entry for removed resource ids
                 resourceTrackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=workingDataPkgDir,trackerType="resource-tracker",latestEntryOnly=True,includeRemovedEntry=False)
                 
-                # get version of resource tracker where all absolute paths (to resource and to resource dependencies) are 
-                # converted to relative paths (relative to working data pkg dir)
-                resourceTrackerEntriesTransformed = resourceTrackerEntries.copy()
-                
-                resourceTrackerEntriesTransformed["path"] = [os.path.relpath(p,workingDataPkgDir) for p in resourceTrackerEntriesTransformed["path"]]
-                
-                colWithPathList = list(resourceTrackerEntriesTransformed)
-                colWithPathList = [c for c in colWithPathList if c.startswith("associatedFile")]
-                colWithPathList = [c for c in colWithPathList if c not in ["associatedFileResultsDependOn","associatedFileMultiLikeFilesIds"]]
-                print("colWithPathList: ",colWithPathList)
-                for c in colWithPathList:
-                    resourceTrackerEntriesTransformed[c] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(l) for l in resourceTrackerEntriesTransformed[c]]
-                    resourceTrackerEntriesTransformed[c] = [[os.path.relpath(p,workingDataPkgDir) for p in l] if l else [] for l in resourceTrackerEntriesTransformed[c]]
-
-                #trackerEntriesTransformed["associatedFileResultsDependOn"] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(l) for l in trackerEntriesTransformed[associatedFileResultsDependOn]]
-                resourceTrackerEntriesTransformed["associatedFileResultsDependOn"] = [ast.literal_eval(l) for l in resourceTrackerEntriesTransformed["associatedFileResultsDependOn"]] # convert stringified list of dicts to actual list of dicts
-                resourceTrackerEntriesTransformed["associatedFileResultsDependOn"] = [dsc_pkg_utils.relPathResultsDependOn(l, relToPath=workingDataPkgDir, pathKey="resultIdDependsOn") if l else [] for l in resourceTrackerEntriesTransformed["associatedFileResultsDependOn"]]  
 
 
                 # get private date (access date) as a timestamp in order to be able to compare to today timestamp
@@ -192,6 +176,34 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                 else: 
                     print("a \"" + flavor + "\" flavor of shareable data pkg is not currently supported - please use one of the currently supported flavors: open-access-now, open-access-by-date, managed-access-now, managed-access-by-date")
                 
+                # create a flag indicating 1 for study resources shared in this shareable data package and 0 if not 
+                # shared in this shareable data package
+                filesToKeep = resourceTrackerEntriesToShare["path"].tolist()
+                #resourceTrackerEntries["shared"] = ifelse(resourceTrackerEntries["path"].isin(filesToKeep),1,0)
+                resourceTrackerEntries["shared"] = np.where(resourceTrackerEntries["path"].isin(filesToKeep),1,0)
+                # move flag to first column
+                sharedCol = resourceTrackerEntries.pop("shared")
+                resourceTrackerEntries.insert(0,"shared",sharedCol)
+                
+                                
+                # get version of resource tracker where all absolute paths (to resource and to resource dependencies) are 
+                # converted to relative paths (relative to working data pkg dir)
+                resourceTrackerEntriesTransformed = resourceTrackerEntries.copy()
+                
+                resourceTrackerEntriesTransformed["path"] = [os.path.relpath(p,workingDataPkgDir) for p in resourceTrackerEntriesTransformed["path"]]
+                
+                colWithPathList = list(resourceTrackerEntriesTransformed)
+                colWithPathList = [c for c in colWithPathList if c.startswith("associatedFile")]
+                colWithPathList = [c for c in colWithPathList if c not in ["associatedFileResultsDependOn","associatedFileMultiLikeFilesIds"]]
+                print("colWithPathList: ",colWithPathList)
+                for c in colWithPathList:
+                    resourceTrackerEntriesTransformed[c] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(l) for l in resourceTrackerEntriesTransformed[c]]
+                    resourceTrackerEntriesTransformed[c] = [[os.path.relpath(p,workingDataPkgDir) for p in l] if l else [] for l in resourceTrackerEntriesTransformed[c]]
+
+                #trackerEntriesTransformed["associatedFileResultsDependOn"] = [dsc_pkg_utils.convertStringifiedArrayOfStringsToList(l) for l in trackerEntriesTransformed[associatedFileResultsDependOn]]
+                resourceTrackerEntriesTransformed["associatedFileResultsDependOn"] = [ast.literal_eval(l) for l in resourceTrackerEntriesTransformed["associatedFileResultsDependOn"]] # convert stringified list of dicts to actual list of dicts
+                resourceTrackerEntriesTransformed["associatedFileResultsDependOn"] = [dsc_pkg_utils.relPathResultsDependOn(l, relToPath=workingDataPkgDir, pathKey="resultIdDependsOn") if l else [] for l in resourceTrackerEntriesTransformed["associatedFileResultsDependOn"]]  
+
 
                 # get any results trackers that will be shared and convert full paths to relative paths
                 if "heal-formatted-results-tracker" in resourceTrackerEntriesToShare["categorySubMetadata"].values:
@@ -219,7 +231,7 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                     resultsTrackerStemList = []
 
 
-                filesToKeep = resourceTrackerEntriesToShare["path"].tolist()
+                #filesToKeep = resourceTrackerEntriesToShare["path"].tolist()
                 filesToKeep.extend([os.path.join(workingDataPkgDir,"heal-csv-experiment-tracker.csv")])
                 filesToKeep = [Path(f) for f in filesToKeep]
                 print("filesToKeep: ",filesToKeep)
@@ -238,6 +250,28 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                         fname = stem + ".csv"
                         df.to_csv(os.path.join(shareablePkgDirString,workingDataPkgDirStem,fname),index=False)
                 
+                # work on shareable data catalog metadata, including 
+                # unzipped resource tracker with flags indicating which files shared in which shareable data pkg(s) 
+                # and readme file
+                sharedColString = "shared-" + flavor
+                if "by-date" in flavor:
+                    sharedColString = sharedColString + "-" + byDate.replace("/","-")
+                resourceTrackerEntriesTransformed.rename(columns={"shared": sharedColString}, inplace=True)
+                
+                if not os.path.isfile(os.path.join(shareableDirString,"heal-csv-resource-tracker.csv")):
+                    # if an unzipped resource tracker doesn't yet exist write it to the directory containing 
+                    # any shareable data pkg(s) created today
+                    resourceTrackerEntriesTransformed.to_csv(os.path.join(shareableDirString,"heal-csv-resource-tracker.csv"),index=False)
+                else:
+                    # if an unzipped resource tracker already exists pull it in and and the flag indicating which of the 
+                    # files are shared in this shareable data pkg
+                    existingResourceTracker = pd.read_csv(os.path.join(shareableDirString,"heal-csv-resource-tracker.csv"))
+                    existingResourceTracker = existingResourceTracker.merge(resourceTrackerEntriesTransformed[["path",sharedColString]], how="left", on="path")
+                    sharedCol = existingResourceTracker.pop(sharedColString)
+                    existingResourceTracker.insert(0,sharedColString,sharedCol)
+                    existingResourceTracker.to_csv(os.path.join(shareableDirString,"heal-csv-resource-tracker.csv"),index=False)
+                
+
                 creationMetadata = {
                     "createdTimestamp":[pd.Timestamp("now").normalize()],
                     "createdFlavor":[flavor]

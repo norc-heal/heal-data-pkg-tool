@@ -215,6 +215,9 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                         resultsTrackerEntriesTransformedDfList.append(resultsTrackerEntries)
                         resultsTrackerStemList.append(resultsTrackerStem)
 
+                else: 
+                    resultsTrackerStemList = []
+
 
                 filesToKeep = resourceTrackerEntriesToShare["path"].tolist()
                 filesToKeep.extend([os.path.join(workingDataPkgDir,"heal-csv-experiment-tracker.csv")])

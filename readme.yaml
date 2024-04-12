@@ -19,12 +19,11 @@ Get-started:
             
         shareable-data-packages: 
             - example-shareable-data-package-name-1:
-                package-name: example-my-study-open-access
                 file-name: example-my-study-open-access.zip
                 access-regime: example-open-access-now
                 by-date: example-2025-04-09
                 created: example-2024-04-09 12:10
                 resource-tracker-flag-name: example-my-study-open-access
-                files-included-instructions: files with a value of 1 in resource-tracker-flag-name column of resource-tracker-file-name resource tracker file are included in this shareable data pkg
+                files-included-instructions: files with a value of 1 in resource-tracker-flag-name column of resource tracker file are included in this shareable data pkg
             
                

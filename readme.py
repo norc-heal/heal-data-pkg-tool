@@ -5,7 +5,16 @@ import os
 
 def createReadme(shareableDirString,shareablePkgDirStemString,flavor,byDate,sharedColString):
 
-    with open("./readme.yaml","r") as file:
+    readmePath = os.path.join(shareableDirString,"readme.yaml")
+
+    # if there's already a readme, add to it
+    # if not, start with the template readme
+    if os.path.isfile(readmePath):
+        startTemplateReadmePath = readmePath
+    else:
+        startTemplateReadmePath = "./readme.yaml" 
+    
+    with open(startTemplateReadmePath,"r") as file:
         contents = yaml.safe_load(file)
 
     #pkgName = "example-shareable-data-package-name-2"

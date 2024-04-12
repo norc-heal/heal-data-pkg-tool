@@ -1,0 +1,29 @@
+Get-started:
+    Description: This is a data catalog that includes one or more shareable data packages. Shareable data packages contain data and/or non-data supporting files packaged according to HEAL DSC specifications. 
+    
+    Specifications:     
+        HEAL-DSC-data-packaging-specifications: https://norc-heal.github.io/heal-data-pkg-guide/overview/what/
+        Resource-tracker-specifications: https://norc-heal.github.io/heal-data-pkg-guide/schemas/md_resource_tracker/ 
+        Experiment-tracker-specifications: https://norc-heal.github.io/heal-data-pkg-guide/schemas/md_experiment_tracker/
+        Results-tracker-specifications: https://norc-heal.github.io/heal-data-pkg-guide/schemas/md_results_tracker/
+        Data-dictionary-specifications: https://norc-heal.github.io/heal-data-pkg-guide/schemas/md_data_dictionary/
+    
+    Contents:
+        readme: 
+            description: (this file) provides overview of shareable data package(s) shared and how to determine which files are shared in each shareable data package
+            file-name: readme.yaml
+            
+        resource-tracker: 
+            description: provides overview of study files, whether shared or not, as well as file dependencies; originating study groups may provide descriptions and other information about files that are not shared in a public data repository, especially if these unshared files are dependencies of a shared file  
+            file-name: heal-csv-resource-tracker.csv
+            
+        shareable-data-packages: 
+            - example-shareable-data-package-name-1:
+                file-name: example-my-study-open-access.zip
+                access-regime: example-open-access-now
+                by-date: example-2025-04-09
+                created: example-2024-04-09 12:10
+                resource-tracker-flag-name: example-my-study-open-access
+                files-included-instructions: files with a value of 1 in resource-tracker-flag-name column of resource tracker file are included in this shareable data pkg
+            
+               

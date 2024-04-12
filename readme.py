@@ -12,7 +12,7 @@ def createReadme(shareableDirString,shareablePkgDirStemString,flavor,byDate,shar
     if os.path.isfile(readmePath):
         startTemplateReadmePath = readmePath
     else:
-        startTemplateReadmePath = "./readme.yaml" 
+        startTemplateReadmePath = "readme.yaml" 
     
     with open(startTemplateReadmePath,"r") as file:
         contents = yaml.safe_load(file)
@@ -77,7 +77,7 @@ def createReadme(shareableDirString,shareablePkgDirStemString,flavor,byDate,shar
     print("contents: ",contents)
 
     
-    with open(os.path.join(shareableDirString,"readme.yaml"),"w") as file:
+    with open(readmePath,"w") as file:
         yaml.safe_dump(contents,file,sort_keys=False)
     print("finished writing readme")
     return

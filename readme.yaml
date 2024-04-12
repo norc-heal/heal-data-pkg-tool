@@ -18,7 +18,7 @@ Get-started:
             file-name: heal-csv-resource-tracker.csv
             
         shareable-data-packages: 
-            - shareable-data-package:
+            - example-shareable-data-package-name-1:
                 package-name: example-my-study-open-access
                 file-name: example-my-study-open-access.zip
                 access-regime: example-open-access-now
@@ -26,12 +26,5 @@ Get-started:
                 created: example-2024-04-09 12:10
                 resource-tracker-flag-name: example-my-study-open-access
                 files-included-instructions: files with a value of 1 in resource-tracker-flag-name column of resource-tracker-file-name resource tracker file are included in this shareable data pkg
-            - shareable-data-package:
-                package-name: example-my-study-open-access
-                file-name: example-my-study-open-access.zip
-                access-regime: example-open-access-now
-                created: example-2024-04-09 12:10
-                resource-tracker-flag-name: example-my-study-open-access
-                files-included-instructions: files with a value of 1 in resource-tracker-flag-name column of resource-tracker-file-name resource tracker file are included in this shareable data pkg
-                            
+            
                

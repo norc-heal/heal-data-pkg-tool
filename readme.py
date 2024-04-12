@@ -77,7 +77,7 @@ def createReadme(shareableDirString,shareablePkgDirStemString,flavor,byDate,shar
     print("contents: ",contents)
 
     
-    with open(os.path.join(readmePath),"w") as file:
+    with open(readmePath,"w") as file:
         yaml.safe_dump(contents,file,sort_keys=False)
     print("finished writing readme")
     return

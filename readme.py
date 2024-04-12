@@ -2,10 +2,14 @@ import yaml
 import copy
 import pandas as pd
 import os
+from os import path
 
 def createReadme(shareableDirString,shareablePkgDirStemString,flavor,byDate,sharedColString):
 
     readmePath = os.path.join(shareableDirString,"readme.yaml")
+    
+    bundleDir = path.abspath(path.dirname(__file__))
+    readmeTemplatePath = path.join(bundleDir, "readme.yaml")
 
     # if there's already a readme, add to it
     # if not, start with the template readme

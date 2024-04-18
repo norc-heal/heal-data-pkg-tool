@@ -1179,7 +1179,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # if in edit mode then resource path should already exist in resource tracker; if not in edit mode the resource path should
         # not yet exist in tracker
         if self.mode != "edit":
-            addedResourcePathsList = dsc_pkg_utils.get_added_resource_paths(self=self)
+            addedResourcePathsList = dsc_pkg_utils.get_added_resource_paths(self=self, latestEntryOnly=True, includeRemovedEntry=False)
             if resource["path"] in addedResourcePathsList:
                 messageText = "<br>You have already added a resource to the Resource Tracker with the file path indicated in this form. You must add a unique resource file path before saving your resource file. Please check your resource file path, add a unique resource file path, and then try saving again. <b>If you meant to edit an existing resource</b>, you can do that by closing this window, then navigating to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab, and clicking the \"Edit an existing resource\" push-button. " 
                 errorFormat = '<span style="color:red;">{}</span>'

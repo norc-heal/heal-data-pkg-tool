@@ -1336,8 +1336,10 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             self.checkDataAssociatedFileMultiLikeFilesDf = self.checkDataAssociatedFileMultiLikeFilesDf.merge(itemsDescriptionDf, on = "path", how = "left")
             self.checkDataAssociatedFileMultiLikeFilesDf["fileDescription"] = self.checkDataAssociatedFileMultiLikeFilesDf["fileDescription"].fillna("")
             if self.items:
-                multiLikeFilesIdList = self.checkDataAssociatedFileMultiLikeFilesDf["id"][self.checkDataAssociatedFileMultiLikeFilesDf["deleted"] == 0]
-                multiLikeFilesIdList = multiLikeFilesIdList.tolist()
+                #multiLikeFilesIdList = self.checkDataAssociatedFileMultiLikeFilesDf["id"][self.checkDataAssociatedFileMultiLikeFilesDf["deleted"] == 0]
+                multiLikeFilesIdDf = self.checkDataAssociatedFileMultiLikeFilesDf[self.checkDataAssociatedFileMultiLikeFilesDf["deleted"] == 0]
+                #multiLikeFilesIdList = multiLikeFilesIdList.tolist()
+                multiLikeFilesIdList = multiLikeFilesIdDf["id"].tolist()
                 resource["associatedFileMultiLikeFilesIds"] = multiLikeFilesIdList
             self.saveDf = self.checkDataAssociatedFileMultiLikeFilesDf
         else: # if mode is not edit

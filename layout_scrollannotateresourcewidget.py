@@ -1588,8 +1588,22 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                     resourceDependAllDf.to_csv(resourcesToAddOutputPath, mode='w', header=True, index=False)
                 
 
-            
-
+            # check for case where user edited single resource >> single resource (not multi >> multi or single >> multi)
+            # where user changed the file path of the single resource
+            # in this case, don't actually want to remove the original resource or create a new resource/resource id
+            if self.saveDf["loadedFromFile"].sum() == 1:
+                if self.saveDf["deleted"].sum() == 1:
+                    if self.saveDf["added"].sum() == 1:
+                        orig = self.saveDf[self.saveDf["loadedFromFile"] == 1]
+                        new = self.saveDf[self.saveDf["added"] == 1]
+                        
+                        save = orig
+                        # replace orig path and file description with new path and file description
+                        # and set deleted back from 1 to 0
+                        save.at[0,"path"] = new.at[0,"path"]
+                        save.at[0,"descriptionFile"] = new.at[0,"descriptionFile"]
+                        save.at[0,"deleted"] = 0
+                        self.saveDf = save
  
             #for idx, p in enumerate(self.saveFilePathList):
             for row in self.saveDf.itertuples():

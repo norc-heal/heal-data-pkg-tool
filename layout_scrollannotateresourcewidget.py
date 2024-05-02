@@ -1189,12 +1189,36 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # get entries in resource tracker (latest, not removed) that do not have the current resource id
         # check if the resouce path in the form is equal to any existing resource path for a different resource id
         # don't allow save if this is the case - don't want to double document the same resource/resource path
-        addedResourcePathsList = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False, excludeIdList=[resource["resourceId"]])
-        if resource["path"] in addedResourcePathsList:
-            messageText = "<br>You have already added a resource to the Resource Tracker with the file path indicated in this form. You must add a unique resource file path before saving your resource file. Please check your resource file path, add a unique resource file path, and then try saving again. <b>If you meant to edit an existing resource</b>, you can do that by closing this window, then navigating to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab, and clicking the \"Edit an existing resource\" push-button. " 
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
-            return
+        if self.mode == edit:
+            addedResourcePathsDf = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False, excludeIdList=self.checkDataAssociatedFileMultiLikeFilesDf["id"].tolist())
+        #     if self.items:
+        #         addedResourcePathsDf = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False, excludeIdList=self.checkDataAssociatedFileMultiLikeFilesDf["id"].tolist())
+        #     else: 
+        #         addedResourcePathsDf = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False, excludeIdList=[resource["resourceId"]])
+        else:
+            addedResourcePathsDf = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False, excludeIdList=[])
+        
+
+        if self.items:
+            for i in self.items:
+                if i in addedResourcePathsDf["path"].values:
+                    dupResourceRow = addedResourcePathsDf[addedResourcePathsDf["path"] == i]
+                    dupResourceRowId = dupResourceRow.iloc[0]["resourceId"]
+            
+                    messageText = "<br>It looks like you are annotating a multi-like file resource. However, you have already added a resource to the Resource Tracker with at least one of the file paths indicated in this form as belonging to the multi-like file resource.<br><br>resource ID: " + dupResourceRowId + "<br>path: " + i + "<br><br>You must include only unique resource file path as part of this multi-like file resource before saving your resource file. Please check your resource file path(s), make sure you've added only unique resource file paths, and then try saving again. <b>If you meant to edit an existing resource</b>, you can do that by closing this window, then navigating to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab, and clicking the \"Edit an existing resource\" push-button." 
+                    errorFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(errorFormat.format(messageText))
+                    return 
+        else: 
+            #addedResourcePathsList = addedResourcePathsDf["path"].tolist()
+            if resource["path"] in addedResourcePathsDf["path"].values:
+                dupResourceRow = addedResourcePathsDf[addedResourcePathsDf["path"] == resource["path"]]
+                dupResourceRowId = dupResourceRow.iloc[0]["resourceId"]
+                
+                messageText = "<br>You have already added a resource to the Resource Tracker with the resource file path indicated in this form.<br><br>resource ID: " + dupResourceRowId + "<br>path: " + resource["path"] + "<br><br>You must add a unique resource file path before saving your resource file. Please check your resource file path, add a unique resource file path, and then try saving again. <b>If you meant to edit an existing resource</b>, you can do that by closing this window, then navigating to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab, and clicking the \"Edit an existing resource\" push-button." 
+                errorFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+                return
 
         # check that file path and at least a minimal description has been added to the form 
         # if not exit with informative error

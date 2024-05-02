@@ -1178,14 +1178,23 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         # if in edit mode then resource path should already exist in resource tracker; if not in edit mode the resource path should
         # not yet exist in tracker
-        if self.mode != "edit":
-            addedResourcePathsList = dsc_pkg_utils.get_added_resource_paths(self=self, latestEntryOnly=True, includeRemovedEntry=False)
-            if resource["path"] in addedResourcePathsList:
-                messageText = "<br>You have already added a resource to the Resource Tracker with the file path indicated in this form. You must add a unique resource file path before saving your resource file. Please check your resource file path, add a unique resource file path, and then try saving again. <b>If you meant to edit an existing resource</b>, you can do that by closing this window, then navigating to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab, and clicking the \"Edit an existing resource\" push-button. " 
-                errorFormat = '<span style="color:red;">{}</span>'
-                self.userMessageBox.append(errorFormat.format(messageText))
-                return
+        # if self.mode != "edit":
+        #     addedResourcePathsList = dsc_pkg_utils.get_added_resource_paths(self=self, latestEntryOnly=True, includeRemovedEntry=False)
+        #     if resource["path"] in addedResourcePathsList:
+        #         messageText = "<br>You have already added a resource to the Resource Tracker with the file path indicated in this form. You must add a unique resource file path before saving your resource file. Please check your resource file path, add a unique resource file path, and then try saving again. <b>If you meant to edit an existing resource</b>, you can do that by closing this window, then navigating to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab, and clicking the \"Edit an existing resource\" push-button. " 
+        #         errorFormat = '<span style="color:red;">{}</span>'
+        #         self.userMessageBox.append(errorFormat.format(messageText))
+        #         return
 
+        # get entries in resource tracker (latest, not removed) that do not have the current resource id
+        # check if the resouce path in the form is equal to any existing resource path for a different resource id
+        # don't allow save if this is the case - don't want to double document the same resource/resource path
+        addedResourcePathsList = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False, excludeIdList=[resource["resourceId"]])
+        if resource["path"] in addedResourcePathsList:
+            messageText = "<br>You have already added a resource to the Resource Tracker with the file path indicated in this form. You must add a unique resource file path before saving your resource file. Please check your resource file path, add a unique resource file path, and then try saving again. <b>If you meant to edit an existing resource</b>, you can do that by closing this window, then navigating to the \"Resource Tracker\" tab >> \"Add Resource\" sub-tab, and clicking the \"Edit an existing resource\" push-button. " 
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+            return
 
         # check that file path and at least a minimal description has been added to the form 
         # if not exit with informative error

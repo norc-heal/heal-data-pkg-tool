@@ -1189,7 +1189,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         # get entries in resource tracker (latest, not removed) that do not have the current resource id
         # check if the resouce path in the form is equal to any existing resource path for a different resource id
         # don't allow save if this is the case - don't want to double document the same resource/resource path
-        if self.mode == edit:
+        if self.mode == "edit":
             addedResourcePathsDf = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False, excludeIdList=self.checkDataAssociatedFileMultiLikeFilesDf["id"].tolist())
         #     if self.items:
         #         addedResourcePathsDf = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=self.workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=True, includeRemovedEntry=False, excludeIdList=self.checkDataAssociatedFileMultiLikeFilesDf["id"].tolist())
@@ -1594,15 +1594,28 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             if self.saveDf["loadedFromFile"].sum() == 1:
                 if self.saveDf["deleted"].sum() == 1:
                     if self.saveDf["added"].sum() == 1:
-                        orig = self.saveDf[self.saveDf["loadedFromFile"] == 1]
-                        new = self.saveDf[self.saveDf["added"] == 1]
+                        #orig = self.saveDf[self.saveDf["loadedFromFile"] == 1]
+                        orig = self.saveDf[self.saveDf["loadedFromFile"] == 1].copy()
+                        print("orig: ",orig)
+                        #new = self.saveDf[self.saveDf["added"] == 1]
+                        new = self.saveDf[self.saveDf["added"] == 1].copy()
+                        print("new: ",new)
                         
-                        save = orig
+                        #newPath = new.loc[0,"path"].copy()
+                        newPath = new["path"].values[0]
+                        print("newPath: ",newPath)
+                        #newFileDescription = new.loc[0,"fileDescription"].copy()
+                        newFileDescription = new["fileDescription"].values[0]
+                        print("newFileDescription: ",newFileDescription)
+
+                        save = orig.copy()
                         # replace orig path and file description with new path and file description
                         # and set deleted back from 1 to 0
-                        save.at[0,"path"] = new.at[0,"path"]
-                        save.at[0,"descriptionFile"] = new.at[0,"descriptionFile"]
-                        save.at[0,"deleted"] = 0
+                        save.loc[0,"path"] = newPath
+                        save.loc[0,"fileDescription"] = newFileDescription
+                        save.loc[0,"deleted"] = 0
+                        print("save: ",save)
+                        
                         self.saveDf = save
  
             #for idx, p in enumerate(self.saveFilePathList):

@@ -1294,6 +1294,9 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 # saveFormat = '<span style="color:blue;">{}</span>'
                 # self.userMessageBox.append(saveFormat.format(messageText))
 
+                origAssocPubsList = data["associatedFilePublication"]
+                self.origAssocPubsList = dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(origAssocPubsList)
+
             self.form.widget.state = data
 
             if len(data["associatedFileDependsOn"]) > 2: 

@@ -1170,11 +1170,22 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.validateFormData(self=self,formData=resource):
             return
 
-        if not os.path.isfile(resource["path"]):
-            messageText = "<br>The file path indicated in this form does not exist. You must enter a resource file path that exists before saving your resource file. Please check your resource file path, update the path indicated in the form if necessary, and then try saving again." 
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
-            return
+        # check that resource file path exists
+        # also need to check that all paths exist if multi like file resource?
+        if self.items:
+            for i in self.items:
+                if not os.path.isfile(i):
+                    messageText = "<br>It looks like you are annotating a multi-like file resource. However, at least one of the resource file paths indicated in this form does not exist:<br><br>Current missing path: " + i + "<br><br>Please ensure that all resource file paths listed as part of this multi-like file resource exist before saving your resource file. Please check your resource file path(s), update the path(s) indicated in the form if necessary, and then try saving again." 
+                    errorFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(errorFormat.format(messageText))
+                    return
+
+        else:
+            if not os.path.isfile(resource["path"]):
+                messageText = "<br>The resource file path indicated in this form does not exist. You must enter a resource file path that exists before saving your resource file. Please check your resource file path, update the path indicated in the form if necessary, and then try saving again." 
+                errorFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+                return
 
         # if in edit mode then resource path should already exist in resource tracker; if not in edit mode the resource path should
         # not yet exist in tracker

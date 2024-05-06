@@ -684,6 +684,14 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             errorFormat = '<span style="color:red;">{}</span>'
             self.userMessageBox.append(errorFormat.format(messageText))
             #return
+
+        if self.mode == "edit":
+            # user is not allowed to edit the result id in edit mode, check to make sure they didn't
+            if result["resultId"] != self.result_id:
+                messageText = "<br>You opened this form in edit mode to edit the result with result ID " + self.result_id + ". However, it looks like you have manually edited the result ID field in the form to " + result["resultId"] + ". This is not allowed while in edit mode - You can only use this form to edit the result with result ID "+ self.result_id + ". <br><br>If you meant to edit the result with result ID " + self.result_id + ", then please make sure that is the result ID value in the result ID form field, then try saving again. Otherwise, close this form and return to the Main Data Packaging Tool window to work on other actions, such as editing a different result, or adding a new result.<br><br>"
+                saveFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(saveFormat.format(messageText))
+                return
         
         if self.mode == "edit":
             # move the annotation file user opened for editing to archive folder
@@ -1013,6 +1021,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
             # add dummy var collect-all equal to 1 for all result entries; all results should be written to the collect-all results tracker
             collect_df["collect-all"] = 1
 
+            
             # get a list of any results trackers that already exist in dsc pkg dir
             resultsTrkFileList = [filename for filename in os.listdir(dscDirPath) if filename.startswith("heal-csv-results-tracker")]
             print(resultsTrkFileList)
@@ -1093,6 +1102,9 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 print_df = print_df[collect_df_cols]
                 print(print_df.shape)
                 print(print_df.columns)
+                print_df["removed"] = 0
+                print(print_df.shape)
+                print(print_df.columns)
 
                 writeResultsList = print_df["resultId"].tolist()
                 writeResultsFileList = ["result-trk-" + r for r in writeResultsList]
@@ -1120,6 +1132,75 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 messageText = "The contents of the Result file(s): <br><br>" + ', '.join(writeResultsFileList) + "<br><br>were added as a result(s) to the Results Tracker file: <br><br>" + output_path + "<br><br>"
                 errorFormat = '<span style="color:green;">{}</span>'
                 self.userMessageBox.append(errorFormat.format(messageText))
+
+            # only if adding one result at a time - if auto adding after saving
+            # only if in edit mode
+            # check if any assoc pubs have been removed 
+            if self.mode == "edit":
+                if collect_df.shape[0] == 1:
+
+                    # origAssocPubsList = data["associatedFilePublication"]
+                    # self.origAssocPubsList = dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(origAssocPubsList)
+                    finalAssocPubsList = collect_df["associatedFilePublication"].values[0]
+                    removeAssocPubsList = [pub for pub in self.origAssocPubsList if pub not in finalAssocPubsList]
+                    if removeAssocPubsList:
+                        removePubListFinal = []
+                        removePubTrackerListFinal = []
+                        for pub in removeAssocPubsList:
+                            # get file paths for any pub specific results trackers from which result should be removed
+                            removePublicationFileStem = Path(pub).stem 
+                            removeFinalResultsTrkFileStem = "heal-csv-results-tracker-"+ removePublicationFileStem + ".csv" 
+                            removeFinalResultsTrkFile = os.path.join(dscDirPath,removeFinalResultsTrkFileStem) 
+                            # check if tracker from which to remove results exists - if tracker has been removed will not attempt to remove results from it
+                            if os.path.isfile(removeFinalResultsTrkFile):
+                                removePubListFinal.append(pub)
+                                removePubTrackerList.append(removeFinalResultsTrkFile)
+                                collect_df[pub] = -1
+                    
+                    if removePubListFinal:
+
+                        print("removePubListFinal: ", removePubListFinal)
+                        print("removePubTrackerList: ", removePubTrackerList)
+                        
+                        for m, t in zip(removePubListFinal, removePubTrackerList):
+                            print(m,"; ",t)
+                            print_df = collect_df[collect_df[m] == -1]
+                            print(print_df.shape)
+                            print(print_df.columns)
+                            print_df = print_df[collect_df_cols]
+                            print(print_df.shape)
+                            print(print_df.columns)
+                            print_df["removed"] = 1
+                            print(print_df.shape)
+                            print(print_df.columns)
+
+                            writeResultsList = print_df["resultId"].tolist()
+                            writeResultsFileList = ["result-trk-" + r for r in writeResultsList]
+                            
+                            output_path = t
+                            all_df = pd.read_csv(output_path)
+                            #all_df = pd.concat([all_df, df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
+                            all_df = pd.concat([all_df, print_df], axis=0) # this will be a row append with outer join on columns - will help accommodate any changes to fields/schema over time
+                        
+                            all_df.sort_values(by = ["resultIdNumber"], inplace=True)
+                            # drop any exact duplicate rows
+                            #all_df.drop_duplicates(inplace=True) # drop_duplicates does not work when df includes list vars
+                            # this current approach does not appear to be working at the moment
+                            print("all_df rows, with dupes: ", all_df.shape[0])
+                            all_df = all_df[-(all_df.astype('string').duplicated())]
+                            print("all_df rows, without dupes: ", all_df.shape[0])
+                        
+                            # before writing to file may want to check for duplicate result IDs and if duplicate result IDs, ensure that 
+                            # user wants to overwrite the earlier instance of the result ID in the results tracker - right now, dup entries 
+                            # for a result are all kept as long as not exact dup (i.e. at least one thing has changed)
+
+                            all_df.to_csv(output_path, mode='w', header=True, index=False)
+                            #df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
+
+                            messageText = "The contents of the Result file(s): <br><br>" + ', '.join(writeResultsFileList) + "<br><br>were added as a <b>REMOVED</b> result(s) to the Results Tracker file: <br><br>" + output_path + "<br><br>"
+                            errorFormat = '<span style="color:green;">{}</span>'
+                            self.userMessageBox.append(errorFormat.format(messageText))
+
 
             if invalidFiles:
                 messageText = "The contents of the Result file(s): <br><br>" + ', '.join(invalidFiles) + "<br><br>cannot be added to a Results Tracker file because they did not pass validation. Please review the validation errors printed above." 

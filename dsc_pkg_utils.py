@@ -631,7 +631,7 @@ def get_added_resource_paths(self, latestEntryOnly=False, includeRemovedEntry=Tr
 
     return resourcePathList
 
-def get_tracker_entries(workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=False, includeRemovedEntry=True):
+def get_tracker_entries(workingDataPkgDir, trackerType="resource-tracker", latestEntryOnly=False, includeRemovedEntry=True, excludeIdList=[]):
 #def get_added_resource_paths():
     
     #trackerType = "resource-tracker"
@@ -641,6 +641,7 @@ def get_tracker_entries(workingDataPkgDir, trackerType="resource-tracker", lates
     if trackerTypeSub == "results":
         trackerTypeSub = "result"
     trackerIdString = trackerTypeSub + "Id"
+    trackerIdNumString = trackerTypeSub + "IdNumber"
 
     getDir = workingDataPkgDir
     #getDir = "P:/3652/Common/HEAL/y3-task-b-data-sharing-consult/repositories/vivli-submission-from-data-pkg/vivli-test-study/dsc-pkg"
@@ -667,6 +668,14 @@ def get_tracker_entries(workingDataPkgDir, trackerType="resource-tracker", lates
         if not includeRemovedEntry:
             if "removed" in trackerDf.columns:
                 trackerDf = trackerDf[trackerDf["removed"] == 0]
+
+        if excludeIdList:
+            for i in excludeIdList:
+                if i in trackerDf[trackerIdString].values:
+                    trackerDf = trackerDf[trackerDf[trackerIdString] != i]
+            
+
+
 
         return trackerDf
         # resourcePathSeries = resourceTrackerDf["path"].astype(str)

@@ -3,6 +3,7 @@ import os # base python, no pip install needed
  
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport 
 from PyQt5.QtGui import QImage, QPainter
+from PyQt5.QtGui import QTextCursor
 from PyQt5.QtCore import QFile, Qt
 
 import sys # base python, no pip install needed
@@ -98,6 +99,13 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
         
+        messageText = "<br>Working on creating your shareable data package...<br>" 
+        saveFormat = '<span style="color:black;">{}</span>'
+        self.userMessageBox.append(saveFormat.format(messageText))
+        self.userMessageBox.moveCursor(QTextCursor.End)
+
+        QApplication.processEvents() # print accumulated user status messages 
+
         shareableDir = pkg_shareable_data.createShareableDataPkg(
             workingDataPkgDir=self.workingDataPkgDir,
             flavor="open-access-now"
@@ -115,6 +123,13 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
         
+        messageText = "<br>Working on creating your shareable data package...<br>" 
+        saveFormat = '<span style="color:black;">{}</span>'
+        self.userMessageBox.append(saveFormat.format(messageText))
+        self.userMessageBox.moveCursor(QTextCursor.End)
+
+        QApplication.processEvents() # print accumulated user status messages
+
         shareableDir = pkg_shareable_data.createShareableDataPkg(
             workingDataPkgDir=self.workingDataPkgDir,
             flavor="managed-access-now"
@@ -136,6 +151,13 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
         
+        messageText = "<br>Working on creating your shareable data package...<br>" 
+        saveFormat = '<span style="color:black;">{}</span>'
+        self.userMessageBox.append(saveFormat.format(messageText))
+        self.userMessageBox.moveCursor(QTextCursor.End)
+
+        QApplication.processEvents() # print accumulated user status messages
+
         shareableDir = pkg_shareable_data.createShareableDataPkg(
             workingDataPkgDir=self.workingDataPkgDir,
             flavor="open-access-by-date",
@@ -158,6 +180,13 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.getWorkingDataPkgDir(self=self):
             return
         
+        messageText = "<br>Working on creating your shareable data package...<br>" 
+        saveFormat = '<span style="color:black;">{}</span>'
+        self.userMessageBox.append(saveFormat.format(messageText))
+        self.userMessageBox.moveCursor(QTextCursor.End)
+
+        QApplication.processEvents() # print accumulated user status messages
+
         shareableDir = pkg_shareable_data.createShareableDataPkg(
             workingDataPkgDir=self.workingDataPkgDir,
             flavor="managed-access-by-date",

@@ -637,6 +637,7 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                 if self.schema["properties"][key]["items"]["type"] == "string":
                     result[key] = dsc_pkg_utils.deleteEmptyStringInArrayOfStrings(myStringArray=result[key])
 
+        # validate against schema
         if not dsc_pkg_utils.validateFormData(self=self,formData=result):
             return
         

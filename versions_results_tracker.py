@@ -46,7 +46,7 @@
 
 
 fieldNameMap = {
-    "latestVersion":"0.3.0",
+    "latestVersion":"0.3.1",
     "properties":{
         "schemaVersion":{
             "formerNames": [],
@@ -141,6 +141,13 @@ fieldNameMap = {
         },
         "annotationModTimeStamp":{
             "formerNames": ["restrk.mod.time.stamp"],
+            "deprecated": False,
+            "mapEnum": {},
+            "deleteEnum":[],
+            "formerSubNames": {}
+        },
+        "removed":{
+            "formerNames": [],
             "deprecated": False,
             "mapEnum": {},
             "deleteEnum":[],

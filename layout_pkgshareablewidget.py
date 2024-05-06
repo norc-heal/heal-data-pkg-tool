@@ -103,6 +103,9 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
             flavor="open-access-now")
 
         print("success")
+        messageText = "<br>Success - Your shareable data package was created! This \"open-access-now\" shareable data package contains:<br><br>1. Study files - all study files set as open-access as of today's date<br>2. Standard data package metadata - experiment tracker, resource tracker, and any data dictionary(s) and results tracker(s) that have been set as open-access as of today's date<br>"
+        errorFormat = '<span style="color:green;">{}</span>'
+        self.userMessageBox.append(errorFormat.format(messageText))
 
     def managed_access_now(self):
         print("creating shareable data pkg with flavor: managed-access-now")
@@ -116,6 +119,9 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
             flavor="managed-access-now")
 
         print("success")
+        messageText = "<br>Success - Your shareable data package was created! This \"managed-access-now\" shareable data package contains:<br><br>1. Study files - all study files set as open-access or managed-access as of today's date<br>2. Standard data package metadata - experiment tracker, resource tracker, and any data dictionary(s) and results tracker(s) that have been set as open-access or managed-access as of today's date<br>"
+        errorFormat = '<span style="color:green;">{}</span>'
+        self.userMessageBox.append(errorFormat.format(messageText))
         
     def open_access_by_date(self):
         print("creating shareable data pkg with flavor: open-access-by-date")
@@ -133,7 +139,10 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
             flavor="open-access-by-date",
             byDate=byDate) 
 
-        print("success")   
+        print("success") 
+        messageText = "<br>Success - Your shareable data package was created! This \"open-access-by-date\" shareable data package contains:<br><br>1. Study files - all study files set as open-access as of " + byDate + "<br>2. Standard data package metadata - experiment tracker, resource tracker, and any data dictionary(s) and results tracker(s) that have been set as open-access as of " + byDate + "<br>"
+        errorFormat = '<span style="color:green;">{}</span>'
+        self.userMessageBox.append(errorFormat.format(messageText))  
    
     def managed_access_by_date(self):
         print("creating shareable data pkg with flavor: managed-access-by-date")
@@ -151,6 +160,9 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
             flavor="managed-access-by-date",
             byDate=byDate) 
 
-        print("success")   
+        print("success") 
+        messageText = "<br>Success - Your shareable data package was created! This \"managed-access-by-date\" shareable data package contains:<br><br>1. Study files - all study files set as open-access or managed-access as of " + byDate + "<br>2. Standard data package metadata - experiment tracker, resource tracker, and any data dictionary(s) and results tracker(s) that have been set as open-access or managed-access as of " + byDate + "<br>"
+        errorFormat = '<span style="color:green;">{}</span>'
+        self.userMessageBox.append(errorFormat.format(messageText))    
    
     

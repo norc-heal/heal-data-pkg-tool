@@ -1154,15 +1154,15 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                             # check if tracker from which to remove results exists - if tracker has been removed will not attempt to remove results from it
                             if os.path.isfile(removeFinalResultsTrkFile):
                                 removePubListFinal.append(pub)
-                                removePubTrackerList.append(removeFinalResultsTrkFile)
+                                removePubTrackerListFinal.append(removeFinalResultsTrkFile)
                                 collect_df[pub] = -1
                     
                     if removePubListFinal:
 
                         print("removePubListFinal: ", removePubListFinal)
-                        print("removePubTrackerList: ", removePubTrackerList)
+                        print("removePubTrackerListFinal: ", removePubTrackerListFinal)
                         
-                        for m, t in zip(removePubListFinal, removePubTrackerList):
+                        for m, t in zip(removePubListFinal, removePubTrackerListFinal):
                             print(m,"; ",t)
                             print_df = collect_df[collect_df[m] == -1]
                             print(print_df.shape)

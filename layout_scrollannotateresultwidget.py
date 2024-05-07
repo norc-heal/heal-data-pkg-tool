@@ -1156,7 +1156,10 @@ class ScrollAnnotateResultWindow(QtWidgets.QMainWindow):
                                 removePubListFinal.append(pub)
                                 removePubTrackerListFinal.append(removeFinalResultsTrkFile)
                                 collect_df[pub] = -1
-                    
+                    else:
+                        removePubListFinal = []
+                        removePubTrackerListFinal = []
+
                     if removePubListFinal:
 
                         print("removePubListFinal: ", removePubListFinal)

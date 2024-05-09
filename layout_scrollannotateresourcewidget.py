@@ -799,7 +799,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             oldLength = len(self.items)
             oldItems = self.items
 
-        self.items = [lw.item(x).text() for x in range(lw.count())]
+        self.items = [os.path.normpath(lw.item(x).text()) for x in range(lw.count())]
         print(self.items)
 
         refactorItems = []

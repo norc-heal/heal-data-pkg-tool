@@ -1019,12 +1019,14 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         # check if specified name convention includes directory structure (if so should provide full path, including file extension when specifying file name convention)
         s = rf"{self.nameConvention}"
+        
         s1 = s.split('/')
         s2 = s.split('\\')
         print("forward slash split: ", s1, "back slash split: ", s2)
 
         if ((len(s1) > 1) or (len(s2) > 1)):
             keepFullPath = True
+            s = os.path.normpath(s)
             messageText = "<br> Because the file name convention you entered contains either forward or back slashes, the file name convention you entered will be applied to the full path of each file in the set of multiple 'like' resources you added to the file drop box. When directory structure is used as part of the file naming convention, please specify the name convention including the full path and the file extension in the file name convention string you provide in the form."  
             self.userMessageBox.append(messageText)
             self.scrollScrollArea(topOrBottom = "top")

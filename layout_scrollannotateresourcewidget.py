@@ -807,7 +807,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             print(i)
             if os.path.isdir(i):
                 #self.programmaticListUpdate = True
-                myFiles = [os.path.join(i,f) for f in os.listdir(i) if os.path.isfile(os.path.join(i,f))]
+                myFiles = [os.path.normpath(os.path.join(i,f)) for f in os.listdir(i) if os.path.isfile(os.path.join(i,f))]
                 print(myFiles)
                 refactorItems.extend(myFiles)
             else:

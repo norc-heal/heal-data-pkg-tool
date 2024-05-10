@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - "*"
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
 env:
   TAG_BRANCH: tag-versions # branch where the version-specific code is. See note below when this var is called
   APP_TITLE: DSC Data Packaging Tool - alpha - #prefix for the title to be displayed in the app

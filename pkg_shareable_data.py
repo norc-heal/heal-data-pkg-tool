@@ -286,7 +286,7 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                 creationMetadataDf.to_csv(os.path.join(shareablePkgDirString,workingDataPkgDirStem,"shareable-pkg-creation-metadata.csv"),index=False)
                 
                 readme.createReadme(shareableDirString,shareablePkgDirStemString,flavor,byDate,sharedColString)
-                return 
+                return shareableDirString
 
 
                 # shutil.copytree(str(studyFolderDirPath),

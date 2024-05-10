@@ -5,7 +5,7 @@ schema_results_tracker = {
     "type": "object",
     "description": "HEAL DSC Core Metadata piece to track and provide basic information about results statements or figures in a publication (e.g. a peer review manuscript, report, presentation, poster, etc.) that presents results from your HEAL study. Objective is to list at least all results that have been/will be published in order to describe each result, the data/non-data files each result depends on, and how to use these data/non-data files to reproduce published results.",
     "title": "HEAL Results Tracker",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "properties": {
         "schemaVersion": {
             "title": "Schema version",
@@ -112,6 +112,13 @@ schema_results_tracker = {
             "title": "Results tracker entry modification datetime timestamp",
             "description": "Date time at which the result annotation was last modified, converted to timestamp for easy sorting by datetime; auto-inferred",
             "type": "number",
+            "priority": "results tracker, auto"
+        },
+        "removed": {
+            "title": "Removed status",
+            "description": "True if user has removed the result from the scope of a publication-specific results tracker",
+            "type": "integer",
+            "enum": [0,1],
             "priority": "results tracker, auto"
         }
     }

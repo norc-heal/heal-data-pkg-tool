@@ -598,7 +598,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                     os.rename(origDir,origDir + "-archive")
                     os.rename(updateDir,origDir)
                     
-                    messageText = "<br>Your original working Data Package Directory has been archived as the original directory name + \"-archive\" plus .<br>"
+                    messageText = "<br>Your original working Data Package Directory has been archived as the original directory name plus \"-archive\".<br>"
                     saveFormat = '<span style="color:green;">{}</span>'
                     self.userMessageBox.append(saveFormat.format(messageText))
                     return
@@ -612,7 +612,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
                 os.rename(origDir,origDir + "-archive")
                 os.rename(updateDir,origDir)
                 
-                messageText = "<br>Your original working Data Package Directory has been archived as \"archive-\" plus the original directory name.<br>"
+                messageText = "<br>Your original working Data Package Directory has been archived as the original directory name plus \"-archive\".<br>"
                 saveFormat = '<span style="color:green;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
                 return
@@ -623,7 +623,7 @@ class PkgAuditWindow(QtWidgets.QMainWindow):
             #os.rename(updateDir,origDir)
             dsc_pkg_utils.robustRename(src=updateDir,dst=origDir)
             
-            messageText = "<br>Your original working Data Package Directory has been archived as \"archive-\" plus the original directory name.<br>"
+            messageText = "<br>Your original working Data Package Directory has been archived as the original directory name plus \"-archive\".<br>"
             saveFormat = '<span style="color:green;">{}</span>'
             self.userMessageBox.append(saveFormat.format(messageText))
         

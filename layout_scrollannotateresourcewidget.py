@@ -799,7 +799,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             oldLength = len(self.items)
             oldItems = self.items
 
-        self.items = [lw.item(x).text() for x in range(lw.count())]
+        self.items = [os.path.normpath(lw.item(x).text()) for x in range(lw.count())]
         print(self.items)
 
         refactorItems = []
@@ -807,7 +807,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
             print(i)
             if os.path.isdir(i):
                 #self.programmaticListUpdate = True
-                myFiles = [os.path.join(i,f) for f in os.listdir(i) if os.path.isfile(os.path.join(i,f))]
+                myFiles = [os.path.normpath(os.path.join(i,f)) for f in os.listdir(i) if os.path.isfile(os.path.join(i,f))]
                 print(myFiles)
                 refactorItems.extend(myFiles)
             else:
@@ -1019,12 +1019,14 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
 
         # check if specified name convention includes directory structure (if so should provide full path, including file extension when specifying file name convention)
         s = rf"{self.nameConvention}"
+        
         s1 = s.split('/')
         s2 = s.split('\\')
         print("forward slash split: ", s1, "back slash split: ", s2)
 
         if ((len(s1) > 1) or (len(s2) > 1)):
             keepFullPath = True
+            s = os.path.normpath(s)
             messageText = "<br> Because the file name convention you entered contains either forward or back slashes, the file name convention you entered will be applied to the full path of each file in the set of multiple 'like' resources you added to the file drop box. When directory structure is used as part of the file naming convention, please specify the name convention including the full path and the file extension in the file name convention string you provide in the form."  
             self.userMessageBox.append(messageText)
             self.scrollScrollArea(topOrBottom = "top")
@@ -1170,11 +1172,22 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
         if not dsc_pkg_utils.validateFormData(self=self,formData=resource):
             return
 
-        if not os.path.isfile(resource["path"]):
-            messageText = "<br>The file path indicated in this form does not exist. You must enter a resource file path that exists before saving your resource file. Please check your resource file path, update the path indicated in the form if necessary, and then try saving again." 
-            errorFormat = '<span style="color:red;">{}</span>'
-            self.userMessageBox.append(errorFormat.format(messageText))
-            return
+        # check that resource file path exists
+        # also need to check that all paths exist if multi like file resource?
+        if self.items:
+            for i in self.items:
+                if not os.path.isfile(i):
+                    messageText = "<br>It looks like you are annotating a multi-like file resource. However, at least one of the resource file paths indicated in this form does not exist:<br><br>Current missing path: " + i + "<br><br>Please ensure that all resource file paths listed as part of this multi-like file resource exist before saving your resource file. Please check your resource file path(s), update the path(s) indicated in the form if necessary, and then try saving again." 
+                    errorFormat = '<span style="color:red;">{}</span>'
+                    self.userMessageBox.append(errorFormat.format(messageText))
+                    return
+
+        else:
+            if not os.path.isfile(resource["path"]):
+                messageText = "<br>The resource file path indicated in this form does not exist. You must enter a resource file path that exists before saving your resource file. Please check your resource file path, update the path indicated in the form if necessary, and then try saving again." 
+                errorFormat = '<span style="color:red;">{}</span>'
+                self.userMessageBox.append(errorFormat.format(messageText))
+                return
 
         # if in edit mode then resource path should already exist in resource tracker; if not in edit mode the resource path should
         # not yet exist in tracker
@@ -1234,6 +1247,7 @@ class ScrollAnnotateResourceWindow(QtWidgets.QMainWindow):
                 messageText = "<br>You opened this form in edit mode to edit the resource with resource ID " + self.resource_id + ". However, it looks like you have manually edited the resource ID field in the form to " + resource["resourceId"] + ". This is not allowed while in edit mode - You can only use this form to edit the resource with resouce ID "+ self.resource_id + ". <br><br>If you meant to edit the resource with resource ID " + self.resource_id + ", then please make sure that is the resource ID value in the resource ID form field, then try saving again. Otherwise, close this form and return to the Main Data Packaging Tool window to work on other actions, such as adding a different resource, or adding a new resource.<br><br>"
                 saveFormat = '<span style="color:red;">{}</span>'
                 self.userMessageBox.append(saveFormat.format(messageText))
+                return
             
             
         # check if user has modified the resource id from the one that was autogenerated when adding dsc data dir for saving

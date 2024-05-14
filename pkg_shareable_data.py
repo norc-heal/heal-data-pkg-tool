@@ -83,6 +83,13 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
     workingDataPkgDirStem = workingDataPkgDirPath.stem
     workingDataPkgDirParentPath = workingDataPkgDirPath.parent
 
+    # check if there is an archived version of the working data package directory and delete it prior to creating a shareable data pkg if there is one
+    workingDataPkgArchiveDirStem = workingDataPkgDirStem + "-archive"
+    workingDataPkgArchiveDir = os.path.join(str(workingDataPkgDirParentPath),workingDataPkgArchiveDirStem)
+    if os.path.isdir(workingDataPkgArchiveDir):
+        shutil.rmtree(workingDataPkgArchiveDir)
+
+
     if StudyFolderCentralized:
         if workingDataPkgDirInStudyFolder:
             if not shareableDataPkgShellDir:

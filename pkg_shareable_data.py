@@ -108,6 +108,11 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                 
 
                 shareablePkgDirString = os.path.join(shareableDirString,shareablePkgDirStemString)
+                # if a shareable data pkg directory of identical "flavor" has already been created on today's date
+                # throw a graceful error with informative message
+                if os.path.isdir(shareablePkgDirString):
+                    print("there is already a shareable data package directory with the path: ",shareablePkgDirString,". If you want to overwrite the previous version, delete the previous version and try again.")
+                    return
                 
                 # get resource tracker entries - latest entry per resource id; no entry for removed resource ids
                 resourceTrackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=workingDataPkgDir,trackerType="resource-tracker",latestEntryOnly=True,includeRemovedEntry=False)

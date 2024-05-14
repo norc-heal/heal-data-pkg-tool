@@ -242,9 +242,12 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                 else: 
                     resultsTrackerStemList = []
 
+                # get experiment tracker entries - latest entry per exp id; no entry for removed exp ids
+                experimentTrackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=workingDataPkgDir,trackerType="experiment-tracker",latestEntryOnly=True,includeRemovedEntry=False)
+                
 
                 #filesToKeep = resourceTrackerEntriesToShare["path"].tolist()
-                filesToKeep.extend([os.path.join(workingDataPkgDir,"heal-csv-experiment-tracker.csv")])
+                #filesToKeep.extend([os.path.join(workingDataPkgDir,"heal-csv-experiment-tracker.csv")])
                 filesToKeep = [Path(f) for f in filesToKeep]
                 print("filesToKeep: ",filesToKeep)
                 
@@ -261,6 +264,7 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                     for stem,df in zip(resultsTrackerStemList,resultsTrackerEntriesTransformedDfList):
                         fname = stem + ".csv"
                         df.to_csv(os.path.join(shareablePkgDirString,workingDataPkgDirStem,fname),index=False)
+                experimentTrackerEntries.to_csv(os.path.join(shareablePkgDirString,workingDataPkgDirStem,"heal-csv-experiment-tracker.csv"),index=False)
                 
                 # work on shareable data catalog metadata, including 
                 # unzipped resource tracker with flags indicating which files shared in which shareable data pkg(s) 

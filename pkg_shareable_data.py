@@ -112,7 +112,12 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                 # throw a graceful error with informative message
                 if os.path.isdir(shareablePkgDirString):
                     print("there is already a shareable data package directory with the path: ",shareablePkgDirString,". If you want to overwrite the previous version, delete the previous version and try again.")
-                    return
+                    
+                    exitStatus = False
+                    failType = "dirExists"
+                
+                    return shareableDirString, shareablePkgDirString, exitStatus, failType
+                    
                 
                 # get resource tracker entries - latest entry per resource id; no entry for removed resource ids
                 resourceTrackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=workingDataPkgDir,trackerType="resource-tracker",latestEntryOnly=True,includeRemovedEntry=False)
@@ -291,7 +296,11 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                 creationMetadataDf.to_csv(os.path.join(shareablePkgDirString,workingDataPkgDirStem,"shareable-pkg-creation-metadata.csv"),index=False)
                 
                 readme.createReadme(shareableDirString,shareablePkgDirStemString,flavor,byDate,sharedColString)
-                return shareableDirString
+                
+                exitStatus = True
+                failType = ""
+                
+                return shareableDirString, shareablePkgDirString, exitStatus, failType
 
 
                 # shutil.copytree(str(studyFolderDirPath),

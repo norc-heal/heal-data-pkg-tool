@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
   
 env:
-  TAG_BRANCH: tag-versions # branch where the version-specific code is. See note below when this var is called
+  TAG_BRANCH: tag-${{ github.ref_name }}-${{ github.sha }} # branch where the version-specific code is. See note below when this var is called
   APP_TITLE: DSC Data Packaging Tool - alpha - #prefix for the title to be displayed in the app
 jobs:
   tag_version:
@@ -24,7 +24,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.TAG_BRANCH }} # defaults to the hash for tags. Need some sort of branch to do git commits (could also be the main branch). 
+          ref: ${{ github.ref_name }} 
       # add the slugified (ie replace periods with dashes) to the version name to the saved output variables file
       - name: Save slugified version tag
         id: save
@@ -35,18 +35,20 @@ jobs:
       - id: title_in_version
         name: Add version number to app title
         run: |
+          git config user.name ${{ github.triggering_actor }}
+          git config user.email ${{ github.triggering_actor }}@users.noreply.github.com
+
+          git checkout -b ${{ env.TAG_BRANCH }}
+
           version="${GITHUB_REF_NAME}"
           title_with_version="${APP_TITLE} ${version}"
           echo $title_with_version
           # replace the window title
           sed -i -e "s/self.setWindowTitle(.*)/self.setWindowTitle(\"${title_with_version}\")/g" dsc_pkg_tool.py
 
-          git config user.name ${{ github.triggering_actor }}
-          git config user.email ${{ github.triggering_actor }}@users.noreply.github.com
-
           git add dsc_pkg_tool.py
           git commit -m "Automated update of app title to ${version}"
-          git push -u origin $TAG_BRANCH
+          git push -u origin ${{ env.TAG_BRANCH }}
           
 
   release:

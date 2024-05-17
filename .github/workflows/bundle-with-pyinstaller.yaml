@@ -24,7 +24,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.TAG_BRANCH }} # defaults to the hash for tags. Need some sort of branch to do git commits (could also be the main branch). 
+          ref: ${{ github.ref_name }} # defaults to the hash for tags. Need some sort of branch to do git commits (could also be the main branch). 
       # add the slugified (ie replace periods with dashes) to the version name to the saved output variables file
       - name: Save slugified version tag
         id: save

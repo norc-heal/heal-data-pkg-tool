@@ -76,8 +76,8 @@ jobs:
         include:
           - os: windows-latest
             name: windows
-          - os: macos-latest
-            name: mac
+          # - os: macos-latest
+          #   name: mac
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3

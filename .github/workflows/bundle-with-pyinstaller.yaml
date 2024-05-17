@@ -76,7 +76,7 @@ jobs:
         include:
           - os: windows-latest
             name: windows
-          - os: macos-latest
+          - os: macos-12
             name: mac
     steps:
     - name: Checkout repository

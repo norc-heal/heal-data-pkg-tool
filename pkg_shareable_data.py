@@ -83,6 +83,13 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
     workingDataPkgDirStem = workingDataPkgDirPath.stem
     workingDataPkgDirParentPath = workingDataPkgDirPath.parent
 
+    # check if there is an archived version of the working data package directory and delete it prior to creating a shareable data pkg if there is one
+    workingDataPkgArchiveDirStem = workingDataPkgDirStem + "-archive"
+    workingDataPkgArchiveDir = os.path.join(str(workingDataPkgDirParentPath),workingDataPkgArchiveDirStem)
+    if os.path.isdir(workingDataPkgArchiveDir):
+        shutil.rmtree(workingDataPkgArchiveDir)
+
+
     if StudyFolderCentralized:
         if workingDataPkgDirInStudyFolder:
             if not shareableDataPkgShellDir:
@@ -108,6 +115,16 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                 
 
                 shareablePkgDirString = os.path.join(shareableDirString,shareablePkgDirStemString)
+                # if a shareable data pkg directory of identical "flavor" has already been created on today's date
+                # throw a graceful error with informative message
+                if os.path.isdir(shareablePkgDirString):
+                    print("there is already a shareable data package directory with the path: ",shareablePkgDirString,". If you want to overwrite the previous version, delete the previous version and try again.")
+                    
+                    exitStatus = False
+                    failType = "dirExists"
+                
+                    return shareableDirString, shareablePkgDirString, exitStatus, failType
+                    
                 
                 # get resource tracker entries - latest entry per resource id; no entry for removed resource ids
                 resourceTrackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=workingDataPkgDir,trackerType="resource-tracker",latestEntryOnly=True,includeRemovedEntry=False)
@@ -232,9 +249,12 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                 else: 
                     resultsTrackerStemList = []
 
+                # get experiment tracker entries - latest entry per exp id; no entry for removed exp ids
+                experimentTrackerEntries = dsc_pkg_utils.get_tracker_entries(workingDataPkgDir=workingDataPkgDir,trackerType="experiment-tracker",latestEntryOnly=True,includeRemovedEntry=False)
+                
 
                 #filesToKeep = resourceTrackerEntriesToShare["path"].tolist()
-                filesToKeep.extend([os.path.join(workingDataPkgDir,"heal-csv-experiment-tracker.csv")])
+                #filesToKeep.extend([os.path.join(workingDataPkgDir,"heal-csv-experiment-tracker.csv")])
                 filesToKeep = [Path(f) for f in filesToKeep]
                 print("filesToKeep: ",filesToKeep)
                 
@@ -251,6 +271,7 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                     for stem,df in zip(resultsTrackerStemList,resultsTrackerEntriesTransformedDfList):
                         fname = stem + ".csv"
                         df.to_csv(os.path.join(shareablePkgDirString,workingDataPkgDirStem,fname),index=False)
+                experimentTrackerEntries.to_csv(os.path.join(shareablePkgDirString,workingDataPkgDirStem,"heal-csv-experiment-tracker.csv"),index=False)
                 
                 # work on shareable data catalog metadata, including 
                 # unzipped resource tracker with flags indicating which files shared in which shareable data pkg(s) 
@@ -286,7 +307,11 @@ def createShareableDataPkg(workingDataPkgDir,flavor="shell",byDate="1/1/2099",sh
                 creationMetadataDf.to_csv(os.path.join(shareablePkgDirString,workingDataPkgDirStem,"shareable-pkg-creation-metadata.csv"),index=False)
                 
                 readme.createReadme(shareableDirString,shareablePkgDirStemString,flavor,byDate,sharedColString)
-                return shareableDirString
+                
+                exitStatus = True
+                failType = ""
+                
+                return shareableDirString, shareablePkgDirString, exitStatus, failType
 
 
                 # shutil.copytree(str(studyFolderDirPath),

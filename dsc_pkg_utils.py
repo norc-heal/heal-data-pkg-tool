@@ -89,7 +89,8 @@ def relPathResultsDependOn(resultsDependOnListOfDicts, relToPath, pathKey="resul
                     print(pathList)
                     print(isinstance(pathList,list))
                     #relPathList = [convertStringifiedArrayOfStringsToList(p) for p in pathList]
-                    relPathList = [os.path.relpath(p,relToPath) for p in pathList]
+                    relPathList = [os.path.relpath(p,relToPath) if p else p for p in pathList] # if the rel path list contains empty string(s) leave then as empty strings; don't try to calc relative path bc will fail with no path specified error
+                    relPathList = [i for i in relPathList if i] # remove any empty string(s) in rel path list
                     print(relPathList)
                     dict[key] = relPathList
         print("dictAfter: ",dict)

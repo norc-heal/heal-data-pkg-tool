@@ -106,15 +106,24 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
 
         QApplication.processEvents() # print accumulated user status messages 
 
-        shareableDir = pkg_shareable_data.createShareableDataPkg(
+        shareableDir, shareablePkgDir, exitStatus, failType = pkg_shareable_data.createShareableDataPkg(
             workingDataPkgDir=self.workingDataPkgDir,
             flavor="open-access-now"
             )
 
-        print("success")
-        messageText = "<br>Success - Your shareable data package was created! This \"open-access-now\" shareable data package contains:<br><br>1. Study files - all study files set as open-access as of today's date<br>2. Standard data package metadata - experiment tracker, resource tracker, and any data dictionary(s) and results tracker(s) that have been set as open-access as of today's date<br><br>You'll find your shareable data package directory at: " + shareableDir + "<br><br>There is also a readme file and an \"overview\" resource tracker with an indicator of which files are shared in this shareable data package at that location. You should:<br><br>1. Inspect your shareable data package, then zip it up once you are satisfied that the correct files have been shared<br>2. Share your zipped up shareable data package directory as open access at your selected data repository<br>3. Share your readme file and \"overview\" resource tracker as open access at your selected data repository<br>"
-        errorFormat = '<span style="color:green;">{}</span>'
-        self.userMessageBox.append(errorFormat.format(messageText))
+        if exitStatus:
+            print("success")
+            messageText = "<br>Success - Your shareable data package was created! This \"open-access-now\" shareable data package contains:<br><br>1. Study files - all study files set as open-access as of today's date<br>2. Standard data package metadata - experiment tracker, resource tracker, and any data dictionary(s) and results tracker(s) that have been set as open-access as of today's date<br><br>You'll find your shareable data package directory at: " + shareableDir + "<br><br>There is also a readme file and an \"overview\" resource tracker with an indicator of which files are shared in this shareable data package at that location.<br><br>Your shareable data package directory's path is: " + shareablePkgDir + "<br><br>You should:<br><br>1. Inspect your shareable data package, then zip it up once you are satisfied that the correct files have been shared<br>2. Share your zipped up shareable data package directory as open access at your selected data repository<br>3. Share your readme file and \"overview\" resource tracker as open access at your selected data repository<br>"
+            errorFormat = '<span style="color:green;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+        else:
+            print("failure")
+            messageText = "<br>Failure - Your shareable data package was NOT created!<br>" 
+            if failType == "dirExists":
+                messageText = messageText + "<br>It looks like you've already created an \"open-access-now\" shareable data package today. If you want to overwrite the original version you will have to first delete the original version. The original version of this shareable data package can be found at: " + shareablePkgDir + "<br>"
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+
 
     def managed_access_now(self):
         print("creating shareable data pkg with flavor: managed-access-now")
@@ -130,15 +139,23 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
 
         QApplication.processEvents() # print accumulated user status messages
 
-        shareableDir = pkg_shareable_data.createShareableDataPkg(
+        shareableDir, shareablePkgDir, exitStatus, failType = pkg_shareable_data.createShareableDataPkg(
             workingDataPkgDir=self.workingDataPkgDir,
             flavor="managed-access-now"
             )
 
-        print("success")
-        messageText = "<br>Success - Your shareable data package was created! This \"managed-access-now\" shareable data package contains:<br><br>1. Study files - all study files set as open-access or managed-access as of today's date<br>2. Standard data package metadata - experiment tracker, resource tracker, and any data dictionary(s) and results tracker(s) that have been set as open-access or managed-access as of today's date<br><br>You'll find your shareable data package directory at: " + shareableDir + "<br><br>There is also a readme file and an \"overview\" resource tracker with an indicator of which files are shared in this shareable data package at that location. You should:<br><br>1. Inspect your shareable data package, then zip it up once you are satisfied that the correct files have been shared<br>2. Share your zipped up shareable data package directory as managed access at your selected data repository<br>3. Share your readme file and \"overview\" resource tracker as open access at your selected data repository<br>"
-        errorFormat = '<span style="color:green;">{}</span>'
-        self.userMessageBox.append(errorFormat.format(messageText))
+        if exitStatus:
+            print("success")
+            messageText = "<br>Success - Your shareable data package was created! This \"managed-access-now\" shareable data package contains:<br><br>1. Study files - all study files set as open-access or managed-access as of today's date<br>2. Standard data package metadata - experiment tracker, resource tracker, and any data dictionary(s) and results tracker(s) that have been set as open-access or managed-access as of today's date<br><br>You'll find your shareable data package directory at: " + shareableDir + "<br><br>There is also a readme file and an \"overview\" resource tracker with an indicator of which files are shared in this shareable data package at that location.<br> Your shareable data package directory's path is: " + shareablePkgDir + "<br><br>You should:<br><br>1. Inspect your shareable data package, then zip it up once you are satisfied that the correct files have been shared<br>2. Share your zipped up shareable data package directory as managed access at your selected data repository<br>3. Share your readme file and \"overview\" resource tracker as open access at your selected data repository<br>"
+            errorFormat = '<span style="color:green;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
+        else:
+            print("failure")
+            messageText = "<br>Failure - Your shareable data package was NOT created!<br>" 
+            if failType == "dirExists":
+                messageText = messageText + "<br>It looks like you've already created a \"managed-access-now\" shareable data package today. If you want to overwrite the original version you will have to first delete the original version. The original version of this shareable data package can be found at: " + shareablePkgDir + "<br>"
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
         
     def open_access_by_date(self):
         print("creating shareable data pkg with flavor: open-access-by-date")
@@ -158,16 +175,24 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
 
         QApplication.processEvents() # print accumulated user status messages
 
-        shareableDir = pkg_shareable_data.createShareableDataPkg(
+        shareableDir, shareablePkgDir, exitStatus, failType = pkg_shareable_data.createShareableDataPkg(
             workingDataPkgDir=self.workingDataPkgDir,
             flavor="open-access-by-date",
             byDate=byDate
             ) 
 
-        print("success") 
-        messageText = "<br>Success - Your shareable data package was created! This \"open-access-by-date\" shareable data package contains:<br><br>1. Study files - all study files set as open-access as of " + byDate + "<br>2. Standard data package metadata - experiment tracker, resource tracker, and any data dictionary(s) and results tracker(s) that have been set as open-access as of " + byDate + "<br><br>You'll find your shareable data package directory at: " + shareableDir + "<br><br>There is also a readme file and an \"overview\" resource tracker with an indicator of which files are shared in this shareable data package at that location. You should:<br><br>1. Inspect your shareable data package, then zip it up once you are satisfied that the correct files have been shared<br>2. Share your zipped up shareable data package directory as open access but under embargo until " + byDate + " at your selected data repository<br>3. Share your readme file and \"overview\" resource tracker as open access at your selected data repository<br>"
-        errorFormat = '<span style="color:green;">{}</span>'
-        self.userMessageBox.append(errorFormat.format(messageText))  
+        if exitStatus:
+            print("success") 
+            messageText = "<br>Success - Your shareable data package was created! This \"open-access-by-date\" shareable data package contains:<br><br>1. Study files - all study files set as open-access as of " + byDate + "<br>2. Standard data package metadata - experiment tracker, resource tracker, and any data dictionary(s) and results tracker(s) that have been set as open-access as of " + byDate + "<br><br>You'll find your shareable data package directory at: " + shareableDir + "<br><br>There is also a readme file and an \"overview\" resource tracker with an indicator of which files are shared in this shareable data package at that location.<br><br>Your shareable data package directory's path is: " + shareablePkgDir + "<br><br> You should:<br><br>1. Inspect your shareable data package, then zip it up once you are satisfied that the correct files have been shared<br>2. Share your zipped up shareable data package directory as open access but under embargo until " + byDate + " at your selected data repository<br>3. Share your readme file and \"overview\" resource tracker as open access at your selected data repository<br>"
+            errorFormat = '<span style="color:green;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))  
+        else:
+            print("failure")
+            messageText = "<br>Failure - Your shareable data package was NOT created!<br>" 
+            if failType == "dirExists":
+                messageText = messageText + "<br>It looks like you've already created an \"open-access-by-date\" shareable data package with a \"by date\" of " + byDate + " today. If you want to overwrite the original version you will have to first delete the original version. The original version of this shareable data package can be found at: " + shareablePkgDir + "<br>"
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))
    
     def managed_access_by_date(self):
         print("creating shareable data pkg with flavor: managed-access-by-date")
@@ -187,15 +212,23 @@ class PkgShareableWindow(QtWidgets.QMainWindow):
 
         QApplication.processEvents() # print accumulated user status messages
 
-        shareableDir = pkg_shareable_data.createShareableDataPkg(
+        shareableDir, shareablePkgDir, exitStatus, failType = pkg_shareable_data.createShareableDataPkg(
             workingDataPkgDir=self.workingDataPkgDir,
             flavor="managed-access-by-date",
             byDate=byDate
             ) 
 
-        print("success") 
-        messageText = "<br>Success - Your shareable data package was created! This \"managed-access-by-date\" shareable data package contains:<br><br>1. Study files - all study files set as open-access or managed-access as of " + byDate + "<br>2. Standard data package metadata - experiment tracker, resource tracker, and any data dictionary(s) and results tracker(s) that have been set as open-access or managed-access as of " + byDate + "<br><br>You'll find your shareable data package directory at: " + shareableDir + "<br><br>There is also a readme file and an \"overview\" resource tracker with an indicator of which files are shared in this shareable data package at that location. You should:<br><br>1. Inspect your shareable data package, then zip it up once you are satisfied that the correct files have been shared<br>2. Share your zipped up shareable data package directory as managed access but under embargo until " + byDate + " at your selected data repository<br>3. Share your readme file and \"overview\" resource tracker as open access at your selected data repository<br>"
-        errorFormat = '<span style="color:green;">{}</span>' 
-        self.userMessageBox.append(errorFormat.format(messageText))    
+        if exitStatus:
+            print("success") 
+            messageText = "<br>Success - Your shareable data package was created! This \"managed-access-by-date\" shareable data package contains:<br><br>1. Study files - all study files set as open-access or managed-access as of " + byDate + "<br>2. Standard data package metadata - experiment tracker, resource tracker, and any data dictionary(s) and results tracker(s) that have been set as open-access or managed-access as of " + byDate + "<br><br>You'll find your shareable data package directory at: " + shareableDir + "<br><br>There is also a readme file and an \"overview\" resource tracker with an indicator of which files are shared in this shareable data package at that location.<br><br>Your shareable data package directory's path is: " + shareablePkgDir + "<br><br> You should:<br><br>1. Inspect your shareable data package, then zip it up once you are satisfied that the correct files have been shared<br>2. Share your zipped up shareable data package directory as managed access but under embargo until " + byDate + " at your selected data repository<br>3. Share your readme file and \"overview\" resource tracker as open access at your selected data repository<br>"
+            errorFormat = '<span style="color:green;">{}</span>' 
+            self.userMessageBox.append(errorFormat.format(messageText)) 
+        else:
+            print("failure")
+            messageText = "<br>Failure - Your shareable data package was NOT created!<br>" 
+            if failType == "dirExists":
+                messageText = messageText + "<br>It looks like you've already created a \"managed-access-by-date\" shareable data package with a \"by date\" of " + byDate + " today. If you want to overwrite the original version you will have to first delete the original version. The original version of this shareable data package can be found at: " + shareablePkgDir + "<br>"
+            errorFormat = '<span style="color:red;">{}</span>'
+            self.userMessageBox.append(errorFormat.format(messageText))   
    
     

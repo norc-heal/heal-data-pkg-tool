@@ -1,4 +1,5 @@
 import csv, codecs # base python, no pip install needed
+csv.field_size_limit(100000000)
 import os # base python, no pip install needed
  
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport 

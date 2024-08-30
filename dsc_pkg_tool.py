@@ -99,6 +99,13 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.tabs)
 
         self.showMaximized()
+        #self.showMinimized()
+        #self.main_widget.setFixedSize(16777215,16777215)
+        # self.main_widget.setMinimumSize(0,0)
+        self.workingDataPkgDirLabel.setMinimumSize(1,40)
+        # self.workingDataPkgDirDisplay.setMinimumSize(0,0)
+        # self.tabs.setMinimumSize(0,0)
+        self.setMinimumSize(1,1)
         
         #self.setCentralWidget(self.layout)
     

@@ -1,4 +1,5 @@
 #healdata-utils @ git+https://github.com/norc-heal/healdata-utils
+numpy==1.26.4
 git+https://github.com/norc-heal/healdata-utils@a94f2f799bf80f83d8e378444d0e96cd61d65b1a
 PyQt5==5.15.9
 pyinstaller==5.8.0
@@ -7,4 +8,5 @@ qt_jsonschema_form==1.0.0
 pyqtschema==0.2.0
 pydantic==1.10.8
 jsonschema2md==0.9.0
+
 
